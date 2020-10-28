@@ -112,8 +112,7 @@ def noun_indices(question):
 
 
         for token in span:
-            if token.dep_ == 'dobj' or token.dep_ == 'pobj' or token.dep_ == 'det' or token.pos_ == "PRON" or token.dep_ == 'nsubj'
-            or token.pos_ == 'PROPN' or token.pos_ == "NOUN" or token.pos_ == "ADJ" or token.pos_ == "NUM":
+            if token.dep_ in ['dobj','pobj','det','nsubj'] or token.pos_ in ["PRON",'PROPN',"NOUN","ADJ","NUM"]:
                 char_index = token.idx
                 print("Token {} {} {}".format(token,token.dep_,token.pos_))
 
