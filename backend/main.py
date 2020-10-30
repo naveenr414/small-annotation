@@ -52,7 +52,7 @@ def chunk_words(question):
 
 def load_annotations(person_name):
     try:
-        f = open("{}_annotations.csv".format(person_name)).read().split("\n")[1:-1]
+        f = open("../data/{}_annotations.csv".format(person_name)).read().split("\n")[1:-1]
     except FileNotFoundError:
         return {}
 
@@ -73,7 +73,7 @@ def load_annotations(person_name):
     return annotations
 
 def write_annotations_dict(person_name,d):
-    w = open("{}_annotations.csv".format(person_name),"w")
+    w = open("../data/{}_annotations.csv".format(person_name),"w")
 
     print("Writing {}".format(d))
 
