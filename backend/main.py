@@ -108,14 +108,10 @@ def noun_indices(question):
     for idxValue in nounIndices:
         doc = nlp(question)
         span = doc[doc[idxValue].left_edge.i : doc[idxValue].right_edge.i+1]
-        print("Span {} {}".format(span,list(span)))
-
 
         for token in span:
             if token.dep_ in ['dobj','pobj','det','nsubj'] or token.pos_ in ["PRON",'PROPN',"NOUN","ADJ","NUM"]:
                 char_index = token.idx
-                print("Token {} {} {}".format(token,token.dep_,token.pos_))
-
 
                 for i in range(len(character_indices)):
                     if(character_indices[i][1] == char_index):
@@ -144,9 +140,10 @@ def get_question_num(question_num):
 
 @app.get("/noun_phrases/{question_num}")
 def get_noun_phrase_num(question_num):
-    name = question_num.split("_")[1].lower()
+    name = question_num.split("_")[1].lower().strip()
     question_num = question_num.split("_")[0]
     l = load_annotations(name)
+    print("Name {} annotations {} question num {}".format(name,l,int(question_num)))
     f = open("questions.txt").read().strip().split("\n")[int(question_num)]
     annotations = []
     if int(question_num) in l:
@@ -187,8 +184,6 @@ def get_autocorrect(word):
 
     if word in wiki and word not in popular_names:
         popular_names+=[word]
-
-    print(popular_names)
     
     return [(i.replace("&amp;","&"),wiki[i][0]) for i in popular_names]+[("no entity","")]
 

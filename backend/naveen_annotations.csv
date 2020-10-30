@@ -1,4 +1,0 @@
-question_num,start,end,annotation,is_named_entity
-2,1,3,abc,False
-0,1,4,abc,False
-0,3,4,francis scott key,False

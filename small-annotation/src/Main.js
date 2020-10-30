@@ -2,6 +2,7 @@ import * as React from "react";
 import Phrase from "./Phrase";
 import Grid from "@material-ui/core/Grid";
 
+let address = "http://0.0.0.0:1234";
 
 interface Props {}
 
@@ -45,7 +46,7 @@ export default class Main extends React.Component<Props, State> {
   
   get_questions = () => {
     fetch(
-      "http://127.0.0.1:8000/questions"
+      address+"/questions"
       )
       .then((res) => res.json())
       .then((res) => this.setState({questions:res}));
@@ -53,7 +54,7 @@ export default class Main extends React.Component<Props, State> {
   
   get_noun_phrases = () => {
     fetch(
-      "http://127.0.0.1:8000/noun_phrases/"+this.state.current_question.toString()+"_"+this.state.name
+      address+"/noun_phrases/"+this.state.current_question.toString()+"_"+this.state.name
       )
       .then((res) => res.json())
       .then((res) => this.setState({noun_phrases:res,annotations:res['formatted_annotations'],checked: res['formatted_checked']},()=>{this.setState({noun_phrases: this.state.noun_phrases})}));
@@ -79,7 +80,7 @@ export default class Main extends React.Component<Props, State> {
       }
     }
       var xhr = new XMLHttpRequest();
-      xhr.open("POST", "http://127.0.0.1:8000/submit");
+      xhr.open("POST", address+"/submit");
       xhr.send(
         JSON.stringify({
       question_num: this.state.current_question,
@@ -134,7 +135,34 @@ export default class Main extends React.Component<Props, State> {
       noun_phrases.push(<div> Loading noun phrases </div>);
     }
       
-    return <div style={{marginLeft: 40, marginTop: 60, marginRight: 100, fontSize: 20, textAlign: 'left'}}> <h1> Question {this.state.current_question+1} </h1> <div>  <button onClick={()=>{this.submit();this.setState({current_question: (this.state.current_question+this.state.questions.length-1)%this.state.questions.length,noun_phrases:[], annotations: {}, checked: {}})}}> Previous </button>  &nbsp; &nbsp;  &nbsp; &nbsp; <button onClick={()=>{this.submit();this.setState({current_question: (this.state.current_question+1)%this.state.questions.length,noun_phrases:[],annotations: {}, checked: {}})}}> Next </button>  &nbsp; &nbsp;  &nbsp; &nbsp;<button onClick={this.submit}> Submit </button>  </div> <br /> <div > {q} </div> <br /> <div> <b> Instructions: </b> Enter noun phrase, and check off if Named Entity <br /> <br /> {noun_phrases} </div> </div>
+    return (<div >
+        <div> 
+              <h1> Question {this.state.current_question+1} </h1> 
+
+          <div style={{fontSize: 24}}>  
+            <button onClick={()=>{this.submit();this.setState({current_question: (this.state.current_question+this.state.questions.length-1)%this.state.questions.length,noun_phrases:[], annotations: {}, checked: {}})}}>
+              Previous 
+            </button>  
+            &nbsp; &nbsp;  &nbsp; &nbsp; 
+            <button onClick={()=>{this.submit();this.setState({current_question: (this.state.current_question+1)%this.state.questions.length,noun_phrases:[],annotations: {}, checked: {}})}}> 
+              Next 
+            </button>  
+            &nbsp; &nbsp;  &nbsp; &nbsp;
+            <button onClick={this.submit}> 
+              Submit 
+            </button>  
+          </div> 
+          <div style={{fontSize: 24, marginLeft: 20, marginRight: 20}}> {q} </div> 
+          <br /> 
+          <div style={{fontSize: 24, marginLeft: 20, marginRight: 20}}>
+          <b> Instructions: </b> 
+          Enter noun phrase, and check off if Named Entity
+          <br /> 
+          </div>
+        </div> 
+        <br /> 
+        <div style={{paddingLeft: 20}}> 
+          <br /> {noun_phrases} </div> </div>);
   }
   
   render() {
