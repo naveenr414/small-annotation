@@ -2,7 +2,7 @@ import * as React from "react";
 import Phrase from "./Phrase";
 import Grid from "@material-ui/core/Grid";
 
-let address = "http://0.0.0.0:1234";
+let address = "http://127.0.0.1:1234";
 
 interface Props {}
 
