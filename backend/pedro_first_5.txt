@@ -1,0 +1,30 @@
+0,0,4,,True
+0,3,4,francis bacon,True
+0,12,12,compass,True
+0,26,28,human,True
+0,34,35,francis bacon,True
+0,66,67,francis bacon,True
+0,69,75,salomon's house,True
+0,73,75,salomon's house,True
+0,83,83,philosophy,True
+0,89,90,world,True
+0,103,108,francis bacon,True
+0,106,108,new atlantis,True
+0,123,137,francis bacon,True
+0,124,126,17th century,True
+0,131,132,novum organum,True
+0,135,137,scientific revolution,True
+0,136,137,,False
+
+0,0,4,novum organum,False
+0,3,4,francis bacon,False
+0,34,35,francis bacon,False
+0,66,67,francis bacon,False
+0,73,75,salomon's house,True
+0,97,101,idola theatri,True
+0,103,108,francis bacon,False
+0,106,108,new atlantis,True
+0,111,116,baconian method,True
+0,113,116,,False
+0,131,132,novum organum,True
+0,136,137,scientific revolution,True

@@ -134,7 +134,8 @@ def noun_indices(question):
 @app.get("/questions")
 def get_questions():
     f = open("questions.txt").read().strip().split("\n")
-    return f
+    g = open("answers.txt").read().strip().split("\n")
+    return {'questions':f,'answers':g}
 
 @app.get("/question_num/{question_num}")
 def get_question_num(question_num):
@@ -145,6 +146,7 @@ def get_noun_phrase_num(question_num):
     name = question_num.split("_")[1].lower().strip()
     question_num = question_num.split("_")[0]
     l = load_annotations(name)
+    
     print("Name {} annotations {} question num {}".format(name,l,int(question_num)))
     f = open("questions.txt").read().strip().split("\n")[int(question_num)]
     annotations = []
@@ -156,6 +158,25 @@ def get_noun_phrase_num(question_num):
 
     w = chunk_words(f)
     n = noun_indices(f)
+
+
+    if int(question_num) in l:
+        for i in l[int(question_num)]:
+            if (i[0],i[1]) not in n['spans']:
+                n['spans'].append((i[0],i[1]))
+                words = ' '.join(w[i[0]:i[1]+1])
+                left_context = ' '.join(w[max(0,i[0]-5):i[0]])
+                right_context = ' '.join(w[i[1]+1:min(len(w),i[1]+6)])
+                n['text'].append({'content':words,'context_left':left_context,'context_right':right_context})
+    print(n)
+
+    spans_seen = list(n['spans'])
+    texts = list(n['text'])
+    spans_seen,texts = zip(*sorted(zip(spans_seen,texts)))
+
+    n = {'spans':list(spans_seen),'text':list(texts)}
+
+
     for i in range(len(n['spans'])):
         for j in range(len(annotations)):
             if n['spans'][i][0] == annotations[j][0] and n['spans'][i][1] == annotations[j][1]:

@@ -1,6 +1,8 @@
 import * as React from "react";
 import Phrase from "./Phrase";
+import Word from "./Word";
 import Grid from "@material-ui/core/Grid";
+
 
 let address = "http://127.0.0.1:1234";
 
@@ -8,6 +10,7 @@ interface Props {}
 
 interface State {
   questions: any;
+  answers: any;
   current_question: number;
   noun_phrases: string[];
   annotations: any;
@@ -15,11 +18,15 @@ interface State {
   current_entity: string;
   description: string;
   name: string;
+  add_entity: boolean;
+  start: number;
+  end: number;
 }
 
 export default class Main extends React.Component<Props, State> {
   state: State = {
     questions: [],
+    answers: [],
     current_question: 0,
     noun_phrases: [],
     annotations: {},
@@ -27,6 +34,9 @@ export default class Main extends React.Component<Props, State> {
     current_entity: "",
     description: "",
     name: "",
+    add_entity: false,
+    start: -1, 
+    end: -1,
   }
   
   componentDidMount = () => {
@@ -49,7 +59,7 @@ export default class Main extends React.Component<Props, State> {
       address+"/questions"
       )
       .then((res) => res.json())
-      .then((res) => this.setState({questions:res}));
+      .then((res) => this.setState({questions:res['questions'],answers:res['answers']}));
   }
   
   get_noun_phrases = () => {
@@ -67,6 +77,22 @@ export default class Main extends React.Component<Props, State> {
     }
   }
 
+  update_span = (num) => {
+    if(this.state.start == -1) {
+      this.setState({start:num});
+    }
+    else {
+      this.setState({end: num, add_entity: false});
+      alert(this.state.start + " "+num);
+      // Add in the entity
+      let left_context = this.state.noun_phrases['words'].slice(Math.max(0,this.state.start-5),this.state.start);
+      let content = this.state.noun_phrases['words'].slice(this.state.start,num+1);
+      let right_context = this.state.noun_phrases['words'].slice(num+1,Math.min(num+6,this.state.noun_phrases['words'].length));
+
+      this.state.noun_phrases['nouns']['spans'].push([this.state.start,num]);
+      this.state.noun_phrases['nouns']['text'].push({'context_left': left_context.join(' '),'content': content.join(' '), context_right: right_context.join(' ')});
+    }
+  }
   
   submit = () => {
     let annotations = [];
@@ -88,6 +114,8 @@ export default class Main extends React.Component<Props, State> {
       annotations: annotations,
     })
   );
+  
+    alert("Saved!");
   }
 
  run_local = (i: any, event:any, f: any) => {
@@ -106,6 +134,19 @@ export default class Main extends React.Component<Props, State> {
     d[i] = event.target.value; 
     this.setState({annotations:d});
   }
+  
+  show_question = () => {
+      let q = this.state.questions[this.state.current_question];
+      let t = [];
+      if('words' in this.state.noun_phrases) {
+        for(var i = 0;i<this.state.noun_phrases['words'].length;i++) {
+          t.push(<Word callback={this.update_span} text={this.state.noun_phrases['words'][i] + " "} num={i} add_entity={this.state.add_entity} key={i} />);
+        }
+      }
+  t.push(<div> Answer: <b> {this.state.answers[this.state.current_question]} </b> </div>);
+      return t;
+  }
+  
   
   renderQuestion = () => {
     let q = this.state.questions[this.state.current_question];
@@ -150,9 +191,14 @@ export default class Main extends React.Component<Props, State> {
             &nbsp; &nbsp;  &nbsp; &nbsp;
             <button onClick={this.submit}> 
               Submit 
-            </button>  
+            </button>
+            <br />
+            <button onClick={()=>{this.setState({add_entity: !this.state.add_entity})}}> 
+              Add Entity
+            </button>
           </div> 
-          <div style={{fontSize: 24, marginLeft: 20, marginRight: 20}}> {q} </div> 
+          
+  <div style={{fontSize: 24, marginLeft: 20, marginRight: 20}}> {this.show_question()} </div> 
           <br /> 
           <div style={{fontSize: 24, marginLeft: 20, marginRight: 20}}>
           <b> Instructions: </b> 
