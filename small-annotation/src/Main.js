@@ -2,6 +2,7 @@ import * as React from "react";
 import Phrase from "./Phrase";
 import Word from "./Word";
 import Grid from "@material-ui/core/Grid";
+import Switch from '@material-ui/core/Switch';
 
 
 let address = "http://127.0.0.1:1234";
@@ -82,8 +83,7 @@ export default class Main extends React.Component<Props, State> {
       this.setState({start:num});
     }
     else {
-      this.setState({end: num, add_entity: false});
-      alert(this.state.start + " "+num);
+      this.setState({end: num});
       // Add in the entity
       let left_context = this.state.noun_phrases['words'].slice(Math.max(0,this.state.start-5),this.state.start);
       let content = this.state.noun_phrases['words'].slice(this.state.start,num+1);
@@ -91,6 +91,8 @@ export default class Main extends React.Component<Props, State> {
 
       this.state.noun_phrases['nouns']['spans'].push([this.state.start,num]);
       this.state.noun_phrases['nouns']['text'].push({'context_left': left_context.join(' '),'content': content.join(' '), context_right: right_context.join(' ')});
+      this.setState({start: -1, end: -1});
+      alert("Added new entity");
     }
   }
   
@@ -139,8 +141,25 @@ export default class Main extends React.Component<Props, State> {
       let q = this.state.questions[this.state.current_question];
       let t = [];
       if('words' in this.state.noun_phrases) {
+        let underlined_words = [];
+        console.log(this.state.annotations);
+        for(var j = 0;j<this.state.noun_phrases['nouns']['text'].length;j++) {
+          if(j in this.state.annotations) 
+          {
+            for(var i = this.state.noun_phrases['nouns']['spans'][j][0];i<=this.state.noun_phrases['nouns']['spans'][j][1];i++) {
+              if(!(i in underlined_words)){
+                underlined_words.push(i);
+              }
+            }
+          }
+          
+        }        
+        
+        console.log(underlined_words);
         for(var i = 0;i<this.state.noun_phrases['words'].length;i++) {
-          t.push(<Word callback={this.update_span} text={this.state.noun_phrases['words'][i] + " "} num={i} add_entity={this.state.add_entity} key={i} />);
+            let should_underline = underlined_words.indexOf(i)>=0;
+            console.log(i + " "+should_underline);
+            t.push(<Word underline={should_underline} callback={this.update_span} text={this.state.noun_phrases['words'][i] + " "} num={i} add_entity={this.state.add_entity} key={i} />);
         }
       }
   t.push(<div> Answer: <b> {this.state.answers[this.state.current_question]} </b> </div>);
@@ -178,7 +197,8 @@ export default class Main extends React.Component<Props, State> {
       
     return (<div >
         <div> 
-              <h1> Question {this.state.current_question+1} </h1> 
+          <div style={{position: "absolute", top: "0px", width: "66%", height: "50%"}}> 
+                        <h1> Question {this.state.current_question+1} </h1> 
 
           <div style={{fontSize: 24}}>  
             <button onClick={()=>{this.submit();this.setState({current_question: (this.state.current_question+this.state.questions.length-1)%this.state.questions.length,noun_phrases:[], annotations: {}, checked: {}})}}>
@@ -193,21 +213,28 @@ export default class Main extends React.Component<Props, State> {
               Submit 
             </button>
             <br />
-            <button onClick={()=>{this.setState({add_entity: !this.state.add_entity})}}> 
-              Add Entity
-            </button>
+            Toggle Add Entity <Switch
+              checked={this.state.add_entity}
+              onChange={()=>{this.setState({add_entity: !this.state.add_entity})}}
+              color="primary"
+              name="checkedB"
+              inputProps={{ 'aria-label': 'primary checkbox' }}
+            />
+            <br />
+
           </div> 
           
   <div style={{fontSize: 24, marginLeft: 20, marginRight: 20}}> {this.show_question()} </div> 
           <br /> 
           <div style={{fontSize: 24, marginLeft: 20, marginRight: 20}}>
           <b> Instructions: </b> 
-          Enter noun phrase, and check off if Named Entity
+          Highlight all noun phrases first, then fill in with Wiki page. 
           <br /> 
           </div>
         </div> 
+        </div>
         <br /> 
-        <div style={{paddingLeft: 20}}> 
+        <div style={{paddingLeft: 20, width: "66%", height: "40%", overflow: "auto", padding: "20px",paddingBottom: "30px", position: "absolute", bottom: "0px"}}> 
           <br /> {noun_phrases} </div> </div>);
   }
   

@@ -10,6 +10,7 @@ interface Props {
   add_entity: boolean;
   callback: any;
   num: number;
+  underline: boolean;
 }
 
 interface State {
@@ -25,7 +26,6 @@ export default class Word extends React.Component<Props, State> {
   clicked = () => {
     
     if(this.props.add_entity) {
-      this.setState({backgroundColor: 'red'});
       this.props.callback(this.props.num);
     }
   }
@@ -49,7 +49,8 @@ export default class Word extends React.Component<Props, State> {
   }
   
   render() {
-    return (<span style={{backgroundColor: this.state.backgroundColor}} onMouseDown={this.clicked} onMouseUp={this.clicked}  onMouseEnter={this.mouse_enter} onMouseLeave={this.mouse_leave}> 
+    let text_decoration = this.props.underline?"underline":"none";
+    return (<span style={{backgroundColor: this.state.backgroundColor, textDecoration: text_decoration}} onMouseDown={this.clicked} onMouseUp={this.clicked}  onMouseEnter={this.mouse_enter} onMouseLeave={this.mouse_leave}> 
       {this.props.text}
   </span>
         );

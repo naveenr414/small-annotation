@@ -129,6 +129,9 @@ def noun_indices(question):
 
     spans_seen,texts = zip(*sorted(zip(spans_seen,texts)))
 
+    spans_seen = []
+    texts = []
+
     return {'spans':list(spans_seen),'text':list(texts)}
 
 @app.get("/questions")
@@ -172,7 +175,8 @@ def get_noun_phrase_num(question_num):
 
     spans_seen = list(n['spans'])
     texts = list(n['text'])
-    spans_seen,texts = zip(*sorted(zip(spans_seen,texts)))
+    if(len(texts)>0):
+        spans_seen,texts = zip(*sorted(zip(spans_seen,texts)))
 
     n = {'spans':list(spans_seen),'text':list(texts)}
 
