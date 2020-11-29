@@ -92,6 +92,7 @@ export default class Main extends React.Component<Props, State> {
       this.state.noun_phrases['nouns']['spans'].push([this.state.start,num]);
       this.state.noun_phrases['nouns']['text'].push({'context_left': left_context.join(' '),'content': content.join(' '), context_right: right_context.join(' ')});
       this.setState({start: -1, end: -1});
+      window.getSelection().removeAllRanges();
       alert("Added new entity");
     }
   }
@@ -192,12 +193,16 @@ export default class Main extends React.Component<Props, State> {
 
     }
     else {
-      noun_phrases.push(<div> Loading noun phrases </div>);
+      noun_phrases.push(<div style={{fontSize: 24}}> Loading noun phrases </div>);
+    }
+    
+    if(noun_phrases.length == 0) {
+      noun_phrases.push(<div style={{fontSize: 24}}> Add some noun phrases by clicking the toggle button above! </div>);
     }
       
     return (<div >
         <div> 
-          <div style={{position: "absolute", top: "0px", width: "66%", height: "50%"}}> 
+          <div style={{position: "absolute", top: "0px", width: "66%", height: "50%", borderBottom: "5px dotted red",}}> 
                         <h1> Question {this.state.current_question+1} </h1> 
 
           <div style={{fontSize: 24}}>  
