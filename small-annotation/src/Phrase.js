@@ -47,7 +47,7 @@ export default class Phrase extends React.Component<Props, State> {
           l.push(res[i][0]);
           m.push(res[i][1]);
         }
-        this.setState({autocorrect: l,descriptions: m},()=>{  this.props.update_description(l[0],this.get_description(l[0]))});
+        this.setState({autocorrect: l,descriptions: m},()=>{this.props.update_description(l[0],this.get_description(l[0]))});
       });
     }
   }
@@ -64,6 +64,7 @@ export default class Phrase extends React.Component<Props, State> {
   }
   
   updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
+
     clearTimeout(this.state.timeout);
     let s =  setTimeout(() => {
         this.get_autocorrect();

@@ -22,6 +22,7 @@ interface State {
   add_entity: boolean;
   start: number;
   end: number;
+  saved: boolean;
 }
 
 export default class Main extends React.Component<Props, State> {
@@ -38,6 +39,7 @@ export default class Main extends React.Component<Props, State> {
     add_entity: false,
     start: -1, 
     end: -1,
+    saved: true,
   }
   
   componentDidMount = () => {
@@ -51,8 +53,12 @@ export default class Main extends React.Component<Props, State> {
   }
   
   update_info = (i,annotation,checked) => {
+    if(this.state.saved == true && (this.state.checked[i]!=checked || this.state.annotations[i]!=annotation)){
+      this.setState({saved: false});
+    }
     this.state.checked[i] = checked;
     this.state.annotations[i] = annotation;
+
   }
   
   get_questions = () => {
@@ -93,7 +99,6 @@ export default class Main extends React.Component<Props, State> {
       this.state.noun_phrases['nouns']['text'].push({'context_left': left_context.join(' '),'content': content.join(' '), context_right: right_context.join(' ')});
       this.setState({start: -1, end: -1});
       window.getSelection().removeAllRanges();
-      alert("Added new entity");
     }
   }
   
@@ -118,7 +123,7 @@ export default class Main extends React.Component<Props, State> {
     })
   );
   
-    alert("Saved!");
+    this.setState({saved: true});
   }
 
  run_local = (i: any, event:any, f: any) => {
@@ -143,7 +148,6 @@ export default class Main extends React.Component<Props, State> {
       let t = [];
       if('words' in this.state.noun_phrases) {
         let underlined_words = [];
-        console.log(this.state.annotations);
         for(var j = 0;j<this.state.noun_phrases['nouns']['text'].length;j++) {
           if(j in this.state.annotations) 
           {
@@ -156,10 +160,8 @@ export default class Main extends React.Component<Props, State> {
           
         }        
         
-        console.log(underlined_words);
         for(var i = 0;i<this.state.noun_phrases['words'].length;i++) {
             let should_underline = underlined_words.indexOf(i)>=0;
-            console.log(i + " "+should_underline);
             t.push(<Word underline={should_underline} callback={this.update_span} text={this.state.noun_phrases['words'][i] + " "} num={i} add_entity={this.state.add_entity} key={i} />);
         }
       }
@@ -173,7 +175,11 @@ export default class Main extends React.Component<Props, State> {
     let noun_phrases = [];
     
         
-    if("nouns" in this.state.noun_phrases){      
+    if("nouns" in this.state.noun_phrases){
+      if(this.state.noun_phrases['nouns']['text'].length>0) {
+        noun_phrases.push(<div style={{fontSize: 24, textAlign: 'left', paddingBottom: '20px'}}> <b> Total Noun Phrases: </b> {this.state.noun_phrases['nouns']['text'].length}</div>);
+      }
+    
       for(var i = 0;i<this.state.noun_phrases['nouns']['text'].length;i++) {
           let left_context = this.state.noun_phrases['nouns']['text'][i]['context_left'];
           let t = this.state.noun_phrases['nouns']['text'][i]['content'];
@@ -206,16 +212,16 @@ export default class Main extends React.Component<Props, State> {
                         <h1> Question {this.state.current_question+1} </h1> 
 
           <div style={{fontSize: 24}}>  
-            <button onClick={()=>{this.submit();this.setState({current_question: (this.state.current_question+this.state.questions.length-1)%this.state.questions.length,noun_phrases:[], annotations: {}, checked: {}})}}>
+            <button style={{fontSize: 24}} onClick={()=>{this.submit();this.setState({current_question: (this.state.current_question+this.state.questions.length-1)%this.state.questions.length,noun_phrases:[], annotations: {}, checked: {},saved: true,})}}>
               Previous 
             </button>  
             &nbsp; &nbsp;  &nbsp; &nbsp; 
-            <button onClick={()=>{this.submit();this.setState({current_question: (this.state.current_question+1)%this.state.questions.length,noun_phrases:[],annotations: {}, checked: {}})}}> 
+            <button style={{fontSize: 24}} onClick={()=>{this.submit();this.setState({current_question: (this.state.current_question+1)%this.state.questions.length,noun_phrases:[],annotations: {}, checked: {},saved: true})}}> 
               Next 
             </button>  
             &nbsp; &nbsp;  &nbsp; &nbsp;
-            <button onClick={this.submit}> 
-              Submit 
+            <button style={{fontSize: 24}} onClick={this.submit}> 
+              Save 
             </button>
             <br />
             Toggle Add Entity <Switch
@@ -252,11 +258,12 @@ export default class Main extends React.Component<Props, State> {
             <Grid container spacing={3}>
 
             <Grid item xs={8}> 
+
               {this.renderQuestion()}
             </Grid>
             <Grid item xs={4}> 
         <div style={{top: 0,   position: 'sticky', padding: 100, fontSize: 24}}> 
-
+              <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> {this.state.saved?'Saved':'Not Saved'} </div>
                     <b> {this.state.current_entity} </b> <br />
                       {this.state.description}
                       </div>
