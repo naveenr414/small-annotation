@@ -3,7 +3,7 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import TextField from '@material-ui/core/TextField';
 import Typography from "@material-ui/core/Typography";
 
-let address = "http://127.0.0.1:1234"
+let address = "/api"
 
 interface Props {
   text: string;

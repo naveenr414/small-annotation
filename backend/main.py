@@ -16,6 +16,8 @@ origins = [
     "http://localhost:2020",
     "http://localhost:1234",
     "http://quenya.umiacs.umd.edu:3000",
+    "http://quel.cs.umd.edu:3000",
+    "http://quel.cs.umde.du",
 ]
 
 app.add_middleware(
@@ -40,7 +42,7 @@ wiki = pickle.load(open("all_wiki.p","rb"))
 names = sorted(wiki.keys())
 print("Took {} time".format(time.time()-start))
 
-@app.get("/")
+@app.get("/api/")
 async def root():
     return {"message": "Hello World"}
 
@@ -134,17 +136,17 @@ def noun_indices(question):
 
     return {'spans':list(spans_seen),'text':list(texts)}
 
-@app.get("/questions")
+@app.get("/api/questions")
 def get_questions():
     f = open("questions.txt").read().strip().split("\n")
     g = open("answers.txt").read().strip().split("\n")
     return {'questions':f,'answers':g}
 
-@app.get("/question_num/{question_num}")
+@app.get("/api/question_num/{question_num}")
 def get_question_num(question_num):
     return open("questions.txt").read().strip().split("\n")[int(question_num)]
 
-@app.get("/noun_phrases/{question_num}")
+@app.get("/api/noun_phrases/{question_num}")
 def get_noun_phrase_num(question_num):
     name = question_num.split("_")[1].lower().strip()
     question_num = question_num.split("_")[0]
@@ -189,7 +191,7 @@ def get_noun_phrase_num(question_num):
     
     return {'words':w,'nouns':n,'annotations':annotations,'formatted_annotations':formatted_annotations,'formatted_checked':formatted_checked}
 
-@app.post("/submit")
+@app.post("/api/submit")
 async def write_phrases(noun_phrases: NounPhrase):
     l = load_annotations(noun_phrases.person_name.lower())
     question_num = noun_phrases.question_num
@@ -199,7 +201,7 @@ async def write_phrases(noun_phrases: NounPhrase):
     l[question_num] = noun_phrases.annotations
     write_annotations_dict(noun_phrases.person_name.lower(),l)
 
-@app.get("/autocorrect/{word}")
+@app.get("/api/autocorrect/{word}")
 def get_autocorrect(word):
     word = word.replace("&","&amp;")
     name_one = bisect.bisect_left(names,word)

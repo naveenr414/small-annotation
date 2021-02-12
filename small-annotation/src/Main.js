@@ -5,7 +5,7 @@ import Grid from "@material-ui/core/Grid";
 import Switch from '@material-ui/core/Switch';
 
 
-let address = "http://127.0.0.1:1234";
+let address = "/api";
 
 interface Props {}
 
