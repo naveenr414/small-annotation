@@ -275,7 +275,29 @@ export default class Main extends React.Component<Props, State> {
       alert("No selection selected");
     }
     else {
-      alert(this.state.start + " "+this.state.end);
+      let real_start = 0;
+      let real_end = 0;
+      let start_word_num = 0;
+      let end_word_num = 0;
+      
+      for(var i = 0;i<this.state.noun_phrases.indices.length;i++) {
+        if(this.state.noun_phrases.indices[i]<=this.state.start) {
+          real_start = this.state.noun_phrases.indices[i];
+          start_word_num = i;
+        }
+      }
+      
+      for(var i = this.state.noun_phrases.indices.length-1;i>=0;i--) {
+        if(this.state.noun_phrases.indices[i]>this.state.end && i!=0) {
+          real_end = this.state.noun_phrases.indices[i-1]+this.state.noun_phrases.words[i-1].length;
+          end_word_num = i-1;
+        }
+      }
+      
+      console.log(this.state.questions[this.state.current_question]);
+      console.log(real_start);
+      console.log(real_end);
+      alert(this.state.questions[this.state.current_question].substring(real_start,real_end));
     }
   }
   

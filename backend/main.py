@@ -8,6 +8,7 @@ import json
 import time
 import bisect
 import pickle
+from nltk.tokenize import WhitespaceTokenizer
 
 app = FastAPI()
 origins = [
@@ -49,8 +50,13 @@ async def root():
 def chunk_words(question):
     original_doc = nlp(question)
 
-    word_indices = [token.text for token in original_doc]
-    return word_indices
+    words = [token.text for token in original_doc]
+    indexes = [token.idx for token in original_doc]
+    return words,indexes
+
+def get_word_indices(question):
+    span_generator = WhitespaceTokenizer().span_tokenize(question)
+    return [span for span in span_generator]
 
 def load_annotations(person_name):
     try:
@@ -162,7 +168,7 @@ def get_noun_phrase_num(question_num):
     formatted_annotations = {}
     formatted_checked = {}
 
-    w = chunk_words(f)
+    w,word_indices = chunk_words(f)
     n = noun_indices(f)
 
 
@@ -190,7 +196,7 @@ def get_noun_phrase_num(question_num):
                 formatted_annotations[i] = annotations[j][2]
                 formatted_checked[i] = annotations[j][3]
     
-    return {'words':w,'nouns':n,'annotations':annotations,'formatted_annotations':formatted_annotations,'formatted_checked':formatted_checked}
+    return {'words':w,'indices':word_indices,'nouns':n,'annotations':annotations,'formatted_annotations':formatted_annotations,'formatted_checked':formatted_checked}
 
 @app.post("/api/submit")
 async def write_phrases(noun_phrases: NounPhrase):
