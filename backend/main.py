@@ -138,6 +138,7 @@ def noun_indices(question):
 
 @app.get("/api/questions")
 def get_questions():
+    print("Get questions")
     f = open("questions.txt").read().strip().split("\n")
     g = open("answers.txt").read().strip().split("\n")
     return {'questions':f,'answers':g}

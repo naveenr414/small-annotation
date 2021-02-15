@@ -3,6 +3,8 @@ import Phrase from "./Phrase";
 import Word from "./Word";
 import Grid from "@material-ui/core/Grid";
 import Switch from '@material-ui/core/Switch';
+import {Editor, EditorState, ContentState} from 'draft-js';
+import 'draft-js/dist/Draft.css';
 
 
 let address = "/api";
@@ -23,6 +25,7 @@ interface State {
   start: number;
   end: number;
   saved: boolean;
+  editorState: any;
 }
 
 export default class Main extends React.Component<Props, State> {
@@ -40,6 +43,7 @@ export default class Main extends React.Component<Props, State> {
     start: -1, 
     end: -1,
     saved: true,
+    editorState: EditorState.createEmpty(),
   }
   
   componentDidMount = () => {
@@ -66,7 +70,7 @@ export default class Main extends React.Component<Props, State> {
       address+"/questions"
       )
       .then((res) => res.json())
-      .then((res) => this.setState({questions:res['questions'],answers:res['answers']}));
+      .then((res) => this.setState({questions:res['questions'],answers:res['answers'],editorState: EditorState.createWithContent(ContentState.createFromText(res['questions'][this.state.current_question]))}));
   }
   
   get_noun_phrases = () => {
@@ -249,6 +253,32 @@ export default class Main extends React.Component<Props, State> {
           <br /> {noun_phrases} </div> </div>);
   }
   
+  editorChange = (editorState) => {
+    this.setState({editorState});
+    console.log("Editor state selection "+editorState.getSelection());
+    let anchorOffset = editorState.getSelection().anchorOffset;
+    let focusOffset = editorState.getSelection().focusOffset;
+    console.log("Editor state offsets "+anchorOffset + " "+focusOffset);
+    if(focusOffset!=anchorOffset) {
+      this.setState(
+        {start: Math.min(anchorOffset,focusOffset),
+          end:Math.max(anchorOffset,focusOffset)});
+    }
+    else {
+      this.setState({start: -1, end: -1});
+    }
+  }
+  
+  // Alert what the start and end characters are 
+  createTag = () => {
+    if(this.state.start == -1 || this.state.end == -1) {
+      alert("No selection selected");
+    }
+    else {
+      alert(this.state.start + " "+this.state.end);
+    }
+  }
+  
   render() {
     if(this.state.questions.length == 0) {
       return <h1> Loading </h1> 
@@ -258,8 +288,9 @@ export default class Main extends React.Component<Props, State> {
             <Grid container spacing={3}>
 
             <Grid item xs={8}> 
-
-              {this.renderQuestion()}
+<Editor keyBindingFn={() => 'not-handled-command'} editorState={this.state.editorState} onChange={this.editorChange} />
+<button style={{fontSize: 24}}  onClick={this.createTag} > Create Tag </button>
+              {/*this.renderQuestion()*/}
             </Grid>
             <Grid item xs={4}> 
         <div style={{top: 0,   position: 'sticky', padding: 100, fontSize: 24}}> 
