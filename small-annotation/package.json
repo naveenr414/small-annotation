@@ -14,6 +14,7 @@
     "jest-environment-node": "^26.6.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-draggable-tags": "^1.0.2",
     "react-scripts": "3.4.4"
   },
   "scripts": {

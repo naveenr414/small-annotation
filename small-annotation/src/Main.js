@@ -5,7 +5,7 @@ import Grid from "@material-ui/core/Grid";
 import Switch from '@material-ui/core/Switch';
 import {Editor, EditorState, ContentState} from 'draft-js';
 import 'draft-js/dist/Draft.css';
-
+import {DraggableArea} from 'react-draggable-tags';
 
 let address = "/api";
 
@@ -26,6 +26,7 @@ interface State {
   end: number;
   saved: boolean;
   editorState: any;
+  tags: any;
 }
 
 export default class Main extends React.Component<Props, State> {
@@ -44,6 +45,7 @@ export default class Main extends React.Component<Props, State> {
     end: -1,
     saved: true,
     editorState: EditorState.createEmpty(),
+    tags: [],
   }
   
   componentDidMount = () => {
@@ -297,7 +299,7 @@ export default class Main extends React.Component<Props, State> {
       console.log(this.state.questions[this.state.current_question]);
       console.log(real_start);
       console.log(real_end);
-      alert(this.state.questions[this.state.current_question].substring(real_start,real_end));
+      this.state.tags.push({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)});
     }
   }
   
@@ -312,6 +314,18 @@ export default class Main extends React.Component<Props, State> {
             <Grid item xs={8}> 
 <Editor keyBindingFn={() => 'not-handled-command'} editorState={this.state.editorState} onChange={this.editorChange} />
 <button style={{fontSize: 24}}  onClick={this.createTag} > Create Tag </button>
+<div style={{width: 294, height: 220, padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}>
+  <DraggableArea
+    tags={this.state.tags}
+    render={({tag, index}) => (
+      <div style={{fontSize: 13,margin: 3,border: "1px dashed #cccccc", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)"}}>
+        {tag.content}
+      </div>
+    )}
+    onChange={tags => console.log(tags)}
+  /> 
+  </div>
+
               {/*this.renderQuestion()*/}
             </Grid>
             <Grid item xs={4}> 
