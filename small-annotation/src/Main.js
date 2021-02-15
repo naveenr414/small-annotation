@@ -5,9 +5,12 @@ import Grid from "@material-ui/core/Grid";
 import Switch from '@material-ui/core/Switch';
 import {Editor, EditorState, ContentState} from 'draft-js';
 import 'draft-js/dist/Draft.css';
-import {DraggableArea} from 'react-draggable-tags';
+import {DraggableArea,DraggableAreasGroup} from 'react-draggable-tags';
 
 let address = "/api";
+const group = new DraggableAreasGroup();
+const DraggableArea1 = group.addArea();
+const DraggableArea2 = group.addArea();
 
 interface Props {}
 
@@ -27,6 +30,7 @@ interface State {
   saved: boolean;
   editorState: any;
   tags: any;
+  tags2: any;
 }
 
 export default class Main extends React.Component<Props, State> {
@@ -45,7 +49,9 @@ export default class Main extends React.Component<Props, State> {
     end: -1,
     saved: true,
     editorState: EditorState.createEmpty(),
-    tags: [],
+    tags: [{id: 3, content: 'banana'}],
+    tags2: [
+  {id: 1, content: 'apple'}],
   }
   
   componentDidMount = () => {
@@ -315,14 +321,23 @@ export default class Main extends React.Component<Props, State> {
 <Editor keyBindingFn={() => 'not-handled-command'} editorState={this.state.editorState} onChange={this.editorChange} />
 <button style={{fontSize: 24}}  onClick={this.createTag} > Create Tag </button>
 <div style={{width: 294, height: 220, padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}>
-  <DraggableArea
+  <DraggableArea1
     tags={this.state.tags}
     render={({tag, index}) => (
       <div style={{fontSize: 13,margin: 3,border: "1px dashed #cccccc", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)"}}>
         {tag.content}
       </div>
     )}
-    onChange={tags => console.log(tags)}
+    onChange={tags => this.setState({tags})}
+  /> <br />
+    <DraggableArea2
+    tags={this.state.tags2}
+    render={({tag, index}) => (
+      <div style={{fontSize: 13,margin: 3,border: "1px dashed #cccccc", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)"}}>
+        {tag.content}
+      </div>
+    )}
+    onChange={tags2 => this.setState({tags2})}
   /> 
   </div>
 
