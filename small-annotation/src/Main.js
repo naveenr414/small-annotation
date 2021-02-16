@@ -52,9 +52,13 @@ export default class Main extends React.Component<Props, State> {
     tags: [{id: 3, content: 'banana'}],
     tags2: [
   {id: 1, content: 'apple'}],
+    dragabbles: [group.addArea()],
   }
+      
+
   
   componentDidMount = () => {
+    console.log(DraggableArea1);
     let name = prompt("What's your name").toLowerCase();
     this.setState({name},()=>{    this.get_questions();
     this.get_noun_phrases();});
@@ -284,9 +288,10 @@ export default class Main extends React.Component<Props, State> {
     }
     else {
       let real_start = 0;
-      let real_end = 0;
+      let real_end = 10;
       let start_word_num = 0;
-      let end_word_num = 0;
+      let end_word_num = 1;
+      
       
       for(var i = 0;i<this.state.noun_phrases.indices.length;i++) {
         if(this.state.noun_phrases.indices[i]<=this.state.start) {
@@ -305,7 +310,11 @@ export default class Main extends React.Component<Props, State> {
       console.log(this.state.questions[this.state.current_question]);
       console.log(real_start);
       console.log(real_end);
-      this.state.tags.push({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)});
+      
+      
+      const tags = this.state.tags.slice();
+      tags.push({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)});
+      this.setState({tags});
     }
   }
   
@@ -318,7 +327,7 @@ export default class Main extends React.Component<Props, State> {
             <Grid container spacing={3}>
 
             <Grid item xs={8}> 
-<Editor keyBindingFn={() => 'not-handled-command'} editorState={this.state.editorState} onChange={this.editorChange} />
+<div>  <Editor onClick={()=>alert("A")} keyBindingFn={() => 'not-handled-command'} editorState={this.state.editorState} onChange={this.editorChange} /> </div>
 <button style={{fontSize: 24}}  onClick={this.createTag} > Create Tag </button>
 <div style={{width: 294, height: 220, padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}>
   <DraggableArea1
