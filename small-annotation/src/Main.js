@@ -1,6 +1,7 @@
 import * as React from "react";
 import Phrase from "./Phrase";
 import Word from "./Word";
+import Search from "./Search";
 import Grid from "@material-ui/core/Grid";
 import Switch from '@material-ui/core/Switch';
 import {Editor, EditorState, ContentState} from 'draft-js';
@@ -31,6 +32,7 @@ interface State {
   editorState: any;
   tags: any;
   tags2: any;
+  draggables: any;
 }
 
 export default class Main extends React.Component<Props, State> {
@@ -50,9 +52,8 @@ export default class Main extends React.Component<Props, State> {
     saved: true,
     editorState: EditorState.createEmpty(),
     tags: [{id: 3, content: 'banana'}],
-    tags2: [
-  {id: 1, content: 'apple'}],
-    dragabbles: [group.addArea()],
+    tags2: [{id: 1, content: 'apple'}],
+    draggables: [],
   }
       
 
@@ -287,6 +288,22 @@ export default class Main extends React.Component<Props, State> {
       alert("No selection selected");
     }
     else {
+      const group = new DraggableAreasGroup();
+      const DraggableArea3 = group.addArea();
+      const DraggableArea4 = group.addArea();
+      let draggables = this.state.draggables;
+      draggables.push(<DraggableArea3
+    tags={this.state.tags}
+    render={({tag, index}) => (
+      <div style={{fontSize: 13,margin: 3,border: "1px dashed #cccccc", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)"}}>
+        {tag.content}
+      </div>
+    )}
+    onChange={tags => this.setState({tags})}
+  />);
+      console.log(draggables);
+      this.setState({draggables});
+    
       let real_start = 0;
       let real_end = 10;
       let start_word_num = 0;
@@ -330,6 +347,7 @@ export default class Main extends React.Component<Props, State> {
 <div>  <Editor onClick={()=>alert("A")} keyBindingFn={() => 'not-handled-command'} editorState={this.state.editorState} onChange={this.editorChange} /> </div>
 <button style={{fontSize: 24}}  onClick={this.createTag} > Create Tag </button>
 <div style={{width: 294, height: 220, padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}>
+<Search />
   <DraggableArea1
     tags={this.state.tags}
     render={({tag, index}) => (
@@ -348,6 +366,9 @@ export default class Main extends React.Component<Props, State> {
     )}
     onChange={tags2 => this.setState({tags2})}
   /> 
+  <div> 
+  {this.state.draggables}
+  </div>
   </div>
 
               {/*this.renderQuestion()*/}

@@ -210,6 +210,7 @@ async def write_phrases(noun_phrases: NounPhrase):
 
 @app.get("/api/autocorrect/{word}")
 def get_autocorrect(word):
+    word = word.replace("_"," ")
     word = word.replace("&","&amp;")
     name_one = bisect.bisect_left(names,word)
     name_two = bisect.bisect_right(names,word+"z")
