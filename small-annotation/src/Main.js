@@ -1,5 +1,6 @@
 import * as React from "react";
 import Phrase from "./Phrase";
+import Dragbox from "./Dragbox";
 import Word from "./Word";
 import Search from "./Search";
 import Grid from "@material-ui/core/Grid";
@@ -10,8 +11,6 @@ import {DraggableArea,DraggableAreasGroup} from 'react-draggable-tags';
 
 let address = "/api";
 const group = new DraggableAreasGroup();
-const DraggableArea1 = group.addArea();
-const DraggableArea2 = group.addArea();
 
 interface Props {}
 
@@ -33,6 +32,8 @@ interface State {
   tags: any;
   tags2: any;
   draggables: any;
+  tags3: any;
+  tags4: any;
 }
 
 export default class Main extends React.Component<Props, State> {
@@ -54,12 +55,21 @@ export default class Main extends React.Component<Props, State> {
     tags: [{id: 3, content: 'banana'}],
     tags2: [{id: 1, content: 'apple'}],
     draggables: [],
+    tags3: [{id: 3, content: 'pear'}],
+    tags4: [{id: 4, content: 'orange'}],
   }
       
-
+  update_tags = (tags,number) => {
+    if(number == 1){ 
+      this.setState({tags3: tags});
+    }
+    else if(number == 2) {
+      this.setState({tags4: tags});
+    }
+  }
   
   componentDidMount = () => {
-    console.log(DraggableArea1);
+    //console.log(DraggableArea1);
     let name = prompt("What's your name").toLowerCase();
     this.setState({name},()=>{    this.get_questions();
     this.get_noun_phrases();});
@@ -283,7 +293,7 @@ export default class Main extends React.Component<Props, State> {
   }
   
   // Alert what the start and end characters are 
-  createTag = () => {
+  /*createTag = () => {
     if(this.state.start == -1 || this.state.end == -1) {
       alert("No selection selected");
     }
@@ -333,7 +343,7 @@ export default class Main extends React.Component<Props, State> {
       tags.push({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)});
       this.setState({tags});
     }
-  }
+  }*/
   
   render() {
     if(this.state.questions.length == 0) {
@@ -348,7 +358,7 @@ export default class Main extends React.Component<Props, State> {
 <button style={{fontSize: 24}}  onClick={this.createTag} > Create Tag </button>
 <div style={{width: 294, height: 220, padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}>
 <Search />
-  <DraggableArea1
+{/*<DraggableArea1
     tags={this.state.tags}
     render={({tag, index}) => (
       <div style={{fontSize: 13,margin: 3,border: "1px dashed #cccccc", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)"}}>
@@ -357,7 +367,7 @@ export default class Main extends React.Component<Props, State> {
     )}
     onChange={tags => this.setState({tags})}
   /> <br />
-    <DraggableArea2
+  <DraggableArea2
     tags={this.state.tags2}
     render={({tag, index}) => (
       <div style={{fontSize: 13,margin: 3,border: "1px dashed #cccccc", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)"}}>
@@ -365,7 +375,11 @@ export default class Main extends React.Component<Props, State> {
       </div>
     )}
     onChange={tags2 => this.setState({tags2})}
-  /> 
+  /> */}
+  <Dragbox entity_number={1} drag_group={group} update_tags={this.update_tags} current_tags={this.state.tags3} />
+    <Dragbox entity_number={2} drag_group={group} update_tags={this.update_tags} current_tags={this.state.tags4} />
+
+
   <div> 
   {this.state.draggables}
   </div>
