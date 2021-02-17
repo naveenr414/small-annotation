@@ -52,20 +52,38 @@ export default class Main extends React.Component<Props, State> {
     end: -1,
     saved: true,
     editorState: EditorState.createEmpty(),
-    tags: [{id: 3, content: 'banana'}],
-    tags2: [{id: 1, content: 'apple'}],
+    tag_list: [],
+    tags0: [],
+    tags: [],
+    tags2: [],
     draggables: [],
-    tags3: [{id: 3, content: 'pear'}],
-    tags4: [{id: 4, content: 'orange'}],
   }
       
   update_tags = (tags,number) => {
-    if(number == 1){ 
-      this.setState({tags3: tags});
+    let tag_list = this.state.tag_list.slice();
+    tag_list[number] = tags;
+    this.setState({tag_list});
+  }
+  
+  create_new_tag = () => {
+    let tag_list = this.state.tag_list.slice();
+    tag_list.push([]);
+    this.setState({tag_list});
+  }
+  
+  render_draggable_0 = () => {
+    if(this.state.tag_list.length>0) {
+      return <Dragbox entity_number={0} drag_group={group} update_tags={this.update_tags} current_tags={this.state.tag_list[0]} />
     }
-    else if(number == 2) {
-      this.setState({tags4: tags});
+    return <div> </div>;
+  }
+  
+  render_draggables = () => {
+    let all_draggables = [];
+    for(var i = 1;i<this.state.tag_list.length;i++) {
+      all_draggables.push(<Dragbox entity_number={i} drag_group={group} update_tags={this.update_tags} current_tags={this.state.tag_list[i]} />);
     }
+    return all_draggables;
   }
   
   componentDidMount = () => {
@@ -73,6 +91,7 @@ export default class Main extends React.Component<Props, State> {
     let name = prompt("What's your name").toLowerCase();
     this.setState({name},()=>{    this.get_questions();
     this.get_noun_phrases();});
+    this.create_new_tag();
   }
   
   updateDescription = (current_entity, description) => {
@@ -293,7 +312,7 @@ export default class Main extends React.Component<Props, State> {
   }
   
   // Alert what the start and end characters are 
-  /*createTag = () => {
+  createTag = () => {
     if(this.state.start == -1 || this.state.end == -1) {
       alert("No selection selected");
     }
@@ -339,11 +358,12 @@ export default class Main extends React.Component<Props, State> {
       console.log(real_end);
       
       
-      const tags = this.state.tags.slice();
-      tags.push({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)});
-      this.setState({tags});
+      const tag_list = this.state.tag_list.slice();
+      tag_list[0].push({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)});
+      this.setState({tag_list});
+
     }
-  }*/
+  }
   
   render() {
     if(this.state.questions.length == 0) {
@@ -356,8 +376,6 @@ export default class Main extends React.Component<Props, State> {
             <Grid item xs={8}> 
 <div>  <Editor onClick={()=>alert("A")} keyBindingFn={() => 'not-handled-command'} editorState={this.state.editorState} onChange={this.editorChange} /> </div>
 <button style={{fontSize: 24}}  onClick={this.createTag} > Create Tag </button>
-<div style={{width: 294, height: 220, padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}>
-<Search />
 {/*<DraggableArea1
     tags={this.state.tags}
     render={({tag, index}) => (
@@ -376,18 +394,17 @@ export default class Main extends React.Component<Props, State> {
     )}
     onChange={tags2 => this.setState({tags2})}
   /> */}
-  <Dragbox entity_number={1} drag_group={group} update_tags={this.update_tags} current_tags={this.state.tags3} />
-    <Dragbox entity_number={2} drag_group={group} update_tags={this.update_tags} current_tags={this.state.tags4} />
-
-
-  <div> 
-  {this.state.draggables}
-  </div>
-  </div>
+  {this.render_draggable_0()}
 
               {/*this.renderQuestion()*/}
             </Grid>
-            <Grid item xs={4}> 
+            <Grid item xs={4}>
+            <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_tag} > Create New Entity </button>
+
+              {this.render_draggables()}
+             
+                        
+
         <div style={{top: 0,   position: 'sticky', padding: 100, fontSize: 24}}> 
               <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> {this.state.saved?'Saved':'Not Saved'} </div>
                     <b> {this.state.current_entity} </b> <br />
