@@ -13,6 +13,8 @@ interface State {
   current_entity: string;
 }
 
+let address = "/api";
+
 export default class Search extends React.Component<Props, State> {
   state: State = {
     value: "",
@@ -29,7 +31,7 @@ export default class Search extends React.Component<Props, State> {
     let current_target = toNormalString(value);
     if (current_target !== "") {
       fetch(
-        "/api/autocorrect/" +
+        address+"/autocorrect/" +
           current_target.replace(" ","_")
       )
       .then((res) => res.json())
