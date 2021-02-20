@@ -39,6 +39,7 @@ interface State {
   saved: boolean;
   editorState: any;
   entity_list: any;
+  entity_names: any;
 }
 
 let colors = ["#648fff","#ffb000","#fe6100","#dc267f","#785ef0"];
@@ -54,22 +55,18 @@ export default class Main extends React.Component<Props, State> {
     current_entity: "",
     description: "",
     name: "",
-    add_entity: false,
     start: -1, 
     end: -1,
     saved: true,
     editorState: EditorState.createEmpty(),
-    entity_list: [],
+    entity_list: [[],[]],
+    entity_names: ["",""],
   }
       
   componentDidMount = () => {
     let name = prompt("What's your name").toLowerCase();
     this.setState({name},()=>{    this.get_questions();
     this.get_noun_phrases();});
-    let entity_list = this.state.entity_list.slice();
-    entity_list.push([]);
-    entity_list.push([]);
-    this.setState({entity_list});
   }
   
   get_questions = () => {
@@ -101,10 +98,31 @@ export default class Main extends React.Component<Props, State> {
     this.setState({entity_list,saved:false});
   }
   
+  update_entity_name = (entity,number) => {
+    let entity_names = this.state.entity_names;
+    entity_names[number] = entity;
+    this.setState({entity_names});
+  }
+  
+  show_entity_names = () => {
+    let names = [];
+    for(var i = 2;i<this.state.entity_names.length;i++){
+      if(this.state.entity_names[i]!="") {
+        names.push(<li style={{textAlign: 'left'}}> {this.state.entity_names[i]} </li>);
+      }
+      else {
+        names.push(<li style={{textAlign: 'left'}}> No Name </li>);
+      }
+    }
+    return names;
+  }
+  
   create_new_entity = () => {
     let entity_list = this.state.entity_list.slice();
+    let entity_names = this.state.entity_names.slice();
     entity_list.push([]);
-    this.setState({entity_list});
+    entity_names.push("");
+    this.setState({entity_list,entity_names});
   }
   
   create_tag = () => {
@@ -165,7 +183,7 @@ export default class Main extends React.Component<Props, State> {
   render_draggables = () => {
     let all_draggables = [];
     for(var i = 0;i<this.state.entity_list.length;i++) {
-      all_draggables.push(<Dragbox entity_number={i} drag_group={group} update_tags={this.update_entity_tags} current_tags={this.state.entity_list[i]} color={colors[i%colors.length]} />);
+      all_draggables.push(<Dragbox entity_number={i} drag_group={group} update_tags={this.update_entity_tags} update_entity_name={this.update_entity_name} current_tags={this.state.entity_list[i]} color={colors[i%colors.length]} />);
     }
     return all_draggables;
   }
@@ -177,10 +195,6 @@ export default class Main extends React.Component<Props, State> {
   
   _handleChange = (editorState) => {
     this.setState({ editorState });
-  }
-    
-  applyCustomStyles = (nameOfCustomStyle) => {
-
   }
 
     
@@ -321,6 +335,10 @@ export default class Main extends React.Component<Props, State> {
               <br />
               <button style={{fontSize: 24}}  onClick={this.create_tag} > Create Tag </button>
               <br />
+              <b> Current Entities: </b> 
+              <ol>
+              {this.show_entity_names()}
+              </ol>
               {this.render_draggables()[0]}
               {this.render_draggables()[1]}
 

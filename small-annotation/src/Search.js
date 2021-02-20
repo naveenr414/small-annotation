@@ -4,7 +4,10 @@ import Typography from "@material-ui/core/Typography";
 import TextField from '@material-ui/core/TextField';
 import {toNormalString,toNiceString} from "./Util";
 
-interface Props {}
+interface Props {update_entity_name: any, entity_number: number}
+
+let timeout_number = -1;
+let search_timeout = -1;
 
 interface State {
   value: string;
@@ -23,39 +26,42 @@ export default class Search extends React.Component<Props, State> {
     current_entity: "",
   }
   
-  update_suggestions = (event: React.ChangeEvent<{}>, value: any) => {
+  update_suggestions = (event: React.ChangeEvent<{}>, value: any) => {   
     this.setState({
       value: value,
     });
         
     let current_target = toNormalString(value);
     if (current_target !== "") {
-      fetch(
-        address+"/autocorrect/" +
-          current_target.replace(" ","_")
-      )
-      .then((res) => res.json())
-      .then((res) => {
-        let suggestions = [];
-        let definitions = {}
-        
-        for(var i = 0;i<res.length;i++) {
-          if (res[i][1]!="") {
-            definitions[toNiceString(res[i][0])] = res[i][1];
+      clearTimeout(search_timeout);
+        fetch(
+          address+"/autocorrect/" +
+            current_target.replace(" ","_")
+        )
+        .then((res) => res.json())
+        .then((res) => {
+          let suggestions = [];
+          let definitions = {}
+          
+          for(var i = 0;i<res.length;i++) {
+            if (res[i][1]!="") {
+              definitions[toNiceString(res[i][0])] = res[i][1];
+            }
+            suggestions.push(toNiceString(res[i][0]));
           }
-          suggestions.push(toNiceString(res[i][0]));
-        }
-        
-        let current_entity = "";
-        if(definitions!=={}) {
-          current_entity = suggestions[0];
-        }
+          
+          let current_entity = "";
+          if(definitions!=={}) {
+            current_entity = suggestions[0];
+            clearTimeout(timeout_number);
+            timeout_number = setTimeout(()=>{this.props.update_entity_name( toNiceString(current_entity),this.props.entity_number)},250);
+          }
 
-        this.setState({ suggestions, definitions, current_entity },function() {
-          return 0;
-        });
-       
-      });
+          this.setState({ suggestions, definitions, current_entity },function() {
+            return 0;
+          });     
+          });
+      
     }
     else {
        this.setState({ suggestions: [],definitions: [] });
@@ -73,6 +79,8 @@ export default class Search extends React.Component<Props, State> {
   on_highlight_change = (event: any, current_entity: any, reason: an) => {
     if(current_entity!="") {
       this.setState({current_entity: toNiceString(current_entity)});
+      clearTimeout(timeout_number);
+      timeout_number = setTimeout(()=>{this.props.update_entity_name( toNiceString(current_entity),this.props.entity_number)},250);
     }
   }
 
@@ -84,7 +92,7 @@ export default class Search extends React.Component<Props, State> {
           Entity Name:{" "}
         </Typography>
                 {this.state.suggestions.length>0 && 
-                <div style={{height: 100, marginBottom: this.get_definition().length>5?200:50}}>
+                <div style={{height: 100, marginBottom: 200}}>
         <Typography style={{ fontSize: 24, marginTop: 9}}> 
           <b> {this.state.current_entity} </b>: {this.get_definition()}
         </Typography> </div>

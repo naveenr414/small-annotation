@@ -7,6 +7,7 @@ interface Props {
   update_tags: any;
   current_tags: any;
   color: string;
+  update_entity_name: any;
 }
 
 interface State {
@@ -60,6 +61,6 @@ export default class Dragbox extends React.Component<Props, State> {
       />); 
     }
 
-    return <div style={{marginBottom: 20}}>  {this.props.entity_number>1?<Search />:''} <br /> <div style={{width: 400, height: this.get_height(), padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}> <span style={{backgroundColor: this.props.entity_number>1?this.props.color:"white"}}> {this.props.entity_number > 1?this.props.entity_number+":":this.props.entity_number == 0?"Unassigned tags":"Delete Tags"} </span> {drag_box_1} <br /> </div> </div>;
+    return <div style={{marginBottom: 20}}>  {this.props.entity_number>1?<Search update_entity_name={this.props.update_entity_name} entity_number={this.props.entity_number} />:''} <br /> <div style={{width: 400, height: this.get_height(), padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}> <span style={{backgroundColor: this.props.entity_number>1?this.props.color:"white"}}> {this.props.entity_number > 1?this.props.entity_number+":":this.props.entity_number == 0?"Unassigned tags":"Recycle Bin"} </span> {drag_box_1} <br /> </div> </div>;
   }
 }
