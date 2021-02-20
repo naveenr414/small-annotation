@@ -6,6 +6,7 @@ interface Props {
   drag_group: any;
   update_tags: any;
   current_tags: any;
+  color: string;
 }
 
 interface State {
@@ -16,18 +17,16 @@ interface State {
 let DraggableArea1 = null;
 
 export default class Dragbox extends React.Component<Props, State> {
-  is_mounted = false;
   state: State = {
   tags: this.props.current_tags,
     entity: "Placeholder Entity",
   }
   
   update_tags = (tags) => {
-    setInterval(() => {this.props.update_tags(tags,this.props.entity_number)},100);
+    setTimeout(() => {this.props.update_tags(tags,this.props.entity_number)},250);
   }
   
   componentDidMount = () => {
-    this.is_mounted = true;
     DraggableArea1 = this.props.drag_group.addArea();
   }
   
@@ -52,6 +51,6 @@ export default class Dragbox extends React.Component<Props, State> {
       />); 
     }
 
-    return <div> {this.props.entity_number>0?<Search />:''} <br /> <div style={{width: 294, height: 220, padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}> {this.props.entity_number > 0?this.props.entity_number:"Unassigned tags"} : {drag_box_1} <br /> </div> </div>;
+    return <div>  {this.props.entity_number>0?<Search />:''} <br /> <div style={{width: 294, height: 220, padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white"}}> {this.props.entity_number > 0?this.props.entity_number+":":"Unassigned tags"} </span> {drag_box_1} <br /> </div> </div>;
   }
 }

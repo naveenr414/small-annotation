@@ -41,6 +41,8 @@ interface State {
   entity_list: any;
 }
 
+let colors = ["#648fff","#ffb000","#fe6100","#dc267f","#785ef0"];
+
 export default class Main extends React.Component<Props, State> {
   state: State = {
     questions: [],
@@ -105,6 +107,18 @@ export default class Main extends React.Component<Props, State> {
     let range = getSelectionCharacterOffsetsWithin(document.getElementById("main_text"));
     let start = range.start-1;
     let end = range.end-1;
+    if (window.getSelection) {
+      if (window.getSelection().empty) {  
+        window.getSelection().empty();
+    } else if (window.getSelection().removeAllRanges) {  // Firefox
+      window.getSelection().removeAllRanges();
+      }
+    } 
+    else if (document.selection) {  // IE?
+      document.selection.empty();
+    }
+
+    
     if(start-end == 0) {
       alert("No selection selected");
     }
@@ -137,7 +151,7 @@ export default class Main extends React.Component<Props, State> {
   render_draggables = () => {
     let all_draggables = [];
     for(var i = 0;i<this.state.entity_list.length;i++) {
-      all_draggables.push(<Dragbox entity_number={i} drag_group={group} update_tags={this.update_entity_tags} current_tags={this.state.entity_list[i]} />);
+      all_draggables.push(<Dragbox entity_number={i} drag_group={group} update_tags={this.update_entity_tags} current_tags={this.state.entity_list[i]} color={colors[i%colors.length]} />);
     }
     return all_draggables;
   }
@@ -200,11 +214,10 @@ export default class Main extends React.Component<Props, State> {
     
     // Calculate the span colors
     let spans = [];
-    let colors = ["blue","red","green"];
     for(var i = 1;i<this.state.entity_list.length;i++) {
       for(var j = 0;j<this.state.entity_list[i].length;j++) {
         let current_tag = this.state.entity_list[i][j];
-        let current_color = colors[(i-1)%colors.length];
+        let current_color = colors[i%colors.length];
         let start_character = this.state.noun_phrases.indices[current_tag.start];
         let end_character = this.state.noun_phrases.indices[current_tag.end]+this.state.noun_phrases.words[current_tag.end].length;
         spans.push([start_character,end_character,current_color]);
