@@ -60,6 +60,6 @@ export default class Dragbox extends React.Component<Props, State> {
       />); 
     }
 
-    return <div style={{marginBottom: 20}}>  {this.props.entity_number>0?<Search />:''} <br /> <div style={{width: 400, height: this.get_height(), padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white"}}> {this.props.entity_number > 0?this.props.entity_number+":":"Unassigned tags"} </span> {drag_box_1} <br /> </div> </div>;
+    return <div style={{marginBottom: 20}}>  {this.props.entity_number>1?<Search />:''} <br /> <div style={{width: 400, height: this.get_height(), padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}> <span style={{backgroundColor: this.props.entity_number>1?this.props.color:"white"}}> {this.props.entity_number > 1?this.props.entity_number+":":this.props.entity_number == 0?"Unassigned tags":"Delete Tags"} </span> {drag_box_1} <br /> </div> </div>;
   }
 }

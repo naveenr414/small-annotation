@@ -66,7 +66,10 @@ export default class Main extends React.Component<Props, State> {
     let name = prompt("What's your name").toLowerCase();
     this.setState({name},()=>{    this.get_questions();
     this.get_noun_phrases();});
-    this.create_new_entity();
+    let entity_list = this.state.entity_list.slice();
+    entity_list.push([]);
+    entity_list.push([]);
+    this.setState({entity_list});
   }
   
   get_questions = () => {
@@ -94,6 +97,7 @@ export default class Main extends React.Component<Props, State> {
   update_entity_tags = (tags,number) => {
     let entity_list = this.state.entity_list.slice();
     entity_list[number] = tags;
+    entity_list[1] = [];
     this.setState({entity_list,saved:false});
   }
   
@@ -318,6 +322,7 @@ export default class Main extends React.Component<Props, State> {
               <button style={{fontSize: 24}}  onClick={this.create_tag} > Create Tag </button>
               <br />
               {this.render_draggables()[0]}
+              {this.render_draggables()[1]}
 
             </Grid>
             
@@ -327,7 +332,7 @@ export default class Main extends React.Component<Props, State> {
                   {this.state.saved?'Saved':'Not Saved'} 
                 </div>
               </div>
-              {all_but_first(this.render_draggables())}  
+              {all_but_first(all_but_first(this.render_draggables()))}  
               <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} > 
                   Create New Entity 
               </button>
