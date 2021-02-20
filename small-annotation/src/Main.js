@@ -104,7 +104,13 @@ export default class Main extends React.Component<Props, State> {
   }
   
   create_tag = () => {
-    let range = getSelectionCharacterOffsetsWithin(document.getElementById("main_text"));
+    let range = 0;
+    try{
+    range = getSelectionCharacterOffsetsWithin(document.getElementById("main_text"));
+    }
+    catch {
+      return;
+    }
     let start = range.start-1;
     let end = range.end-1;
     if (window.getSelection) {
@@ -117,16 +123,20 @@ export default class Main extends React.Component<Props, State> {
     else if (document.selection) {  // IE?
       document.selection.empty();
     }
+    else {
+      return;
+    }
 
     
     if(start-end == 0) {
       alert("No selection selected");
     }
     else {   
-      let real_start = 0;
-      let real_end = 10;
+      let real_start = -1;
+      let real_end = this.state.noun_phrases.indices[this.state.noun_phrases.indices.length-1]+this.state.noun_phrases.words[this.state.noun_phrases.words.length-1].length;
       let start_word_num = 0;
-      let end_word_num = 1;
+      let end_word_num = this.state.noun_phrases.words.length-1;
+      
       
       for(var i = 0;i<this.state.noun_phrases.indices.length;i++) {
         if(this.state.noun_phrases.indices[i]<=start) {
@@ -136,12 +146,13 @@ export default class Main extends React.Component<Props, State> {
       }
       
       for(var i = this.state.noun_phrases.indices.length-1;i>=0;i--) {
-        if(this.state.noun_phrases.indices[i]>end && i!=0) {
+        if(this.state.noun_phrases.indices[i]>=end && i!=0) {
           real_end = this.state.noun_phrases.indices[i-1]+this.state.noun_phrases.words[i-1].length;
           end_word_num = i-1;
         }
       }
-      
+      console.log(real_start + " "+real_end);
+
       const entity_list = this.state.entity_list.slice();
       entity_list[0].push({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)});
       this.setState({entity_list});
@@ -228,40 +239,58 @@ export default class Main extends React.Component<Props, State> {
     
     let new_spans = []
     i =0;
+    console.log(spans);
     while(i<spans.length){ 
+      if(spans.length>i+1) {
+        console.log(i + " "+(spans[i+1][0]>=spans[i][1]));
+      }
+      console.log(new_spans);
       if(i == spans.length-1) {
         new_spans.push(spans[i]);
         i+=1;
       }
-      else if(spans[i+1][0]>spans[i][1]) {
+      else if(spans[i][0] === spans[i+1][0] && spans[i+1][1] == spans[i][1]) {
+        i+=1;
+      }
+      else if(spans[i+1][0]>=spans[i][1]) {
+        console.log("Easy case");
         new_spans.push(spans[i]);
         i+=1;
       }
       else {
+        console.log("Hard case");
+        console.log(spans);
         // If it's in the middle of a longer span 
         if(spans[i+1][1]<=spans[i][1]) {
+          console.log("Case 1");
           new_spans.push([spans[i][0],spans[i+1][0],spans[i][2]]);
-          let temp = spans[i+1];
+          console.log(new_spans);
+          let temp = spans[i+1].slice();
           spans[i+1] = spans[i];
           spans[i] = temp;
           spans[i+1][0] = spans[i][1];
         }
         else {
+          console.log("Case 2")
           // A: -----
           // B:   -----
           // If A is smaller than B, show A, then B
           if(spans[i][1]-spans[i][0]<spans[i+1][1]-spans[i+1][0]){ 
             new_spans.push(spans[i]);
+            console.log("2a "+new_spans);
             spans[i+1][0] = spans[i][1];
             i+=1;
           }
           // Show A up to B
           else {
             new_spans.push([spans[i][0],spans[i+1][0],spans[i][2]]);
+            console.log("2b "+new_spans);
             i+=1;
           }
-        }        
+        }
+        console.log(new_spans);
       }
+      console.log(new_spans);
     }
     
     let parts = []

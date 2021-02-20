@@ -66,6 +66,7 @@ export function all_but_first(l) {
 export function getSelectionCharacterOffsetsWithin (element){
     var startOffset = 0, endOffset = 0;
     if (typeof window.getSelection != "undefined") {
+      
         var range = window.getSelection().getRangeAt(0);
         var preCaretRange = range.cloneRange();
         preCaretRange.selectNodeContents(element);
