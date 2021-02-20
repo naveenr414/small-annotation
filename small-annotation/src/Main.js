@@ -240,7 +240,7 @@ export default class Main extends React.Component<Props, State> {
   }
   
   render() {
-    if(this.state.questions.length == 0) {
+    if(this.state.noun_phrases.length == 0) {
       return <h1> Loading </h1> 
     }
     else {

@@ -16,16 +16,18 @@ interface State {
 let DraggableArea1 = null;
 
 export default class Dragbox extends React.Component<Props, State> {
+  is_mounted = false;
   state: State = {
   tags: this.props.current_tags,
     entity: "Placeholder Entity",
   }
   
   update_tags = (tags) => {
-    this.props.update_tags(tags,this.props.entity_number);
+    setInterval(() => {this.props.update_tags(tags,this.props.entity_number)},100);
   }
   
   componentDidMount = () => {
+    this.is_mounted = true;
     DraggableArea1 = this.props.drag_group.addArea();
   }
   
@@ -45,7 +47,8 @@ export default class Dragbox extends React.Component<Props, State> {
           {tag.content}
         </div>
       )}
-      onChange={tags => {this.setState({tags}); this.update_tags(tags);}}
+      onChange={
+      tags => {this.setState({tags});this.update_tags(tags)}}
       />); 
     }
 
