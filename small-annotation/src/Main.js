@@ -226,22 +226,60 @@ export default class Main extends React.Component<Props, State> {
     
     spans = spans.sort();
     
+    let new_spans = []
+    i =0;
+    while(i<spans.length){ 
+      if(i == spans.length-1) {
+        new_spans.push(spans[i]);
+        i+=1;
+      }
+      else if(spans[i+1][0]>spans[i][1]) {
+        new_spans.push(spans[i]);
+        i+=1;
+      }
+      else {
+        // If it's in the middle of a longer span 
+        if(spans[i+1][1]<=spans[i][1]) {
+          new_spans.push([spans[i][0],spans[i+1][0],spans[i][2]]);
+          let temp = spans[i+1];
+          spans[i+1] = spans[i];
+          spans[i] = temp;
+          spans[i+1][0] = spans[i][1];
+        }
+        else {
+          // A: -----
+          // B:   -----
+          // If A is smaller than B, show A, then B
+          if(spans[i][1]-spans[i][0]<spans[i+1][1]-spans[i+1][0]){ 
+            new_spans.push(spans[i]);
+            spans[i+1][0] = spans[i][1];
+            i+=1;
+          }
+          // Show A up to B
+          else {
+            new_spans.push([spans[i][0],spans[i+1][0],spans[i][2]]);
+            i+=1;
+          }
+        }        
+      }
+    }
+    
     let parts = []
     
     let num = 0;
     let current_span = 0;
     while(num<text.length) {
-      if(current_span == spans.length) {
+      if(current_span == new_spans.length) {
         parts.push([num,text.length,'white']);
         num = text.length;
       }
-      else if(num<spans[current_span][0]) {
-        parts.push([num,spans[current_span][0],'white']);
-        num = spans[current_span][0];
+      else if(num<new_spans[current_span][0]) {
+        parts.push([num,new_spans[current_span][0],'white']);
+        num = new_spans[current_span][0];
       }
       else {
-        parts.push(spans[current_span]);
-        num = spans[current_span][1];
+        parts.push(new_spans[current_span]);
+        num = new_spans[current_span][1];
         current_span+=1;
       }
     }
