@@ -258,9 +258,9 @@ export default class Main extends React.Component<Props, State> {
     }
     else {
       return <div> 
-            <Grid container spacing={3}>
+            <Grid container style={{marginTop: 50}} spacing={3}>
 
-            <Grid item xs={8}> 
+            <Grid item xs={8} style={{width: "50%", position: "fixed", top:"0", marginLeft: 75}}> 
               <div> 
                 <button onClick={this.decrement_question}> Previous </button>
                 <button onClick={this.increment_question}> Next </button>
@@ -269,18 +269,17 @@ export default class Main extends React.Component<Props, State> {
               {this.state.current_question+1}
               <div id="main_text"> {this.get_styles()} </div>
               </div>
-              
+              <br />
               <button style={{fontSize: 24}}  onClick={this.create_tag} > Create Tag </button>
+              <br />
               {this.render_draggables()[0]}
 
             </Grid>
             
-            <Grid item xs={4}>
+            <Grid item xs={4} style={{marginLeft: "65%"}}>
+              {all_but_first(this.render_draggables())}  
               <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} > 
                   Create New Entity </button>
-
-              {all_but_first(this.render_draggables())}  
-
               <div style={{top: 0,   position: 'sticky', padding: 100, fontSize: 24}}> 
                 <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
                   {this.state.saved?'Saved':'Not Saved'} 

@@ -62,10 +62,6 @@ export default class Search extends React.Component<Props, State> {
     }
   };
   
-  componentWillUnmount(){
-    alert("Unmounted!");
-  }
-  
   
   get_definition = () => {
     if(this.state.current_entity in this.state.definitions){ 
