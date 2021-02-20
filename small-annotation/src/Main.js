@@ -94,7 +94,7 @@ export default class Main extends React.Component<Props, State> {
   update_entity_tags = (tags,number) => {
     let entity_list = this.state.entity_list.slice();
     entity_list[number] = tags;
-    this.setState({entity_list});
+    this.setState({entity_list,saved:false});
   }
   
   create_new_entity = () => {
@@ -151,7 +151,6 @@ export default class Main extends React.Component<Props, State> {
           end_word_num = i-1;
         }
       }
-      console.log(real_start + " "+real_end);
 
       const entity_list = this.state.entity_list.slice();
       entity_list[0].push({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)});
@@ -182,7 +181,7 @@ export default class Main extends React.Component<Props, State> {
 
     
   submit = () => {
-    let annotations = [];
+    /*let annotations = [];
     if(!('nouns' in this.state.noun_phrases)) {
       return;
     }
@@ -200,7 +199,7 @@ export default class Main extends React.Component<Props, State> {
       person_name: this.state.name,
       annotations: annotations,
     })
-  );
+    );*/
   
     this.setState({saved: true});
   } 
@@ -238,9 +237,7 @@ export default class Main extends React.Component<Props, State> {
     spans = spans.sort(function(a, b) {
       return a[0] - b[0];
     });
-    
-    console.log(JSON.stringify(spans));
-    
+        
     let new_spans = []
     i =0;
     
@@ -256,31 +253,24 @@ export default class Main extends React.Component<Props, State> {
         if(current_span[0]<new_spans.slice(-1)[0][0]) {
           alert("There's an issue!");
         }
-        console.log(current_span + " "+new_spans.slice(-1)[0] + " "+intersects(current_span,new_spans.slice(-1)[0]));
         if(intersects(current_span,new_spans.slice(-1)[0])) {
           if (span_length(current_span)<span_length(new_spans.slice(-1)[0]) && new_spans[new_spans.length-1][0]<=current_span[0]) {
             new_spans[new_spans.length-1][1] = current_span[0];
             new_spans.push(current_span);
-            console.log(current_span + " "+new_spans[new_spans.length-2]);
             if(new_spans[new_spans.length-2][1]>current_span[1]) {
               new_spans.push([current_span[1],new_spans[new_spans.length-2][1],new_spans[new_spans.length-2][2]]);
-              console.log([current_span[1],new_spans[new_spans.length-3][1],new_spans[new_spans.length-4][2]]);
             }
           }
           else {
             current_span[0] = new_spans[new_spans.length-1][1];
             new_spans.push(current_span);
-            console.log(current_span);
           }
         } else {
           new_spans.push(current_span);
-          console.log(current_span);
         }
       }
     }
-    
-    console.log(JSON.stringify(new_spans));
-        
+            
     let parts = []; 
     
     let num = 0;
@@ -300,8 +290,6 @@ export default class Main extends React.Component<Props, State> {
         current_span+=1;
       }
     }
-
-    console.log("Parts "+parts);
        
     var highlights = parts.map(fields => <span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], fields[1])}</span>);
     return highlights;
@@ -316,13 +304,15 @@ export default class Main extends React.Component<Props, State> {
             <Grid container style={{marginTop: 50}} spacing={3}>
 
             <Grid item xs={8} style={{width: "50%", position: "fixed", top:"0", marginLeft: 75}}> 
-              <div> 
-                <button onClick={this.decrement_question}> Previous </button>
-                <button onClick={this.increment_question}> Next </button>
-              </div>
+              <div style={{marginBottom: 20}}> 
+                <button style={{marginLeft: 30}} onClick={this.decrement_question}> Previous </button>
+                <button style={{marginLeft: 30}} onClick={this.increment_question}> Next </button>
+                <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button>
+              </div> 
               <div>  
               {this.state.current_question+1}
               <div id="main_text"> {this.get_styles()} </div>
+              <div> <b> Answer: </b> {this.state.answers[this.state.current_question]} </div>
               </div>
               <br />
               <button style={{fontSize: 24}}  onClick={this.create_tag} > Create Tag </button>
@@ -332,17 +322,16 @@ export default class Main extends React.Component<Props, State> {
             </Grid>
             
             <Grid item xs={4} style={{marginLeft: "65%"}}>
-              {all_but_first(this.render_draggables())}  
-              <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} > 
-                  Create New Entity </button>
-              <div style={{top: 0,   position: 'sticky', padding: 100, fontSize: 24}}> 
+              <div style={{top: 0, marginBottom: 20, fontSize: 24}}> 
                 <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
                   {this.state.saved?'Saved':'Not Saved'} 
                 </div>
-                <b> {this.state.current_entity} </b> 
-                <br />
-                {this.state.description}
-            </div>
+              </div>
+              {all_but_first(this.render_draggables())}  
+              <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} > 
+                  Create New Entity 
+              </button>
+
             </Grid>
             </Grid>
             </div>

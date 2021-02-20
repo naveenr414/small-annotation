@@ -36,13 +36,22 @@ export default class Dragbox extends React.Component<Props, State> {
     }
   }
 
+  get_height = () => {
+    let total_tag_length = 0;
+    for(var i = 0;i<this.state.tags.length;i++) {
+      total_tag_length+=this.state.tags[i]['content'].length;
+    }
+    console.log("Total tag length "+total_tag_length);
+    return 150+Math.floor(total_tag_length);
+  }
+  
   render = () => {
     let drag_box_1 = <div> </div>
     if(DraggableArea1!=null) {
       drag_box_1 = (<DraggableArea1
       tags={this.state.tags}
       render={({tag, index}) => (
-        <div style={{fontSize: 13,margin: 3,border: "1px dashed #cccccc", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)"}}>
+        <div style={{fontSize: 16,margin: 3,border: "1px dashed #cccccc", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)"}}>
           {tag.content}
         </div>
       )}
@@ -51,6 +60,6 @@ export default class Dragbox extends React.Component<Props, State> {
       />); 
     }
 
-    return <div>  {this.props.entity_number>0?<Search />:''} <br /> <div style={{width: 294, height: 220, padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white"}}> {this.props.entity_number > 0?this.props.entity_number+":":"Unassigned tags"} </span> {drag_box_1} <br /> </div> </div>;
+    return <div style={{marginBottom: 20}}>  {this.props.entity_number>0?<Search />:''} <br /> <div style={{width: 400, height: this.get_height(), padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white"}}> {this.props.entity_number > 0?this.props.entity_number+":":"Unassigned tags"} </span> {drag_box_1} <br /> </div> </div>;
   }
 }

@@ -83,10 +83,15 @@ export default class Search extends React.Component<Props, State> {
           {" "}
           Entity Name:{" "}
         </Typography>
-        
+                {this.state.suggestions.length>0 && 
+                <div style={{height: 100, marginBottom: this.get_definition().length>5?200:50}}>
+        <Typography style={{ fontSize: 24, marginTop: 9}}> 
+          <b> {this.state.current_entity} </b>: {this.get_definition()}
+        </Typography> </div>
+          }
         
         <Autocomplete
-          style={{ fontSize: 24 }}
+          style={{ fontSize: 24, marginBottom: 50 }}
           value={this.state.value}
           getOptionLabel={(option) => option}
           options={this.state.suggestions}
@@ -98,12 +103,8 @@ export default class Search extends React.Component<Props, State> {
           onHighlightChange={this.on_highlight_change}
           openOnFocus={true}
         />
-        <div>  <br /> <br /> <br /> <br /> <br />
-        {this.state.suggestions.length>0 && 
-        <Typography style={{ fontSize: 24, marginTop: 9}}> 
-          <b> {this.state.current_entity} </b>: {this.get_definition()}
-        </Typography> 
-          }
+        <div> 
+
           </div>
       </div>
     );
