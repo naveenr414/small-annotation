@@ -63,6 +63,14 @@ export function all_but_first(l) {
   return a;
 }
 
+export function intersects(span_1,span_2) {
+    return Math.max(span_1[0],span_2[0])<=Math.min(span_1[1],span_2[1]);
+}
+
+export function span_length(span) {
+    return span[1]-span[0];
+}
+
 export function getSelectionCharacterOffsetsWithin (element){
     var startOffset = 0, endOffset = 0;
     if (typeof window.getSelection != "undefined") {

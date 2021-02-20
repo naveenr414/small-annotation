@@ -6,7 +6,7 @@ import Switch from '@material-ui/core/Switch';
 import {Editor, RichUtils,EditorState, ContentState} from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import {DraggableArea,DraggableAreasGroup} from 'react-draggable-tags';
-import {all_but_first,getSelectionCharacterOffsetsWithin} from './Util';
+import {all_but_first,getSelectionCharacterOffsetsWithin,span_length,intersects} from './Util';
 
 let address = "/api";
 const group = new DraggableAreasGroup();
@@ -235,65 +235,53 @@ export default class Main extends React.Component<Props, State> {
       }
     }
     
-    spans = spans.sort();
+    spans = spans.sort(function(a, b) {
+      return a[0] - b[0];
+    });
+    
+    console.log(JSON.stringify(spans));
     
     let new_spans = []
     i =0;
-    console.log(spans);
-    while(i<spans.length){ 
-      if(spans.length>i+1) {
-        console.log(i + " "+(spans[i+1][0]>=spans[i][1]));
-      }
-      console.log(new_spans);
-      if(i == spans.length-1) {
-        new_spans.push(spans[i]);
-        i+=1;
-      }
-      else if(spans[i][0] === spans[i+1][0] && spans[i+1][1] == spans[i][1]) {
-        i+=1;
-      }
-      else if(spans[i+1][0]>=spans[i][1]) {
-        console.log("Easy case");
-        new_spans.push(spans[i]);
-        i+=1;
+    
+    while(spans.length>0){ 
+      
+      let current_span = spans.shift();
+      if(new_spans.length == 0) {
+        new_spans.push(current_span);
       }
       else {
-        console.log("Hard case");
-        console.log(spans);
-        // If it's in the middle of a longer span 
-        if(spans[i+1][1]<=spans[i][1]) {
-          console.log("Case 1");
-          new_spans.push([spans[i][0],spans[i+1][0],spans[i][2]]);
-          console.log(new_spans);
-          let temp = spans[i+1].slice();
-          spans[i+1] = spans[i];
-          spans[i] = temp;
-          spans[i+1][0] = spans[i][1];
+        
+        current_span[0] = Math.max(current_span[0],new_spans.slice(-1)[0][0]);
+        if(current_span[0]<new_spans.slice(-1)[0][0]) {
+          alert("There's an issue!");
         }
-        else {
-          console.log("Case 2")
-          // A: -----
-          // B:   -----
-          // If A is smaller than B, show A, then B
-          if(spans[i][1]-spans[i][0]<spans[i+1][1]-spans[i+1][0]){ 
-            new_spans.push(spans[i]);
-            console.log("2a "+new_spans);
-            spans[i+1][0] = spans[i][1];
-            i+=1;
+        console.log(current_span + " "+new_spans.slice(-1)[0] + " "+intersects(current_span,new_spans.slice(-1)[0]));
+        if(intersects(current_span,new_spans.slice(-1)[0])) {
+          if (span_length(current_span)<span_length(new_spans.slice(-1)[0]) && new_spans[new_spans.length-1][0]<=current_span[0]) {
+            new_spans[new_spans.length-1][1] = current_span[0];
+            new_spans.push(current_span);
+            console.log(current_span + " "+new_spans[new_spans.length-2]);
+            if(new_spans[new_spans.length-2][1]>current_span[1]) {
+              new_spans.push([current_span[1],new_spans[new_spans.length-2][1],new_spans[new_spans.length-2][2]]);
+              console.log([current_span[1],new_spans[new_spans.length-3][1],new_spans[new_spans.length-4][2]]);
+            }
           }
-          // Show A up to B
           else {
-            new_spans.push([spans[i][0],spans[i+1][0],spans[i][2]]);
-            console.log("2b "+new_spans);
-            i+=1;
+            current_span[0] = new_spans[new_spans.length-1][1];
+            new_spans.push(current_span);
+            console.log(current_span);
           }
+        } else {
+          new_spans.push(current_span);
+          console.log(current_span);
         }
-        console.log(new_spans);
       }
-      console.log(new_spans);
     }
     
-    let parts = []
+    console.log(JSON.stringify(new_spans));
+        
+    let parts = []; 
     
     let num = 0;
     let current_span = 0;
