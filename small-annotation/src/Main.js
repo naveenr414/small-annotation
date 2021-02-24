@@ -1,26 +1,15 @@
 import * as React from "react";
 import Dragbox from "./Dragbox";
 import Search from "./Search";
+import Span from "./Span";
 import Grid from "@material-ui/core/Grid";
 import Switch from '@material-ui/core/Switch';
-import {Editor, RichUtils,EditorState, ContentState} from 'draft-js';
 import 'draft-js/dist/Draft.css';
-import {DraggableArea,DraggableAreasGroup} from 'react-draggable-tags';
 import {all_but_first,getSelectionCharacterOffsetsWithin,span_length,intersects} from './Util';
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 
 let address = "/api";
-const group = new DraggableAreasGroup();
-
-const customStyleMap = {
-  redBackground: {
-  	backgroundColor: 'red'
-  },
-  underlined: {
-    textDecoration: 'underline',
-    fontSize: 26
-  },
-};
-
 
 interface Props {}
 
@@ -37,7 +26,6 @@ interface State {
   start: number;
   end: number;
   saved: boolean;
-  editorState: any;
   entity_list: any;
   entity_names: any;
 }
@@ -58,7 +46,6 @@ export default class Main extends React.Component<Props, State> {
     start: -1, 
     end: -1,
     saved: true,
-    editorState: EditorState.createEmpty(),
     entity_list: [[],[]],
     entity_names: ["",""],
   }
@@ -74,7 +61,7 @@ export default class Main extends React.Component<Props, State> {
       address+"/questions"
       )
       .then((res) => res.json())
-      .then((res) => this.setState({questions:res['questions'],answers:res['answers'],editorState: EditorState.createWithContent(ContentState.createFromText(res['questions'][this.state.current_question]))}));
+      .then((res) => this.setState({questions:res['questions'],answers:res['answers']}));
   }
   
   get_noun_phrases = () => {
@@ -91,6 +78,15 @@ export default class Main extends React.Component<Props, State> {
     }
   }
 
+  update_spans = (span,number) => {
+    let entity_list = this.state.entity_list.slice();
+    for(var i = 0;i<entity_list.length;i++) {
+      entity_list[i] = entity_list[i].slice().filter(item => item['start']!==span['start'] || item['end'] !== span['end']);
+    }
+    entity_list[number].push(span);
+    this.setState({entity_list,saved: false});
+  }
+  
   update_entity_tags = (tags,number) => {
     let entity_list = this.state.entity_list.slice();
     entity_list[number] = tags;
@@ -174,16 +170,14 @@ export default class Main extends React.Component<Props, State> {
         }
       }
 
-      const entity_list = this.state.entity_list.slice();
-      entity_list[0].push({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)});
-      this.setState({entity_list});
+      this.update_spans({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)},0)
     }
   }
  
   render_draggables = () => {
     let all_draggables = [];
     for(var i = 0;i<this.state.entity_list.length;i++) {
-      all_draggables.push(<Dragbox entity_number={i} drag_group={group} update_tags={this.update_entity_tags} update_entity_name={this.update_entity_name} current_tags={this.state.entity_list[i]} color={colors[i%colors.length]} />);
+      all_draggables.push(<Dragbox entity_number={i} update_spans={this.update_spans} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} color={colors[i%colors.length]} />);
     }
     return all_draggables;
   }
@@ -193,9 +187,6 @@ export default class Main extends React.Component<Props, State> {
     this.setState({current_entity,description});
   }
   
-  _handleChange = (editorState) => {
-    this.setState({ editorState });
-  }
 
     
   submit = () => {
@@ -223,7 +214,7 @@ export default class Main extends React.Component<Props, State> {
   } 
   
   reload = (new_num) => {
-    this.setState({current_question: new_num,editorState: EditorState.createWithContent(ContentState.createFromText(this.state.questions[new_num])),entity_list: [[]]},()=>{this.get_noun_phrases()});
+    this.setState({current_question: new_num,entity_list: [[]]},()=>{this.get_noun_phrases()});
   }
   
   increment_question = () => {
@@ -318,7 +309,7 @@ export default class Main extends React.Component<Props, State> {
       return <h1> Loading </h1> 
     }
     else {
-      return <div> 
+      return  <DndProvider backend={HTML5Backend}> <div> 
             <Grid container style={{marginTop: 50}} spacing={3}>
 
             <Grid item xs={8} style={{width: "50%", position: "fixed", top:"0", marginLeft: 75}}> 
@@ -327,6 +318,8 @@ export default class Main extends React.Component<Props, State> {
                 <button style={{marginLeft: 30}} onClick={this.increment_question}> Next </button>
                 <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button>
               </div> 
+              <br />
+              
               <div>  
               {this.state.current_question+1}
               <div id="main_text"> {this.get_styles()} </div>
@@ -357,7 +350,7 @@ export default class Main extends React.Component<Props, State> {
 
             </Grid>
             </Grid>
-            </div>
+            </div> </DndProvider>
    }
   }
 }
