@@ -10,6 +10,7 @@ interface Props {
   current_spans: any;
   color: string;
   update_entity_name: any;
+  delete_span: any;
 }
 
 interface State {
@@ -57,7 +58,7 @@ class Dragbox extends React.Component<Props, State> {
   render = () => {
     let spans = [];
     for(var i = 0;i<this.props.current_spans.length;i++) {
-      spans.push(<Span content={this.props.current_spans[i].content} start={this.props.current_spans[i].start} end={this.props.current_spans[i].end} />);
+      spans.push(<Span content={this.props.current_spans[i].content} start={this.props.current_spans[i].start} end={this.props.current_spans[i].end} delete_span={this.props.delete_span} />);
     }
 
     return this.props.dropTarget(
@@ -67,7 +68,7 @@ class Dragbox extends React.Component<Props, State> {
         <br /> 
         <div style={{width: 400, height: this.get_height(), padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}> 
         
-        <span style={{backgroundColor: this.props.entity_number>1?this.props.color:"white"}}> {this.props.entity_number > 1?this.props.entity_number+":":this.props.entity_number == 0?"Unassigned tags":"Recycle Bin"} 
+        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white"}}> {this.props.entity_number > 0?this.props.entity_number+":":"Unassigned tags"} 
         </span> 
         
         <div> {spans} </div> <br /> </div> </div>);

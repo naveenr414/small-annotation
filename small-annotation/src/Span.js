@@ -1,11 +1,12 @@
- import * as React from "react";
+import * as React from "react";
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import Typography from "@material-ui/core/Typography";
 import TextField from '@material-ui/core/TextField';
 import {toNormalString,toNiceString} from "./Util";
 import { DragSource } from "react-dnd";
+import deleteImage from './images/delete.png';
 
-interface Props {content: string, start: number, end: number}
+interface Props {content: string, start: number, end: number, delete_span: any}
 
 interface State {
 }
@@ -38,7 +39,13 @@ class Span extends React.Component<Props, State> {
      const { isDragging, connectDragSource, src } = this.props;
      return connectDragSource(
        <div style={{fontSize: 16,margin: 3,border: "1px dashed #cccccc", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)", display: "inline"}}>
+
         {this.props.content}
+         <img
+            style={{marginTop: -12, marginRight: -10, top: -1, right: -1, width: 16, height: 16, cursor: "pointer", userDrag: "none", userSelect: "none"}}
+            src={deleteImage}
+            onClick={() => this.props.delete_span({ 'content':this.props.content, 'start': this.props.start, 'end': this.props.end })}
+         />
       </div>
      )
     

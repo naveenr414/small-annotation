@@ -8,6 +8,10 @@ import 'draft-js/dist/Draft.css';
 import {all_but_first,getSelectionCharacterOffsetsWithin,span_length,intersects} from './Util';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+import Instructions from './Instructions';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 let address = "/api";
 
@@ -46,8 +50,9 @@ export default class Main extends React.Component<Props, State> {
     start: -1, 
     end: -1,
     saved: true,
-    entity_list: [[],[]],
-    entity_names: ["",""],
+    entity_list: [[]],
+    entity_names: [""],
+    show_instructions: false,
   }
       
   componentDidMount = () => {
@@ -84,6 +89,14 @@ export default class Main extends React.Component<Props, State> {
       entity_list[i] = entity_list[i].slice().filter(item => item['start']!==span['start'] || item['end'] !== span['end']);
     }
     entity_list[number].push(span);
+    this.setState({entity_list,saved: false});
+  }
+  
+  delete_span = (span) => {
+    let entity_list = this.state.entity_list.slice();
+    for(var i = 0;i<entity_list.length;i++) {
+      entity_list[i] = entity_list[i].slice().filter(item => item['start']!==span['start'] || item['end'] !== span['end']);
+    }
     this.setState({entity_list,saved: false});
   }
   
@@ -177,7 +190,7 @@ export default class Main extends React.Component<Props, State> {
   render_draggables = () => {
     let all_draggables = [];
     for(var i = 0;i<this.state.entity_list.length;i++) {
-      all_draggables.push(<Dragbox entity_number={i} update_spans={this.update_spans} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} color={colors[i%colors.length]} />);
+      all_draggables.push(<Dragbox entity_number={i} update_spans={this.update_spans} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} color={colors[i%colors.length]} delete_span={this.delete_span} />);
     }
     return all_draggables;
   }
@@ -304,6 +317,14 @@ export default class Main extends React.Component<Props, State> {
     return highlights;
   }
   
+  show_instructions = () => {
+    this.setState({show_instructions: true});
+  }
+  
+  hide_instructions = () => {
+    this.setState({show_instructions: false});
+  }
+  
   render() {
     if(this.state.noun_phrases.length == 0) {
       return <h1> Loading </h1> 
@@ -317,9 +338,21 @@ export default class Main extends React.Component<Props, State> {
                 <button style={{marginLeft: 30}} onClick={this.decrement_question}> Previous </button>
                 <button style={{marginLeft: 30}} onClick={this.increment_question}> Next </button>
                 <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button>
+                <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button>
               </div> 
               <br />
-              
+                    <Modal show={this.state.show_instructions} onHide={this.hide_instructions} animation={false}>
+                      <Modal.Header closeButton>
+                        <Modal.Title>Instructions</Modal.Title>
+                      </Modal.Header>
+                      <Modal.Body><Instructions /></Modal.Body>
+                      <Modal.Footer>
+                        <Button variant="secondary" onClick={this.hide_instructions}>
+                          Close
+                        </Button>
+                      </Modal.Footer>
+                    </Modal>
+
               <div>  
               {this.state.current_question+1}
               <div id="main_text"> {this.get_styles()} </div>
@@ -333,7 +366,6 @@ export default class Main extends React.Component<Props, State> {
               {this.show_entity_names()}
               </ol>
               {this.render_draggables()[0]}
-              {this.render_draggables()[1]}
 
             </Grid>
             
@@ -343,7 +375,7 @@ export default class Main extends React.Component<Props, State> {
                   {this.state.saved?'Saved':'Not Saved'} 
                 </div>
               </div>
-              {all_but_first(all_but_first(this.render_draggables()))}  
+              {all_but_first(this.render_draggables())}  
               <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} > 
                   Create New Entity 
               </button>
