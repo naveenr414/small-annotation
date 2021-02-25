@@ -38,7 +38,7 @@ class Span extends React.Component<Props, State> {
   render() {
      const { isDragging, connectDragSource, src } = this.props;
      return connectDragSource(
-       <div style={{fontSize: 16,margin: 3,border: "1px dashed #cccccc", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)", display: "inline"}}>
+       <div style={{fontSize: 16,margin: 3,border: "1px dashed #444444", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)", display: "inline", marginTop: 10}}>
 
         {this.props.content}
          <img

@@ -97,7 +97,7 @@ export default class Search extends React.Component<Props, State> {
           <b> {this.state.current_entity} </b>: {this.get_definition()}
         </Typography> </div>
           }
-        
+        <br />
         <Autocomplete
           style={{ fontSize: 24, marginBottom: 50 }}
           value={this.state.value}

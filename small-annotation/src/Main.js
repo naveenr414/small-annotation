@@ -12,6 +12,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Instructions from './Instructions';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Divider from '@material-ui/core/Divider';
 
 let address = "/api";
 
@@ -333,14 +334,16 @@ export default class Main extends React.Component<Props, State> {
       return  <DndProvider backend={HTML5Backend}> <div> 
             <Grid container style={{marginTop: 50}} spacing={3}>
 
-            <Grid item xs={8} style={{width: "50%", position: "fixed", top:"0", marginLeft: 75}}> 
+            <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 75}}> 
               <div style={{marginBottom: 20}}> 
                 <button style={{marginLeft: 30}} onClick={this.decrement_question}> Previous </button>
                 <button style={{marginLeft: 30}} onClick={this.increment_question}> Next </button>
-                <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button>
-                <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button>
+                <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button> 
+                <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
+                <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
+                    {this.state.saved?'Saved':'Not Saved'} 
+                </div>
               </div> 
-              <br />
                     <Modal show={this.state.show_instructions} onHide={this.hide_instructions} animation={false}>
                       <Modal.Header closeButton>
                         <Modal.Title>Instructions</Modal.Title>
@@ -353,33 +356,25 @@ export default class Main extends React.Component<Props, State> {
                       </Modal.Footer>
                     </Modal>
 
-              <div>  
-              {this.state.current_question+1}
+              <div  style={{fontSize: 24}}>  
+              Question number: {this.state.current_question+1}
               <div id="main_text"> {this.get_styles()} </div>
               <div> <b> Answer: </b> {this.state.answers[this.state.current_question]} </div>
               </div>
               <br />
               <button style={{fontSize: 24}}  onClick={this.create_tag} > Create Tag </button>
               <br />
-              <b> Current Entities: </b> 
-              <ol>
-              {this.show_entity_names()}
-              </ol>
               {this.render_draggables()[0]}
 
             </Grid>
-            
-            <Grid item xs={4} style={{marginLeft: "65%"}}>
-              <div style={{top: 0, marginBottom: 20, fontSize: 24}}> 
-                <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
-                  {this.state.saved?'Saved':'Not Saved'} 
-                </div>
+            <Divider orientation="vertical" flexItem />
+            <Grid item xs={6} style={{marginLeft: "55%", paddingLeft: 25, paddingRight: 25, borderLeft:'1px solid black',height: "100%", width: "40%"}}>
+              <div style={{height: "100%"}}>
+                {all_but_first(this.render_draggables())}  
+                <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} > 
+                    Create New Entity 
+                </button>
               </div>
-              {all_but_first(this.render_draggables())}  
-              <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} > 
-                  Create New Entity 
-              </button>
-
             </Grid>
             </Grid>
             </div> </DndProvider>

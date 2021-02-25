@@ -3,6 +3,8 @@ import Search from "./Search";
 import Span from './Span';
 import './Dragbox.css';
 import { DropTarget } from "react-dnd";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 interface Props {
   entity_number: number;
@@ -14,6 +16,9 @@ interface Props {
 }
 
 interface State {
+  show_search: boolean;
+  entity_search: string;
+  entity_name: string;
 }
 
 const boxTarget = {
@@ -38,6 +43,9 @@ const collect = (connect, monitor) => ({
 
 class Dragbox extends React.Component<Props, State> {
   state: State = {
+    show_search: false,
+    entity_name: "No Entity",
+    entity_search: "No Entity",
   }
   
   update_tags = (tags) => {
@@ -53,24 +61,52 @@ class Dragbox extends React.Component<Props, State> {
     return 150+Math.floor(total_tag_length);
   }
   
+  close_search = () => {
+    this.setState({show_search: false});
+  }
   
+  update_entity_name = (entity_search,number) => {
+    if(entity_search !== null) {
+      this.setState({entity_search});
+      this.props.update_entity_name(entity_search,number);
+    }
+  }
+  
+  save_search_results = () => {
+    this.setState({show_search: false, entity_name: this.state.entity_search});
+  }
 
   render = () => {
     let spans = [];
     for(var i = 0;i<this.props.current_spans.length;i++) {
       spans.push(<Span content={this.props.current_spans[i].content} start={this.props.current_spans[i].start} end={this.props.current_spans[i].end} delete_span={this.props.delete_span} />);
     }
+    
 
     return this.props.dropTarget(
       <div style={{marginBottom: 20}}>  
-        {this.props.entity_number>1?<Search update_entity_name={this.props.update_entity_name} entity_number={this.props.entity_number} />:''}
-
         <br /> 
-        <div style={{width: 400, height: this.get_height(), padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}> 
-        
-        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white"}}> {this.props.entity_number > 0?this.props.entity_number+":":"Unassigned tags"} 
+        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.state.entity_name:"Unassigned tags"} 
         </span> 
+        {this.props.entity_number>0?<button style={{marginLeft: 100}} onClick={()=>{this.setState({show_search: true})}} > Search for Entity
+        </button> :''}
+        <Modal size="lg" show={this.state.show_search} onHide={this.close_search} animation={false}>
+          <Modal.Header closeButton>
+            <Modal.Title>Search</Modal.Title>
+          </Modal.Header>
+          <Modal.Body> <Search update_entity_name={this.update_entity_name} entity_number={this.props.entity_number} /> </Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={this.save_search_results}>
+              Save
+            </Button>
+            <Button variant="secondary" onClick={this.close_search}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+        <div style={{width: "80%", minHeight: 40, padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}> 
         
+
         <div> {spans} </div> <br /> </div> </div>);
   }
 }
