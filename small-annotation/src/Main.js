@@ -33,6 +33,7 @@ interface State {
   saved: boolean;
   entity_list: any;
   entity_names: any;
+  bolded_span: any;
 }
 
 let colors = ["#648fff","#ffb000","#fe6100","#dc267f","#785ef0"];
@@ -54,6 +55,7 @@ export default class Main extends React.Component<Props, State> {
     entity_list: [[]],
     entity_names: [""],
     show_instructions: false,
+    bolded_span: [],
   }
       
   componentDidMount = () => {
@@ -83,7 +85,27 @@ export default class Main extends React.Component<Props, State> {
       this.get_noun_phrases();
     }
   }
+  
+  word_to_character = (span) => {
+    let start = span[0];
+    let end = span[1];
+    let real_start = this.state.noun_phrases.indices[start];
+    let real_end = this.state.noun_phrases.indices[end]+this.state.noun_phrases.words[end].length
+    return [real_start,real_end];
+  }
 
+  add_bolded = (bolded_span) => {
+    this.setState({bolded_span: this.word_to_character(bolded_span)});
+  }
+  
+  remove_bolded = (bolded_span) => {
+    bolded_span = this.word_to_character(bolded_span);
+    if(this.state.bolded_span[0] == bolded_span[0] 
+    && this.state.bolded_span[1] == bolded_span[1]) {
+      this.setState({bolded_span: []});
+    }
+  }
+  
   update_spans = (span,number) => {
     let entity_list = this.state.entity_list.slice();
     for(var i = 0;i<entity_list.length;i++) {
@@ -97,8 +119,8 @@ export default class Main extends React.Component<Props, State> {
     let entity_list = this.state.entity_list.slice();
     for(var i = 0;i<entity_list.length;i++) {
       entity_list[i] = entity_list[i].slice().filter(item => item['start']!==span['start'] || item['end'] !== span['end']);
-    }
-    this.setState({entity_list,saved: false});
+    }    
+    this.setState({entity_list,saved: false, bolded_span: []});
   }
   
   update_entity_tags = (tags,number) => {
@@ -191,7 +213,7 @@ export default class Main extends React.Component<Props, State> {
   render_draggables = () => {
     let all_draggables = [];
     for(var i = 0;i<this.state.entity_list.length;i++) {
-      all_draggables.push(<Dragbox entity_number={i} update_spans={this.update_spans} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} color={colors[i%colors.length]} delete_span={this.delete_span} />);
+      all_draggables.push(<Dragbox entity_number={i} add_bolded={this.add_bolded} remove_bolded={this.remove_bolded} update_spans={this.update_spans} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} color={colors[i%colors.length]} delete_span={this.delete_span} />);
     }
     return all_draggables;
   }
@@ -313,8 +335,48 @@ export default class Main extends React.Component<Props, State> {
         current_span+=1;
       }
     }
+    
+    var highlights = [];
+    for(var i = 0;i<parts.length; i++) {
+      let fields = parts[i];
+      if(this.state.bolded_span.length>0) {
+        if(this.state.bolded_span[0]>=fields[0] && this.state.bolded_span[0]<fields[1]) {
+            if(this.state.bolded_span[1]<fields[1]) {
+              // Then it goes [Text][Bolded][Text]
+                highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.bolded_span[0])}</span>);
+                highlights.push(<span key={this.state.bolded_span[0]} style={{backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.bolded_span[0], this.state.bolded_span[1])}</span>);
+                highlights.push(<span key={this.state.bolded_span[1]} style={{backgroundColor:fields[2]}}>{text.substring(this.state.bolded_span[1], fields[1])}</span>);
+            }
+            else {
+              // Then it goes [Text][Bolded]
+              highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.bolded_span[0])}</span>);
+              highlights.push(<span key={this.state.bolded_span[0]} style={{backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.bolded_span[0], fields[1])}</span>);
+            }
+
+        }
+        else if(this.state.bolded_span[0]<=fields[0] && this.state.bolded_span[1]>=fields[0]) {
+          if(this.state.bolded_span[1]>=fields[1]) {
+            // Then it goes [Bolded]
+            highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(fields[0], fields[1])}</span>);
+          }
+          else {
+            // Then it goes [Bolded][Text]
+            highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(fields[0], this.state.bolded_span[1])}</span>);
+            highlights.push(<span key={this.state.bolded_span[1]} style={{backgroundColor:fields[2]}}>{text.substring(this.state.bolded_span[1], fields[1])}</span>);
+          }
+        }
+        else {
+          // Then it goes [Text]
+          highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], fields[1])}</span>)
+        }
+      }
+      else {
+          // Then it goes [Text]
+          highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], fields[1])}</span>)
+        }
+
+    }
        
-    var highlights = parts.map(fields => <span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], fields[1])}</span>);
     return highlights;
   }
   
@@ -334,7 +396,7 @@ export default class Main extends React.Component<Props, State> {
       return  <DndProvider backend={HTML5Backend}> <div> 
             <Grid container style={{marginTop: 50}} spacing={3}>
 
-            <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 75}}> 
+            <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
               <div style={{marginBottom: 20}}> 
                 <button style={{marginLeft: 30}} onClick={this.decrement_question}> Previous </button>
                 <button style={{marginLeft: 30}} onClick={this.increment_question}> Next </button>
@@ -356,13 +418,13 @@ export default class Main extends React.Component<Props, State> {
                       </Modal.Footer>
                     </Modal>
 
-              <div  style={{fontSize: 24}}>  
+              <div  style={{fontSize: 16}}>  
               Question number: {this.state.current_question+1}
               <div id="main_text"> {this.get_styles()} </div>
               <div> <b> Answer: </b> {this.state.answers[this.state.current_question]} </div>
               </div>
               <br />
-              <button style={{fontSize: 24}}  onClick={this.create_tag} > Create Tag </button>
+              <button style={{fontSize: 24}}  onClick={this.create_tag} > Create Span </button>
               <br />
               {this.render_draggables()[0]}
 
@@ -372,7 +434,7 @@ export default class Main extends React.Component<Props, State> {
               <div style={{height: "100%"}}>
                 {all_but_first(this.render_draggables())}  
                 <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} > 
-                    Create New Entity 
+                    Create New Entity Cluster
                 </button>
               </div>
             </Grid>

@@ -13,6 +13,8 @@ interface Props {
   color: string;
   update_entity_name: any;
   delete_span: any;
+  add_bolded: any;
+  remove_bolded: any;
 }
 
 interface State {
@@ -79,7 +81,7 @@ class Dragbox extends React.Component<Props, State> {
   render = () => {
     let spans = [];
     for(var i = 0;i<this.props.current_spans.length;i++) {
-      spans.push(<Span content={this.props.current_spans[i].content} start={this.props.current_spans[i].start} end={this.props.current_spans[i].end} delete_span={this.props.delete_span} />);
+      spans.push(<Span remove_bolded={this.props.remove_bolded} add_bolded={this.props.add_bolded} content={this.props.current_spans[i].content} start={this.props.current_spans[i].start} end={this.props.current_spans[i].end} delete_span={this.props.delete_span} />);
     }
     
 
@@ -88,7 +90,7 @@ class Dragbox extends React.Component<Props, State> {
         <br /> 
         <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.state.entity_name:"Unassigned tags"} 
         </span> 
-        {this.props.entity_number>0?<button style={{marginLeft: 100}} onClick={()=>{this.setState({show_search: true})}} > Search for Entity
+        {this.props.entity_number>0?<button style={{marginLeft: 100}} onClick={()=>{this.setState({show_search: true})}} > Edit Entity Name
         </button> :''}
         <Modal size="lg" show={this.state.show_search} onHide={this.close_search} animation={false}>
           <Modal.Header closeButton>

@@ -6,7 +6,13 @@ import {toNormalString,toNiceString} from "./Util";
 import { DragSource } from "react-dnd";
 import deleteImage from './images/delete.png';
 
-interface Props {content: string, start: number, end: number, delete_span: any}
+interface Props {content: string, 
+start: number, 
+end: number, 
+delete_span: any,
+add_bolded: any,
+remove_bolded: any,
+}
 
 interface State {
 }
@@ -38,7 +44,7 @@ class Span extends React.Component<Props, State> {
   render() {
      const { isDragging, connectDragSource, src } = this.props;
      return connectDragSource(
-       <div style={{fontSize: 16,margin: 3,border: "1px dashed #444444", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)", display: "inline", marginTop: 10}}>
+       <div onMouseOver={()=>{this.props.add_bolded([this.props.start,this.props.end])}} onMouseLeave={()=>{this.props.remove_bolded([this.props.start,this.props.end])}} style={{fontSize: 16,margin: 3,border: "1px dashed #111111", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: "rgba(255, 255, 255, 0.7)", display: "inline", marginTop: 10}}>
 
         {this.props.content}
          <img
