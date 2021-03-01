@@ -32,6 +32,7 @@ export default class Search extends React.Component<Props, State> {
     });
         
     let current_target = toNormalString(value);
+    console.log("Current target "+current_target + " current_entity "+this.state.value);
     if (current_target !== "") {
       clearTimeout(search_timeout);
         fetch(
@@ -57,6 +58,7 @@ export default class Search extends React.Component<Props, State> {
             timeout_number = setTimeout(()=>{this.props.update_entity_name( toNiceString(current_entity),this.props.entity_number)},250);
           }
 
+          console.log("Setting current entity "+current_entity);
           this.setState({ suggestions, definitions, current_entity },function() {
             return 0;
           });     
@@ -78,6 +80,7 @@ export default class Search extends React.Component<Props, State> {
   
   on_highlight_change = (event: any, current_entity: any, reason: an) => {
     if(current_entity!="") {
+      console.log("Setting current entity "+current_entity);
       this.setState({current_entity: toNiceString(current_entity)});
       clearTimeout(timeout_number);
       timeout_number = setTimeout(()=>{this.props.update_entity_name( toNiceString(current_entity),this.props.entity_number)},250);
@@ -91,12 +94,11 @@ export default class Search extends React.Component<Props, State> {
           {" "}
           Entity Name:{" "}
         </Typography>
-                {this.state.suggestions.length>0 && 
-                <div style={{height: 100, marginBottom: 200}}>
+        <div style={{height: 100, marginBottom: 200}}>
         <Typography style={{ fontSize: 24, marginTop: 9}}> 
-          <b> {this.state.current_entity} </b>: {this.get_definition()}
+          <b> {this.state.current_entity} </b>{this.state.suggestions.length>0?':':''} {this.get_definition()}
         </Typography> </div>
-          }
+          
         <br />
         <Autocomplete
           style={{ fontSize: 24, marginBottom: 50 }}
@@ -107,7 +109,7 @@ export default class Search extends React.Component<Props, State> {
           />}
           onInputChange={this.update_suggestions}  
           onChange={(event: any,value: any,reason: any) =>{if(reason === "select-option"  ) {
-          this.setState({value: value})}}}
+          this.setState({value: value, current_entity: value})}}}
           onHighlightChange={this.on_highlight_change}
           openOnFocus={true}
         />
