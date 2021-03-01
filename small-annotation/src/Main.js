@@ -213,7 +213,7 @@ export default class Main extends React.Component<Props, State> {
   render_draggables = () => {
     let all_draggables = [];
     for(var i = 0;i<this.state.entity_list.length;i++) {
-      all_draggables.push(<Dragbox entity_number={i} add_bolded={this.add_bolded} remove_bolded={this.remove_bolded} update_spans={this.update_spans} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} color={colors[i%colors.length]} delete_span={this.delete_span} />);
+      all_draggables.push(<Dragbox entity_number={i} add_bolded={this.add_bolded} remove_bolded={this.remove_bolded} update_spans={this.update_spans} delete_entity={this.delete_entity} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} color={colors[i%colors.length]} delete_span={this.delete_span} />);
     }
     return all_draggables;
   }
@@ -269,10 +269,13 @@ export default class Main extends React.Component<Props, State> {
     
     // Calculate the span colors
     let spans = [];
-    for(var i = 1;i<this.state.entity_list.length;i++) {
+    for(var i = 0;i<this.state.entity_list.length;i++) {
       for(var j = 0;j<this.state.entity_list[i].length;j++) {
         let current_tag = this.state.entity_list[i][j];
         let current_color = colors[i%colors.length];
+        if (i == 0) {
+          current_color = "#DDDDDD";
+        } 
         let start_character = this.state.noun_phrases.indices[current_tag.start];
         let end_character = this.state.noun_phrases.indices[current_tag.end]+this.state.noun_phrases.words[current_tag.end].length;
         spans.push([start_character,end_character,current_color]);
@@ -380,6 +383,14 @@ export default class Main extends React.Component<Props, State> {
     return highlights;
   }
   
+  delete_entity = (entity_number) => {
+    let entity_list = this.state.entity_list.slice();
+    let entity_names = this.state.entity_names.slice(); 
+    entity_list.splice(entity_number, 1);
+    entity_names.splice(entity_number,1);
+    this.setState({entity_list,entity_names})
+  }
+  
   show_instructions = () => {
     this.setState({show_instructions: true});
   }
@@ -419,7 +430,7 @@ export default class Main extends React.Component<Props, State> {
                     </Modal>
 
               <div  style={{fontSize: 16}}>  
-              Question number: {this.state.current_question+1}
+              Question number: {this.state.current_question+1} (1. Highlight spans and select create span)
               <div id="main_text"> {this.get_styles()} </div>
               <div> <b> Answer: </b> {this.state.answers[this.state.current_question]} </div>
               </div>

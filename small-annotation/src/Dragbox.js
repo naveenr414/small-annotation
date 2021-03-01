@@ -15,6 +15,7 @@ interface Props {
   delete_span: any;
   add_bolded: any;
   remove_bolded: any;
+  delete_entity: any;
 }
 
 interface State {
@@ -77,6 +78,10 @@ class Dragbox extends React.Component<Props, State> {
   save_search_results = () => {
     this.setState({show_search: false, entity_name: this.state.entity_search});
   }
+  
+  delete_entity = () => {
+    this.props.delete_entity(this.props.entity_number);
+  }
 
   render = () => {
     let spans = [];
@@ -88,10 +93,12 @@ class Dragbox extends React.Component<Props, State> {
     return this.props.dropTarget(
       <div style={{marginBottom: 20}}>  
         <br /> 
-        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.state.entity_name:"Unassigned tags"} 
+        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.state.entity_name:"Unassigned tags (2. Drag spans to associated entity cluster on right)"} 
         </span> 
         {this.props.entity_number>0?<button style={{marginLeft: 100}} onClick={()=>{this.setState({show_search: true})}} > Edit Entity Name
         </button> :''}
+        {this.props.entity_number>0?<button style={{marginLeft: 100}} onClick={this.delete_entity} > Delete Entity Cluster
+        </button>:''}
         <Modal size="lg" show={this.state.show_search} onHide={this.close_search} animation={false}>
           <Modal.Header closeButton>
             <Modal.Title>Search</Modal.Title>
@@ -106,7 +113,7 @@ class Dragbox extends React.Component<Props, State> {
             </Button>
           </Modal.Footer>
         </Modal>
-        <div style={{width: "80%", minHeight: 40, padding: 5, borderRadius: 4,border: "1px solid #E9E9E9"}}> 
+        <div style={{width: "80%", marginLeft: "10%", minHeight: 40, padding: 5, borderRadius: 4,border: "1px solid #444444"}}> 
         
 
         <div> {spans} </div> <br /> </div> </div>);

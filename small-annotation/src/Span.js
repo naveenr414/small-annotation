@@ -48,7 +48,7 @@ class Span extends React.Component<Props, State> {
 
         {this.props.content}
          <img
-            style={{marginTop: -12, marginRight: -10, top: -1, right: -1, width: 16, height: 16, cursor: "pointer", userDrag: "none", userSelect: "none"}}
+            style={{marginTop: -8, marginRight: -9, top: -1, right: -1, width: 20, height: 20, cursor: "pointer", userDrag: "none", userSelect: "none"}}
             src={deleteImage}
             onClick={() => this.props.delete_span({ 'content':this.props.content, 'start': this.props.start, 'end': this.props.end })}
          />
