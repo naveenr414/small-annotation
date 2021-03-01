@@ -109,7 +109,7 @@ export default class Search extends React.Component<Props, State> {
           />}
           onInputChange={this.update_suggestions}  
           onChange={(event: any,value: any,reason: any) =>{if(reason === "select-option"  ) {
-          this.setState({value: value, current_entity: value})}}}
+          this.setState({value: value})}}}
           onHighlightChange={this.on_highlight_change}
           openOnFocus={true}
         />

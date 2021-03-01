@@ -9,6 +9,7 @@ import time
 import bisect
 import pickle
 from nltk.tokenize import WhitespaceTokenizer
+import os.path
 
 app = FastAPI()
 origins = [
@@ -31,9 +32,10 @@ app.add_middleware(
 )
 
 class NounPhrase(BaseModel):
-    question_num: int
-    annotations: list
-    person_name: str
+    str_entity_names: str
+    str_entity_spans: str
+    username: str
+    question_id: int
 
 nlp = spacy.load("en_core_web_sm")
 tokenizer = Tokenizer(nlp.vocab)
@@ -73,7 +75,6 @@ def load_annotations(person_name):
         end = int(s[2])
         annotation = s[3]
         is_nel = s[4] == 'True'
-        print("Is Nel {} {}".format(is_nel,s[4]))
         if question_num not in annotations:
             annotations[question_num] = []
         annotations[question_num].append((start,end,annotation,is_nel))
@@ -142,6 +143,17 @@ def noun_indices(question):
 
     return {'spans':list(spans_seen),'text':list(texts)}
 
+def get_annotations(username,question_num):
+    names = '[""]'
+    spans = '[[]]'
+    print("Getting annotations for {} {}".format(username,question_num))
+
+    if os.path.isfile("../data/{}_{}.txt".format(username,question_num)):
+        f = open("../data/{}_{}.txt".format(username,question_num)).read().strip().split("\n")
+        names = f[0]
+        spans = f[1]
+    return {'names':names,'spans':spans}
+
 @app.get("/api/questions")
 def get_questions():
     print("Get questions")
@@ -157,9 +169,11 @@ def get_question_num(question_num):
 def get_noun_phrase_num(question_num):
     name = question_num.split("_")[1].lower().strip()
     question_num = question_num.split("_")[0]
+
+    annotation_data = get_annotations(name,question_num)
+    
     l = load_annotations(name)
     
-    print("Name {} annotations {} question num {}".format(name,l,int(question_num)))
     f = open("questions.txt").read().strip().split("\n")[int(question_num)]
     annotations = []
     if int(question_num) in l:
@@ -180,8 +194,6 @@ def get_noun_phrase_num(question_num):
                 left_context = ' '.join(w[max(0,i[0]-5):i[0]])
                 right_context = ' '.join(w[i[1]+1:min(len(w),i[1]+6)])
                 n['text'].append({'content':words,'context_left':left_context,'context_right':right_context})
-    print(n)
-
     spans_seen = list(n['spans'])
     texts = list(n['text'])
     if(len(texts)>0):
@@ -196,17 +208,20 @@ def get_noun_phrase_num(question_num):
                 formatted_annotations[i] = annotations[j][2]
                 formatted_checked[i] = annotations[j][3]
     
-    return {'words':w,'indices':word_indices,'nouns':n,'annotations':annotations,'formatted_annotations':formatted_annotations,'formatted_checked':formatted_checked}
+    return {'words':w,'indices':word_indices,'nouns':n,'annotations':annotations,'formatted_annotations':formatted_annotations,'formatted_checked':formatted_checked,
+            'entity_names':annotation_data['names'],'entity_spans':annotation_data['spans']}
 
 @app.post("/api/submit")
 async def write_phrases(noun_phrases: NounPhrase):
-    l = load_annotations(noun_phrases.person_name.lower())
-    question_num = noun_phrases.question_num
-    if question_num not in l:
-        l[question_num] = []
-    print("Annotations {}".format(noun_phrases.annotations))
-    l[question_num] = noun_phrases.annotations
-    write_annotations_dict(noun_phrases.person_name.lower(),l)
+    question_id = noun_phrases.question_id
+    username = noun_phrases.username
+    w = open("../data/{}_{}.txt".format(username,question_id),"w")
+    w.write(noun_phrases.str_entity_names)
+    w.write("\n")
+    w.write(noun_phrases.str_entity_spans)
+    w.write("\n")
+    w.close()
+    print("Wrote to {}_{}".format(username,question_id))
 
 @app.get("/api/autocorrect/{word}")
 def get_autocorrect(word):

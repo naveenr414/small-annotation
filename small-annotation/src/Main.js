@@ -213,7 +213,7 @@ export default class Main extends React.Component<Props, State> {
   render_draggables = () => {
     let all_draggables = [];
     for(var i = 0;i<this.state.entity_list.length;i++) {
-      all_draggables.push(<Dragbox entity_number={i} add_bolded={this.add_bolded} remove_bolded={this.remove_bolded} update_spans={this.update_spans} delete_entity={this.delete_entity} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} color={colors[i%colors.length]} delete_span={this.delete_span} />);
+      all_draggables.push(<Dragbox entity_number={i} add_bolded={this.add_bolded} remove_bolded={this.remove_bolded} update_spans={this.update_spans} delete_entity={this.delete_entity} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} entity_name={this.state.entity_names[i]} color={colors[i%colors.length]} delete_span={this.delete_span} />);
     }
     return all_draggables;
   }
@@ -226,6 +226,13 @@ export default class Main extends React.Component<Props, State> {
 
     
   submit = () => {
+    let str_entity_names = JSON.stringify(this.state.entity_names);
+    let str_entity_spans = JSON.stringify(this.state.entity_list);
+    let username = this.state.name;
+    let question_id = this.state.current_question;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", address+"/submit");
+    xhr.send(JSON.stringify({str_entity_names,str_entity_spans,username,question_id}));
     /*let annotations = [];
     if(!('nouns' in this.state.noun_phrases)) {
       return;

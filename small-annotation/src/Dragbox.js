@@ -16,12 +16,12 @@ interface Props {
   add_bolded: any;
   remove_bolded: any;
   delete_entity: any;
+  entity_name: string; 
 }
 
 interface State {
   show_search: boolean;
   entity_search: string;
-  entity_name: string;
 }
 
 const boxTarget = {
@@ -71,12 +71,11 @@ class Dragbox extends React.Component<Props, State> {
   update_entity_name = (entity_search,number) => {
     if(entity_search !== null) {
       this.setState({entity_search});
-      this.props.update_entity_name(entity_search,number);
     }
   }
   
   save_search_results = () => {
-    this.setState({show_search: false, entity_name: this.state.entity_search});
+    this.setState({show_search: false, entity_name: this.state.entity_search},()=>{this.props.update_entity_name(this.state.entity_search,this.props.entity_number);});
   }
   
   delete_entity = () => {
@@ -93,7 +92,7 @@ class Dragbox extends React.Component<Props, State> {
     return this.props.dropTarget(
       <div style={{marginBottom: 20}}>  
         <br /> 
-        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.state.entity_name:"Unassigned tags (2. Drag spans to associated entity cluster on right)"} 
+        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.props.entity_name:"Unassigned tags (2. Drag spans to associated entity cluster on right)"} 
         </span> 
         {this.props.entity_number>0?<button style={{marginLeft: 100}} onClick={()=>{this.setState({show_search: true})}} > Change Entity
         </button> :''}
