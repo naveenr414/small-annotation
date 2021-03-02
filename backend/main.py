@@ -45,7 +45,7 @@ wiki = pickle.load(open("all_wiki.p","rb"))
 names = sorted(wiki.keys())
 print("Took {} time".format(time.time()-start))
 
-@app.get("/api/")
+@app.get("/quel/")
 async def root():
     return {"message": "Hello World"}
 
@@ -154,18 +154,18 @@ def get_annotations(username,question_num):
         spans = f[1]
     return {'names':names,'spans':spans}
 
-@app.get("/api/questions")
+@app.get("/quel/questions")
 def get_questions():
     print("Get questions")
     f = open("questions.txt").read().strip().split("\n")
     g = open("answers.txt").read().strip().split("\n")
     return {'questions':f,'answers':g}
 
-@app.get("/api/question_num/{question_num}")
+@app.get("/quel/question_num/{question_num}")
 def get_question_num(question_num):
     return open("questions.txt").read().strip().split("\n")[int(question_num)]
 
-@app.get("/api/noun_phrases/{question_num}")
+@app.get("/quel/noun_phrases/{question_num}")
 def get_noun_phrase_num(question_num):
     name = question_num.split("_")[1].lower().strip()
     question_num = question_num.split("_")[0]
@@ -211,7 +211,7 @@ def get_noun_phrase_num(question_num):
     return {'words':w,'indices':word_indices,'nouns':n,'annotations':annotations,'formatted_annotations':formatted_annotations,'formatted_checked':formatted_checked,
             'entity_names':annotation_data['names'],'entity_spans':annotation_data['spans']}
 
-@app.post("/api/submit")
+@app.post("/quel/submit")
 async def write_phrases(noun_phrases: NounPhrase):
     question_id = noun_phrases.question_id
     username = noun_phrases.username
@@ -223,7 +223,7 @@ async def write_phrases(noun_phrases: NounPhrase):
     w.close()
     print("Wrote to {}_{}".format(username,question_id))
 
-@app.get("/api/autocorrect/{word}")
+@app.get("/quel/autocorrect/{word}")
 def get_autocorrect(word):
     word = word.replace("_"," ")
     word = word.replace("&","&amp;")

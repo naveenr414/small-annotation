@@ -8,6 +8,7 @@ interface Props {update_entity_name: any, entity_number: number}
 
 let timeout_number = -1;
 let search_timeout = -1;
+let tantivy_timeout = -1;
 
 interface State {
   value: string;
@@ -16,7 +17,7 @@ interface State {
   current_entity: string;
 }
 
-let address = "/api";
+let address = "/quel";
 
 export default class Search extends React.Component<Props, State> {
   state: State = {
@@ -32,37 +33,69 @@ export default class Search extends React.Component<Props, State> {
     });
         
     let current_target = toNormalString(value);
-    console.log("Current target "+current_target + " current_entity "+this.state.value);
     if (current_target !== "") {
       clearTimeout(search_timeout);
-        fetch(
-          address+"/autocorrect/" +
-            current_target.replace(" ","_")
-        )
-        .then((res) => res.json())
-        .then((res) => {
-          let suggestions = [];
-          let definitions = {}
-          
-          for(var i = 0;i<res.length;i++) {
-            if (res[i][1]!="") {
-              definitions[toNiceString(res[i][0])] = res[i][1];
-            }
-            suggestions.push(toNiceString(res[i][0]));
+      clearTimeout(tantivy_timeout);
+      fetch(
+        address+"/autocorrect/" +
+          current_target.replace(" ","_")
+      )
+      .then((res) => res.json())
+      .then((res) => {
+        let suggestions = [];
+        let definitions = {}
+        
+        for(var i = 0;i<res.length;i++) {
+          if (res[i][1]!="") {
+            definitions[toNiceString(res[i][0])] = res[i][1];
           }
-          
-          let current_entity = "";
-          if(definitions!=={}) {
-            current_entity = suggestions[0];
-            clearTimeout(timeout_number);
-            timeout_number = setTimeout(()=>{this.props.update_entity_name( toNiceString(current_entity),this.props.entity_number)},250);
-          }
+          suggestions.push(toNiceString(res[i][0]));
+        }
+        
+        let current_entity = "";
+        if(definitions!=={}) {
+          current_entity = suggestions[0];
+          clearTimeout(timeout_number);
+          timeout_number = setTimeout(()=>{this.props.update_entity_name( toNiceString(current_entity),this.props.entity_number)},250);
+        }
 
-          console.log("Setting current entity "+current_entity);
-          this.setState({ suggestions, definitions, current_entity },function() {
-            return 0;
-          });     
+        this.setState({ suggestions, definitions, current_entity },function() {
+          return 0;
+        });     
+      });
+      
+      tantivy_timeout = setTimeout(()=>{
+        if(current_target !== "" && this.state.suggestions.length<8) { 
+          fetch(
+            "/api/?q="+current_target.replaceAll("_","+")+"&nhits=5"
+          )
+          .then((res) => res.json())
+          .then((res) => { 
+res = res['hits']      
+          let suggestions = [];
+          let definitions = this.state.definitions;
+          let num_trials = Math.min(res.length,(8-this.state.suggestions.length));
+          for(var i = 0;i<num_trials;i++) {
+            if (res[i]['doc']['summary']!="") {
+              definitions[toNiceString(res[i]['doc']['name'][0])] = res[i]['doc']['summary'];
+            }
+            suggestions.push(toNiceString(res[i]['doc']['name'][0]));
+          }
+          
+          if(res.length>0) {
+            let current_entity = "";
+            if(this.state.suggestions.length == 3 && definitions !== {}) {
+              current_entity = suggestions[0];
+              clearTimeout(timeout_number);
+              timeout_number = setTimeout(()=>{this.props.update_entity_name( toNiceString(current_entity),this.props.entity_number)},250);
+            }
+            this.setState({ suggestions: suggestions.concat(this.state.suggestions), definitions, current_entity },function() {
+              return 0;
+            }); 
+          }
           });
+      }
+    },200);
       
     }
     else {

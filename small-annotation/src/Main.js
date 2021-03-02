@@ -14,7 +14,7 @@ import Instructions from './Instructions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Divider from '@material-ui/core/Divider';
 
-let address = "/api";
+let address = "/quel";
 
 interface Props {}
 
