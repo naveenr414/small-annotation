@@ -167,6 +167,7 @@ def get_question_num(question_num):
 
 @app.get("/quel/noun_phrases/{question_num}")
 def get_noun_phrase_num(question_num):
+    start = time.time()
     name = question_num.split("_")[1].lower().strip()
     question_num = question_num.split("_")[0]
 
@@ -175,41 +176,12 @@ def get_noun_phrase_num(question_num):
     l = load_annotations(name)
     
     f = open("questions.txt").read().strip().split("\n")[int(question_num)]
-    annotations = []
-    if int(question_num) in l:
-        annotations = l[int(question_num)]
-
-    formatted_annotations = {}
-    formatted_checked = {}
+    print("Reading time {}".format(time.time()-start))
 
     w,word_indices = chunk_words(f)
-    n = noun_indices(f)
-
-
-    if int(question_num) in l:
-        for i in l[int(question_num)]:
-            if (i[0],i[1]) not in n['spans']:
-                n['spans'].append((i[0],i[1]))
-                words = ' '.join(w[i[0]:i[1]+1])
-                left_context = ' '.join(w[max(0,i[0]-5):i[0]])
-                right_context = ' '.join(w[i[1]+1:min(len(w),i[1]+6)])
-                n['text'].append({'content':words,'context_left':left_context,'context_right':right_context})
-    spans_seen = list(n['spans'])
-    texts = list(n['text'])
-    if(len(texts)>0):
-        spans_seen,texts = zip(*sorted(zip(spans_seen,texts)))
-
-    n = {'spans':list(spans_seen),'text':list(texts)}
-
-
-    for i in range(len(n['spans'])):
-        for j in range(len(annotations)):
-            if n['spans'][i][0] == annotations[j][0] and n['spans'][i][1] == annotations[j][1]:
-                formatted_annotations[i] = annotations[j][2]
-                formatted_checked[i] = annotations[j][3]
-    
-    return {'words':w,'indices':word_indices,'nouns':n,'annotations':annotations,'formatted_annotations':formatted_annotations,'formatted_checked':formatted_checked,
-            'entity_names':annotation_data['names'],'entity_spans':annotation_data['spans']}
+    print("Chunk word time {}".format(time.time()-start))
+    print("Took {} time".format(time.time()-start))
+    return {'words':w,'indices':word_indices,'entity_names':annotation_data['names'],'entity_list':annotation_data['spans'],'loaded_question':question_num}
 
 @app.post("/quel/submit")
 async def write_phrases(noun_phrases: NounPhrase):

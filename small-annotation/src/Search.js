@@ -31,7 +31,11 @@ export default class Search extends React.Component<Props, State> {
     this.setState({
       value: value,
     });
-        
+    
+    if(!(event.nativeEvent instanceof InputEvent)) {
+      return;
+    }
+    
     let current_target = toNormalString(value);
     if (current_target !== "") {
       clearTimeout(search_timeout);
@@ -84,10 +88,11 @@ res = res['hits']
           
           if(res.length>0) {
             let current_entity = "";
-            if(this.state.suggestions.length == 3 && definitions !== {}) {
+            if(this.state.current_entity == null ||  this.state.current_entity === "") {
               current_entity = suggestions[0];
+              console.log("Updating current_entity with "+current_entity+ " when current entity is "+this.state.current_entity );
               clearTimeout(timeout_number);
-              timeout_number = setTimeout(()=>{this.props.update_entity_name( toNiceString(current_entity),this.props.entity_number)},250);
+              timeout_number = setTimeout(()=>{this.props.update_entity_name( toNiceString(current_entity),this.props.entity_number)},10);
             }
             this.setState({ suggestions: suggestions.concat(this.state.suggestions), definitions, current_entity },function() {
               return 0;
@@ -95,7 +100,7 @@ res = res['hits']
           }
           });
       }
-    },200);
+    },50);
       
     }
     else {

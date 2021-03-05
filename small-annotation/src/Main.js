@@ -22,7 +22,8 @@ interface State {
   questions: any;
   answers: any;
   current_question: number;
-  noun_phrases: string[];
+  words: string[];
+  indices: any;
   annotations: any;
   checked: any;
   current_entity: string;
@@ -34,6 +35,7 @@ interface State {
   entity_list: any;
   entity_names: any;
   bolded_span: any;
+  loaded_question: any;
 }
 
 let colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
@@ -43,12 +45,11 @@ export default class Main extends React.Component<Props, State> {
     questions: [],
     answers: [],
     current_question: 0,
-    noun_phrases: [],
-    annotations: {},
-    checked: {},
     current_entity: "",
     description: "",
     name: "",
+    words: [],
+    indices: [],
     start: -1, 
     end: -1,
     saved: true,
@@ -56,12 +57,13 @@ export default class Main extends React.Component<Props, State> {
     entity_names: [""],
     show_instructions: false,
     bolded_span: [],
+    loaded_question: 0,
   }
       
   componentDidMount = () => {
     let name = prompt("What's your name").toLowerCase();
     this.setState({name},()=>{    this.get_questions();
-    this.get_noun_phrases();});
+    this.get_noun_phrases(0);});
   }
   
   get_questions = () => {
@@ -72,25 +74,20 @@ export default class Main extends React.Component<Props, State> {
       .then((res) => this.setState({questions:res['questions'],answers:res['answers']}));
   }
   
-  get_noun_phrases = () => {
+  get_noun_phrases = (question_num) => {
     fetch(
-      address+"/noun_phrases/"+this.state.current_question.toString()+"_"+this.state.name
+      address+"/noun_phrases/"+question_num+"_"+this.state.name
       )
       .then((res) => res.json())
-      .then((res) => this.setState({noun_phrases:res,annotations:res['formatted_annotations'],checked: res['formatted_checked']},()=>{this.setState({noun_phrases: this.state.noun_phrases})}));
+      .then((res) => this.setState({current_question: question_num,loaded_question: res['loaded_question'], words: res['words'], indices: res['indices'],entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list'])},()=>{this.setState({words: this.state.words})}));
   }
   
-  componentDidUpdate = (prevProps, prevState) => {
-    if(prevState.current_question != this.state.current_question) {
-      this.get_noun_phrases();
-    }
-  }
   
   word_to_character = (span) => {
     let start = span[0];
     let end = span[1];
-    let real_start = this.state.noun_phrases.indices[start];
-    let real_end = this.state.noun_phrases.indices[end]+this.state.noun_phrases.words[end].length
+    let real_start = this.state.indices[start];
+    let real_end = this.state.indices[end]+this.state.words[end].length
     return [real_start,real_end];
   }
 
@@ -187,21 +184,21 @@ export default class Main extends React.Component<Props, State> {
     }
     else {   
       let real_start = -1;
-      let real_end = this.state.noun_phrases.indices[this.state.noun_phrases.indices.length-1]+this.state.noun_phrases.words[this.state.noun_phrases.words.length-1].length;
+      let real_end = this.state.indices[this.state.indices.length-1]+this.state.words[this.state.words.length-1].length;
       let start_word_num = 0;
-      let end_word_num = this.state.noun_phrases.words.length-1;
+      let end_word_num = this.state.words.length-1;
       
       
-      for(var i = 0;i<this.state.noun_phrases.indices.length;i++) {
-        if(this.state.noun_phrases.indices[i]<=start) {
-          real_start = this.state.noun_phrases.indices[i];
+      for(var i = 0;i<this.state.indices.length;i++) {
+        if(this.state.indices[i]<=start) {
+          real_start = this.state.indices[i];
           start_word_num = i;
         }
       }
       
-      for(var i = this.state.noun_phrases.indices.length-1;i>=0;i--) {
-        if(this.state.noun_phrases.indices[i]>=end && i!=0) {
-          real_end = this.state.noun_phrases.indices[i-1]+this.state.noun_phrases.words[i-1].length;
+      for(var i = this.state.indices.length-1;i>=0;i--) {
+        if(this.state.indices[i]>=end && i!=0) {
+          real_end = this.state.indices[i-1]+this.state.words[i-1].length;
           end_word_num = i-1;
         }
       }
@@ -233,39 +230,21 @@ export default class Main extends React.Component<Props, State> {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", address+"/submit");
     xhr.send(JSON.stringify({str_entity_names,str_entity_spans,username,question_id}));
-    /*let annotations = [];
-    if(!('nouns' in this.state.noun_phrases)) {
-      return;
-    }
-    
-    for(var i = 0;i<this.state.noun_phrases['nouns']['text'].length;i++) {
-      if(i in this.state.annotations) {
-        annotations.push([this.state.noun_phrases['nouns']['spans'][i][0],this.state.noun_phrases['nouns']['spans'][i][1],this.state.annotations[i],this.state.checked[i]]);
-      }
-    }
-      var xhr = new XMLHttpRequest();
-      xhr.open("POST", address+"/submit");
-      xhr.send(
-        JSON.stringify({
-      question_num: this.state.current_question,
-      person_name: this.state.name,
-      annotations: annotations,
-    })
-    );*/
-  
     this.setState({saved: true});
   } 
   
   reload = (new_num) => {
-    this.setState({current_question: new_num,entity_list: [[]]},()=>{this.get_noun_phrases()});
+    this.get_noun_phrases(new_num)
   }
   
   increment_question = () => {
+    this.submit();
     let new_num = (this.state.current_question+1)%this.state.questions.length;
     this.reload(new_num);
   }
   
   decrement_question = () => {
+    this.submit();
     let new_num = (this.state.current_question-1+this.state.questions.length)%this.state.questions.length;
     this.reload(new_num);
   }
@@ -273,7 +252,7 @@ export default class Main extends React.Component<Props, State> {
 
   get_styles = () => {
     let text = this.state.questions[this.state.current_question];
-    
+        
     // Calculate the span colors
     let spans = [];
     for(var i = 0;i<this.state.entity_list.length;i++) {
@@ -283,8 +262,8 @@ export default class Main extends React.Component<Props, State> {
         if (i == 0) {
           current_color = "#DDDDDD";
         } 
-        let start_character = this.state.noun_phrases.indices[current_tag.start];
-        let end_character = this.state.noun_phrases.indices[current_tag.end]+this.state.noun_phrases.words[current_tag.end].length;
+        let start_character = this.state.indices[current_tag.start];
+        let end_character = this.state.indices[current_tag.end]+this.state.words[current_tag.end].length;
         spans.push([start_character,end_character,current_color]);
       }
     }
@@ -407,7 +386,7 @@ export default class Main extends React.Component<Props, State> {
   }
   
   render() {
-    if(this.state.noun_phrases.length == 0) {
+    if(this.state.words.length == 0 || this.state.loaded_question != this.state.current_question) {
       return <h1> Loading </h1> 
     }
     else {
