@@ -151,7 +151,7 @@ export default class Main extends React.Component<Props, State> {
     let entity_names = this.state.entity_names.slice();
     entity_list.push([]);
     entity_names.push("");
-    this.setState({entity_list,entity_names});
+    this.setState({entity_list,entity_names, saved: false});
   }
   
   create_tag = () => {
@@ -374,7 +374,7 @@ export default class Main extends React.Component<Props, State> {
     let entity_names = this.state.entity_names.slice(); 
     entity_list.splice(entity_number, 1);
     entity_names.splice(entity_number,1);
-    this.setState({entity_list,entity_names})
+    this.setState({entity_list,entity_names, saved:false})
   }
   
   show_instructions = () => {
