@@ -94,7 +94,7 @@ res = res['hits']
               clearTimeout(timeout_number);
               timeout_number = setTimeout(()=>{this.props.update_entity_name( toNiceString(current_entity),this.props.entity_number)},10);
             }
-            this.setState({ suggestions: suggestions.concat(this.state.suggestions), definitions, current_entity },function() {
+            this.setState({ suggestions: this.state.suggestions.slice(0,this.state.suggestions.length-3).concat(suggestions.concat(this.state.suggestions.slice(-3))), definitions, current_entity },function() {
               return 0;
             }); 
           }

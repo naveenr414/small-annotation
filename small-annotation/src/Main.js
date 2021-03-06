@@ -79,7 +79,7 @@ export default class Main extends React.Component<Props, State> {
       address+"/noun_phrases/"+question_num+"_"+this.state.name
       )
       .then((res) => res.json())
-      .then((res) => this.setState({current_question: question_num,loaded_question: res['loaded_question'], words: res['words'], indices: res['indices'],entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list'])},()=>{this.setState({words: this.state.words})}));
+      .then((res) => this.setState({current_question: question_num,loaded_question: res['loaded_question'], words: res['words'], indices: res['indices'],entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),bolded_span: []},()=>{this.setState({words: this.state.words})}));
   }
   
   
@@ -109,7 +109,7 @@ export default class Main extends React.Component<Props, State> {
       entity_list[i] = entity_list[i].slice().filter(item => item['start']!==span['start'] || item['end'] !== span['end']);
     }
     entity_list[number].push(span);
-    this.setState({entity_list,saved: false});
+    this.setState({entity_list,saved: false,bolded_span: []});
   }
   
   delete_span = (span) => {
