@@ -144,9 +144,11 @@ def noun_indices(question):
     return {'spans':list(spans_seen),'text':list(texts)}
 
 def get_annotations(username,question_num):
-    names = '[""]'
-    spans = '[[]]'
     print("Getting annotations for {} {}".format(username,question_num))
+    answer = open("answers_wiki.txt").read().strip().split("\n")[int(question_num)]
+
+    names = '["","{}"]'.format(answer)
+    spans = '[[],[]]'
 
     if os.path.isfile("../data/{}_{}.txt".format(username,question_num)):
         f = open("../data/{}_{}.txt".format(username,question_num)).read().strip().split("\n")
