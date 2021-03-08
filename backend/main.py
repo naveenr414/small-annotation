@@ -211,5 +211,5 @@ def get_autocorrect(word):
     if word in wiki and word not in popular_names:
         popular_names+=[word]
     
-    return [(i.replace("&amp;","&"),wiki[i][0]) for i in popular_names]+[("no entity","")]+[("no entity character","")]+[("no entity literature","")]
+    return [(i.replace("&amp;","&"),wiki[i][0]) for i in popular_names]
 

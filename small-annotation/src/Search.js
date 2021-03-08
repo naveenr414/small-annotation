@@ -32,7 +32,7 @@ export default class Search extends React.Component<Props, State> {
       value: value,
     });
     
-    if(!(event.nativeEvent instanceof InputEvent)) {
+    if(event == null || !(event.nativeEvent instanceof InputEvent)) {
       return;
     }
     
@@ -69,7 +69,7 @@ export default class Search extends React.Component<Props, State> {
       });
       
       tantivy_timeout = setTimeout(()=>{
-        if(current_target !== "" && this.state.suggestions.length<8) { 
+        if(current_target !== "" && this.state.suggestions.length<5) { 
           fetch(
             "/api/?q="+current_target.replaceAll("_","+")+"&nhits=5"
           )
@@ -78,7 +78,7 @@ export default class Search extends React.Component<Props, State> {
 res = res['hits']      
           let suggestions = [];
           let definitions = this.state.definitions;
-          let num_trials = Math.min(res.length,(8-this.state.suggestions.length));
+          let num_trials = Math.min(res.length,(5-this.state.suggestions.length));
           for(var i = 0;i<num_trials;i++) {
             if (res[i]['doc']['summary']!="") {
               definitions[toNiceString(res[i]['doc']['name'][0])] = res[i]['doc']['summary'];
@@ -124,6 +124,11 @@ res = res['hits']
     }
   }
 
+  set_search = (s) => {
+    this.setState({value: s, current_entity: s});
+    this.props.update_entity_name(s);
+  }
+  
   get_input = () => {   
     return (
       <div>
@@ -151,7 +156,10 @@ res = res['hits']
           openOnFocus={true}
         />
         <div> 
-
+            <button onClick={() => {this.set_search("No Entity")}} style={{marginLeft: 30}}> No entity </button>
+            <button onClick={() => {this.set_search("No Entity Character")}} style={{marginLeft: 30}}> No entity character </button>
+            <button onClick={() => {this.set_search("No Entity Literature")}} style={{marginLeft: 30}}> No entity literature </button>
+            <button onClick={() => {this.set_search("Unknown")}} style={{marginLeft: 30}}> Unknown </button>
           </div>
       </div>
     );

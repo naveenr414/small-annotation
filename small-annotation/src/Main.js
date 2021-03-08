@@ -210,7 +210,7 @@ export default class Main extends React.Component<Props, State> {
   render_draggables = () => {
     let all_draggables = [];
     for(var i = 0;i<this.state.entity_list.length;i++) {
-      all_draggables.push(<Dragbox entity_number={i} add_bolded={this.add_bolded} remove_bolded={this.remove_bolded} update_spans={this.update_spans} delete_entity={this.delete_entity} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} entity_name={this.state.entity_names[i]} color={colors[i%colors.length]} delete_span={this.delete_span} />);
+      all_draggables.push(<Dragbox entity_number={i} add_bolded={this.add_bolded} remove_bolded={this.remove_bolded} update_spans={this.update_spans} delete_entity={this.delete_entity} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} entity_name={this.state.entity_names[i]} color={colors[i%colors.length]} delete_span={this.delete_span}/>);
     }
     return all_draggables;
   }
@@ -332,36 +332,36 @@ export default class Main extends React.Component<Props, State> {
         if(this.state.bolded_span[0]>=fields[0] && this.state.bolded_span[0]<fields[1]) {
             if(this.state.bolded_span[1]<fields[1]) {
               // Then it goes [Text][Bolded][Text]
-                highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.bolded_span[0])}</span>);
-                highlights.push(<span key={this.state.bolded_span[0]} style={{backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.bolded_span[0], this.state.bolded_span[1])}</span>);
-                highlights.push(<span key={this.state.bolded_span[1]} style={{backgroundColor:fields[2]}}>{text.substring(this.state.bolded_span[1], fields[1])}</span>);
+                highlights.push(<span key={fields[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.bolded_span[0])}</span>);
+                highlights.push(<span key={this.state.bolded_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.bolded_span[0], this.state.bolded_span[1])}</span>);
+                highlights.push(<span key={this.state.bolded_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.bolded_span[1], fields[1])}</span>);
             }
             else {
               // Then it goes [Text][Bolded]
               highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.bolded_span[0])}</span>);
-              highlights.push(<span key={this.state.bolded_span[0]} style={{backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.bolded_span[0], fields[1])}</span>);
+              highlights.push(<span key={this.state.bolded_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.bolded_span[0], fields[1])}</span>);
             }
 
         }
         else if(this.state.bolded_span[0]<=fields[0] && this.state.bolded_span[1]>=fields[0]) {
           if(this.state.bolded_span[1]>=fields[1]) {
             // Then it goes [Bolded]
-            highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(fields[0], fields[1])}</span>);
+            highlights.push(<span key={fields[0]} style={{border: fields[2]=='white'?'':'1px solid #000000', backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(fields[0], fields[1])}</span>);
           }
           else {
             // Then it goes [Bolded][Text]
-            highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(fields[0], this.state.bolded_span[1])}</span>);
-            highlights.push(<span key={this.state.bolded_span[1]} style={{backgroundColor:fields[2]}}>{text.substring(this.state.bolded_span[1], fields[1])}</span>);
+            highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2], border: fields[2]=='white'?'':'1px solid #000000',textDecoration: 'underline'}}>{text.substring(fields[0], this.state.bolded_span[1])}</span>);
+            highlights.push(<span key={this.state.bolded_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.bolded_span[1], fields[1])}</span>);
           }
         }
         else {
           // Then it goes [Text]
-          highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], fields[1])}</span>)
+          highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>)
         }
       }
       else {
           // Then it goes [Text]
-          highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], fields[1])}</span>)
+          highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>)
         }
 
     }
