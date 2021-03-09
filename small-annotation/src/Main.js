@@ -13,6 +13,7 @@ import Button from 'react-bootstrap/Button';
 import Instructions from './Instructions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Divider from '@material-ui/core/Divider';
+import KeyboardEventHandler from 'react-keyboard-event-handler';
 
 let address = "/quel";
 
@@ -38,7 +39,7 @@ interface State {
   loaded_question: any;
 }
 
-let colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+let colors = ['hsl(205, 56.49289099526066%, 41.372549019607845%)', 'hsl(28, 80.0%, 52.74509803921569%)', 'hsl(120, 45.490196078431374%, 40.0%)', 'hsl(360, 55.33596837944664%, 49.6078431372549%)', 'hsl(271, 31.55963302752294%, 57.25490196078431%)', 'hsl(10, 24.186046511627907%, 42.156862745098046%)', 'hsl(318, 52.68292682926828%, 67.84313725490196%)', 'hsl(0, 0.0%, 49.80392156862745%)', 'hsl(60, 55.6053811659193%, 43.72549019607843%)', 'hsl(186, 64.0%, 45.09803921568628%)'];
 
 export default class Main extends React.Component<Props, State> {
   state: State = {
@@ -154,7 +155,8 @@ export default class Main extends React.Component<Props, State> {
     this.setState({entity_list,entity_names, saved: false});
   }
   
-  create_tag = () => {
+
+  create_tag = (num=0) => {
     let range = 0;
     try{
     range = getSelectionCharacterOffsetsWithin(document.getElementById("main_text"));
@@ -203,7 +205,7 @@ export default class Main extends React.Component<Props, State> {
         }
       }
 
-      this.update_spans({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)},0)
+      this.update_spans({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)},num)
     }
   }
  
@@ -385,6 +387,10 @@ export default class Main extends React.Component<Props, State> {
     this.setState({show_instructions: false});
   }
   
+  handle_key = (key,e) => {
+    this.create_tag(parseInt(key));
+  }
+  
   render() {
     if(this.state.words.length == 0 || this.state.loaded_question != this.state.current_question) {
       return <h1> Loading </h1> 
@@ -436,7 +442,12 @@ export default class Main extends React.Component<Props, State> {
               </div>
             </Grid>
             </Grid>
-            </div> </DndProvider>
+            </div> 
+              <KeyboardEventHandler
+    handleKeys={['1','2','3','4','5','6','7','8','9']}
+    onKeyEvent={(key, e) => this.handle_key(key,e)} />
+
+            </DndProvider>
    }
   }
 }
