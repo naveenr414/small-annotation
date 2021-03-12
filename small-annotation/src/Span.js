@@ -12,6 +12,7 @@ end: number,
 delete_span: any,
 add_bolded: any,
 remove_bolded: any,
+toggle_drag: any,
 }
 
 interface State {
@@ -22,9 +23,11 @@ const Types = {
 }
 const spanSource = {
  beginDrag(props) {
+   props.toggle_drag(true);
    return { 'content':props.content, 'start': props.start, 'end': props.end };
  },
  endDrag(props) {
+   props.toggle_drag(false);
    return { 'content':props.content, 'start': props.start, 'end': props.end };
  }
 }

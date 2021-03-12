@@ -17,6 +17,8 @@ interface Props {
   remove_bolded: any;
   delete_entity: any;
   entity_name: string; 
+  dragged: boolean;
+  toggle_drag: any;
 }
 
 interface State {
@@ -85,7 +87,7 @@ class Dragbox extends React.Component<Props, State> {
   render = () => {
     let spans = [];
     for(var i = 0;i<this.props.current_spans.length;i++) {
-      spans.push(<Span remove_bolded={this.props.remove_bolded} add_bolded={this.props.add_bolded} content={this.props.current_spans[i].content} start={this.props.current_spans[i].start} end={this.props.current_spans[i].end} delete_span={this.props.delete_span} />);
+      spans.push(<Span remove_bolded={this.props.remove_bolded} add_bolded={this.props.add_bolded} content={this.props.current_spans[i].content} start={this.props.current_spans[i].start} end={this.props.current_spans[i].end} delete_span={this.props.delete_span} toggle_drag={this.props.toggle_drag} />);
     }
     
 
@@ -112,7 +114,7 @@ class Dragbox extends React.Component<Props, State> {
             </Button>
           </Modal.Footer>
         </Modal>
-        <div style={{width: "80%", marginLeft: "10%", minHeight: 40, padding: 5, borderRadius: 4,border: "1px solid #444444"}}> 
+        <div style={{width: "80%", marginLeft: "10%", minHeight: 40, padding: 5, borderRadius: 4,border: this.props.dragged?"2px dashed #000000":"1px solid #444444"}}> 
         
 
         <div> {spans} </div> <br /> </div> </div>);

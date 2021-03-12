@@ -59,6 +59,11 @@ export default class Main extends React.Component<Props, State> {
     show_instructions: false,
     bolded_span: [],
     loaded_question: 0,
+    is_dragged: false,
+  }
+      
+  toggle_drag = (is_dragged) => {
+    this.setState({is_dragged});
   }
       
   componentDidMount = () => {
@@ -212,7 +217,7 @@ export default class Main extends React.Component<Props, State> {
   render_draggables = () => {
     let all_draggables = [];
     for(var i = 0;i<this.state.entity_list.length;i++) {
-      all_draggables.push(<Dragbox entity_number={i} add_bolded={this.add_bolded} remove_bolded={this.remove_bolded} update_spans={this.update_spans} delete_entity={this.delete_entity} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} entity_name={this.state.entity_names[i]} color={colors[i%colors.length]} delete_span={this.delete_span}/>);
+      all_draggables.push(<Dragbox toggle_drag={this.toggle_drag} dragged={this.state.is_dragged} entity_number={i} add_bolded={this.add_bolded} remove_bolded={this.remove_bolded} update_spans={this.update_spans} delete_entity={this.delete_entity} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} entity_name={this.state.entity_names[i]} color={colors[i%colors.length]} delete_span={this.delete_span}/>);
     }
     return all_draggables;
   }
