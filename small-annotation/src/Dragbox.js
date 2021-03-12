@@ -19,6 +19,8 @@ interface Props {
   entity_name: string; 
   dragged: boolean;
   toggle_drag: any;
+  update_clicked: any;
+  clicked: any;
 }
 
 interface State {
@@ -76,6 +78,7 @@ class Dragbox extends React.Component<Props, State> {
     }
   }
   
+  
   save_search_results = () => {
     this.setState({show_search: false, entity_name: this.state.entity_search},()=>{this.props.update_entity_name(this.state.entity_search,this.props.entity_number);});
   }
@@ -87,7 +90,8 @@ class Dragbox extends React.Component<Props, State> {
   render = () => {
     let spans = [];
     for(var i = 0;i<this.props.current_spans.length;i++) {
-      spans.push(<Span remove_bolded={this.props.remove_bolded} add_bolded={this.props.add_bolded} content={this.props.current_spans[i].content} start={this.props.current_spans[i].start} end={this.props.current_spans[i].end} delete_span={this.props.delete_span} toggle_drag={this.props.toggle_drag} />);
+      let json_string = JSON.stringify({start: this.props.current_spans[i].start, end: this.props.current_spans[i].end, number: i, entity_number: this.props.entity_number});
+      spans.push(<Span remove_bolded={this.props.remove_bolded} add_bolded={this.props.add_bolded} content={this.props.current_spans[i].content} start={this.props.current_spans[i].start} end={this.props.current_spans[i].end} delete_span={this.props.delete_span} update_clicked={()=>{this.props.update_clicked(json_string)}} toggle_drag={this.props.toggle_drag} number={i} clicked={this.props.clicked === json_string} />);
     }
     
 

@@ -37,6 +37,7 @@ interface State {
   entity_names: any;
   bolded_span: any;
   loaded_question: any;
+  clicked: any;
 }
 
 let colors = ['hsl(205, 56.49289099526066%, 41.372549019607845%)', 'hsl(28, 80.0%, 52.74509803921569%)', 'hsl(120, 45.490196078431374%, 40.0%)', 'hsl(360, 55.33596837944664%, 49.6078431372549%)', 'hsl(271, 31.55963302752294%, 57.25490196078431%)', 'hsl(10, 24.186046511627907%, 42.156862745098046%)', 'hsl(318, 52.68292682926828%, 67.84313725490196%)', 'hsl(0, 0.0%, 49.80392156862745%)', 'hsl(60, 55.6053811659193%, 43.72549019607843%)', 'hsl(186, 64.0%, 45.09803921568628%)'];
@@ -60,6 +61,7 @@ export default class Main extends React.Component<Props, State> {
     bolded_span: [],
     loaded_question: 0,
     is_dragged: false,
+    clicked: "",
   }
       
   toggle_drag = (is_dragged) => {
@@ -85,7 +87,7 @@ export default class Main extends React.Component<Props, State> {
       address+"/noun_phrases/"+question_num+"_"+this.state.name
       )
       .then((res) => res.json())
-      .then((res) => this.setState({current_question: question_num,loaded_question: res['loaded_question'], words: res['words'], indices: res['indices'],entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),bolded_span: []},()=>{this.setState({words: this.state.words})}));
+      .then((res) => this.setState({current_question: question_num,loaded_question: res['loaded_question'], words: res['words'], indices: res['indices'],entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),bolded_span: []},()=>{this.setState({clicked: []})}));
   }
   
   
@@ -109,6 +111,10 @@ export default class Main extends React.Component<Props, State> {
     }
   }
   
+  update_clicked = (json_string) => {
+    this.setState({clicked: this.state.clicked==json_string?"":json_string});
+  }
+  
   update_spans = (span,number) => {
     let entity_list = this.state.entity_list.slice();
     for(var i = 0;i<entity_list.length;i++) {
@@ -123,7 +129,7 @@ export default class Main extends React.Component<Props, State> {
       entity_names.push("");
     }
     
-    this.setState({entity_list,entity_names,saved: false,bolded_span: []});
+    this.setState({entity_list,entity_names,clicked:"",saved: false,bolded_span: []});
   }
   
   delete_span = (span) => {
@@ -131,7 +137,7 @@ export default class Main extends React.Component<Props, State> {
     for(var i = 0;i<entity_list.length;i++) {
       entity_list[i] = entity_list[i].slice().filter(item => item['start']!==span['start'] || item['end'] !== span['end']);
     }    
-    this.setState({entity_list,saved: false, bolded_span: []});
+    this.setState({entity_list,clicked:"",saved: false, bolded_span: []});
   }
   
   update_entity_tags = (tags,number) => {
@@ -168,6 +174,29 @@ export default class Main extends React.Component<Props, State> {
     this.setState({entity_list,entity_names, saved: false});
   }
   
+  get_content = (start,end) => {
+    start = this.state.indices[start];
+    end = this.state.indices[end]+this.state.words[end].length
+    let real_start = -1;
+    let real_end = this.state.indices[this.state.indices.length-1]+this.state.words[this.state.words.length-1].length;
+    let start_word_num = 0;
+    let end_word_num = this.state.words.length-1;
+    for(var i = 0;i<this.state.indices.length;i++) {
+      if(this.state.indices[i]<=start) {
+        real_start = this.state.indices[i];
+        start_word_num = i;
+      }
+    }
+    
+    for(var i = this.state.indices.length-1;i>=0;i--) {
+      if(this.state.indices[i]>=end && i!=0) {
+        real_end = this.state.indices[i-1]+this.state.words[i-1].length;
+        end_word_num = i-1;
+      }
+    }
+
+    return this.state.questions[this.state.current_question].substring(real_start,real_end);
+  }
 
   create_tag = (num=0) => {
     let range = 0;
@@ -225,7 +254,7 @@ export default class Main extends React.Component<Props, State> {
   render_draggables = () => {
     let all_draggables = [];
     for(var i = 0;i<this.state.entity_list.length;i++) {
-      all_draggables.push(<Dragbox toggle_drag={this.toggle_drag} dragged={this.state.is_dragged} entity_number={i} add_bolded={this.add_bolded} remove_bolded={this.remove_bolded} update_spans={this.update_spans} delete_entity={this.delete_entity} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} entity_name={this.state.entity_names[i]} color={colors[i%colors.length]} delete_span={this.delete_span}/>);
+      all_draggables.push(<Dragbox toggle_drag={this.toggle_drag} dragged={this.state.is_dragged} entity_number={i} add_bolded={this.add_bolded} remove_bolded={this.remove_bolded} update_spans={this.update_spans} delete_entity={this.delete_entity} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} entity_name={this.state.entity_names[i]} color={colors[i%colors.length]} delete_span={this.delete_span} update_clicked={this.update_clicked} clicked={this.state.clicked}/>);
     }
     return all_draggables;
   }
@@ -401,7 +430,35 @@ export default class Main extends React.Component<Props, State> {
   }
   
   handle_key = (key,e) => {
-    this.create_tag(parseInt(key));
+    if(key>='0' && key<='9') {
+      this.create_tag(parseInt(key));
+    }
+    else {
+      let direction = 0;
+      if(key == 'a') {
+        direction = -1;
+      }
+      else if (key == 'd') {
+        direction = 1;
+      }
+      if(direction != 0 && this.state.clicked!=="") {
+        let click_data = JSON.parse(this.state.clicked);
+        let entity_list = JSON.parse(JSON.stringify(this.state.entity_list));
+        let d = JSON.parse(JSON.stringify(entity_list[click_data.entity_number][click_data.number]));
+
+        if(direction == -1) {
+          d.start-=1;
+        }
+        else {
+          d.end+=1;
+        }
+        d.content = this.get_content(d.start,d.end);
+        entity_list[click_data.entity_number][click_data.number] = d;
+        click_data.start = d.start;
+        click_data.end = d.end
+        this.setState({entity_list,clicked:JSON.stringify(click_data)});
+      }
+    }
   }
   
   render() {
@@ -457,7 +514,7 @@ export default class Main extends React.Component<Props, State> {
             </Grid>
             </div> 
               <KeyboardEventHandler
-    handleKeys={['1','2','3','4','5','6','7','8','9']}
+    handleKeys={['1','2','3','4','5','6','7','8','9','a','d']}
     onKeyEvent={(key, e) => this.handle_key(key,e)} />
 
             </DndProvider>
