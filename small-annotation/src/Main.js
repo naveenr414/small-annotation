@@ -54,8 +54,8 @@ export default class Main extends React.Component<Props, State> {
     start: -1, 
     end: -1,
     saved: true,
-    entity_list: [[]],
-    entity_names: [""],
+    entity_list: [[],[]],
+    entity_names: ["",""],
     show_instructions: false,
     bolded_span: [],
     loaded_question: 0,
@@ -114,8 +114,16 @@ export default class Main extends React.Component<Props, State> {
     for(var i = 0;i<entity_list.length;i++) {
       entity_list[i] = entity_list[i].slice().filter(item => item['start']!==span['start'] || item['end'] !== span['end']);
     }
+    
     entity_list[number].push(span);
-    this.setState({entity_list,saved: false,bolded_span: []});
+    let entity_names = this.state.entity_names;
+    
+    if(number == entity_list.length-1) {
+      entity_list.push([]);
+      entity_names.push("");
+    }
+    
+    this.setState({entity_list,entity_names,saved: false,bolded_span: []});
   }
   
   delete_span = (span) => {
