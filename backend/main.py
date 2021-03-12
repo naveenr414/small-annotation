@@ -10,6 +10,7 @@ import bisect
 import pickle
 from nltk.tokenize import WhitespaceTokenizer
 import os.path
+from db import Database
 
 app = FastAPI()
 origins = [
@@ -41,9 +42,14 @@ nlp = spacy.load("en_core_web_sm")
 tokenizer = Tokenizer(nlp.vocab)
 
 start = time.time()
-wiki = pickle.load(open("all_wiki.p","rb"))
-names = sorted(wiki.keys())
+print("Starting loading of pickle file")
+wiki = {}#pickle.load(open("all_wiki.p","rb"))
+names = []#sorted(wiki.keys())
 print("Took {} time".format(time.time()-start))
+
+start = time.time()
+db = Database()
+print("Took {} time to create databases".format(time.time()-start))
 
 @app.get("/quel/")
 async def root():
@@ -199,17 +205,6 @@ async def write_phrases(noun_phrases: NounPhrase):
 
 @app.get("/quel/autocorrect/{word}")
 def get_autocorrect(word):
-    word = word.replace("_"," ")
-    word = word.replace("&","&amp;")
-    name_one = bisect.bisect_left(names,word)
-    name_two = bisect.bisect_right(names,word+"z")
-    if(name_two-name_one<10**4):
-        popular_names = [i for i in sorted(names[name_one:name_two],key=lambda x: wiki[x][1],reverse=True) if i in wiki][:5]
-    else:
-        popular_names = names[name_one:name_one+5]
-
-    if word in wiki and word not in popular_names:
-        popular_names+=[word]
-    
-    return [(i.replace("&amp;","&"),wiki[i][0]) for i in popular_names]
+    word = word.replace("&","&amp;")    
+    return db.get_autocorrect(word)
 

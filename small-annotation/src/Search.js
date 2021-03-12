@@ -4,7 +4,7 @@ import Typography from "@material-ui/core/Typography";
 import TextField from '@material-ui/core/TextField';
 import {toNormalString,toNiceString} from "./Util";
 
-interface Props {update_entity_name: any, entity_number: number}
+interface Props {update_entity_name: any, entity_number: number, default_search: string,}
 
 let timeout_number = -1;
 let search_timeout = -1;
@@ -21,7 +21,7 @@ let address = "/quel";
 
 export default class Search extends React.Component<Props, State> {
   state: State = {
-    value: "",
+    value: this.props.default_search,
     suggestions: [],
     definitions: {},
     current_entity: "",
@@ -93,7 +93,7 @@ res = res['hits']
               clearTimeout(timeout_number);
               timeout_number = setTimeout(()=>{this.props.update_entity_name( toNiceString(current_entity),this.props.entity_number)},100);
             }
-            this.setState({ suggestions: this.state.suggestions.slice(0,this.state.suggestions.length-3).concat(suggestions.concat(this.state.suggestions.slice(-3))), definitions},function() {
+            this.setState({ suggestions: this.state.suggestions.concat(suggestions), definitions},function() {
               return 0;
             }); 
           }

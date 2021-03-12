@@ -6,3 +6,5 @@ Caddyfile
 npm-debug.log
 backend/all_wiki.json
 backend/wikipedia-index
+qanta*.json
+*.sqlite3
