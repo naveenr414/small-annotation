@@ -25,18 +25,13 @@ interface State {
   current_question: number;
   words: string[];
   indices: any;
-  annotations: any;
   checked: any;
-  current_entity: string;
-  description: string;
   name: string;
-  start: number;
-  end: number;
   saved: boolean;
   entity_list: any;
   entity_names: any;
-  bolded_span: any;
-  loaded_question: any;
+  underline_span: any;
+  is_dragged: boolean;
   clicked: any;
 }
 
@@ -47,27 +42,19 @@ export default class Main extends React.Component<Props, State> {
     questions: [],
     answers: [],
     current_question: 0,
-    current_entity: "",
-    description: "",
     name: "",
     words: [],
     indices: [],
-    start: -1, 
-    end: -1,
     saved: true,
     entity_list: [[],[]],
     entity_names: ["",""],
     show_instructions: false,
-    bolded_span: [],
-    loaded_question: 0,
+    underline_span: [],
     is_dragged: false,
     clicked: "",
   }
-      
-  toggle_drag = (is_dragged) => {
-    this.setState({is_dragged});
-  }
-      
+  
+  /* Loading in questions */ 
   componentDidMount = () => {
     let name = prompt("What's your name").toLowerCase();
     this.setState({name},()=>{    this.get_questions();
@@ -87,10 +74,21 @@ export default class Main extends React.Component<Props, State> {
       address+"/noun_phrases/"+question_num+"_"+this.state.name
       )
       .then((res) => res.json())
-      .then((res) => this.setState({current_question: question_num,loaded_question: res['loaded_question'], words: res['words'], indices: res['indices'],entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),bolded_span: []},()=>{this.setState({clicked: []})}));
+      .then((res) => this.setState({current_question: question_num, words: res['words'], indices: res['indices'],entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []},()=>{this.setState({clicked: []})}));
   }
   
+  submit = () => {
+    let str_entity_names = JSON.stringify(this.state.entity_names);
+    let str_entity_spans = JSON.stringify(this.state.entity_list);
+    let username = this.state.name;
+    let question_id = this.state.current_question;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", address+"/submit");
+    xhr.send(JSON.stringify({str_entity_names,str_entity_spans,username,question_id}));
+    this.setState({saved: true});
+  } 
   
+  /* Util to help with word <-> character <-> span */ 
   word_to_character = (span) => {
     let start = span[0];
     let end = span[1];
@@ -98,23 +96,26 @@ export default class Main extends React.Component<Props, State> {
     let real_end = this.state.indices[end]+this.state.words[end].length
     return [real_start,real_end];
   }
-
-  add_bolded = (bolded_span) => {
-    this.setState({bolded_span: this.word_to_character(bolded_span)});
+  
+  /* Dealing with underlining */
+  add_bolded = (underline_span) => {
+    this.setState({underline_span: this.word_to_character(underline_span)});
   }
   
-  remove_bolded = (bolded_span) => {
-    bolded_span = this.word_to_character(bolded_span);
-    if(this.state.bolded_span[0] == bolded_span[0] 
-    && this.state.bolded_span[1] == bolded_span[1]) {
-      this.setState({bolded_span: []});
+  remove_bolded = (underline_span) => {
+    underline_span = this.word_to_character(underline_span);
+    if(this.state.underline_span[0] == underline_span[0] 
+    && this.state.underline_span[1] == underline_span[1]) {
+      this.setState({underline_span: []});
     }
   }
   
-  update_clicked = (json_string) => {
-    this.setState({clicked: this.state.clicked==json_string?"":json_string});
-  }
+  /* Dealing with span updating */ 
   
+  toggle_drag = (is_dragged) => {
+    this.setState({is_dragged});
+  }
+
   update_spans = (span,number) => {
     let entity_list = this.state.entity_list.slice();
     for(var i = 0;i<entity_list.length;i++) {
@@ -129,7 +130,7 @@ export default class Main extends React.Component<Props, State> {
       entity_names.push("");
     }
     
-    this.setState({entity_list,entity_names,clicked:"",saved: false,bolded_span: []});
+    this.setState({entity_list,entity_names,clicked:"",saved: false,underline_span: []});
   }
   
   delete_span = (span) => {
@@ -137,15 +138,35 @@ export default class Main extends React.Component<Props, State> {
     for(var i = 0;i<entity_list.length;i++) {
       entity_list[i] = entity_list[i].slice().filter(item => item['start']!==span['start'] || item['end'] !== span['end']);
     }    
-    this.setState({entity_list,clicked:"",saved: false, bolded_span: []});
+    this.setState({entity_list,clicked:"",saved: false, underline_span: []});
   }
   
-  update_entity_tags = (tags,number) => {
-    let entity_list = this.state.entity_list.slice();
-    entity_list[number] = tags;
-    entity_list[1] = [];
-    this.setState({entity_list,saved:false});
+  adjust_span = (direction,click_data) => {
+    let entity_list = JSON.parse(JSON.stringify(this.state.entity_list));
+    let d = JSON.parse(JSON.stringify(entity_list[click_data.entity_number][click_data.number]));
+
+    if(direction == -1) {
+      d.start-=1;
+    }
+    else {
+      d.end+=1;
+    }
+    let character_indicies = this.word_to_character([d.start,d.end]);
+    let content = this.state.questions[this.state.current_question].substring(character_indicies[0],character_indicies[1]);
+    d.content = content;
+    entity_list[click_data.entity_number][click_data.number] = d;
+    click_data.start = d.start;
+    click_data.end = d.end
+    this.setState({entity_list,clicked:JSON.stringify(click_data)});
   }
+  
+  /* Dealing with clicking on spans */ 
+  
+  update_clicked = (json_string) => {
+    this.setState({clicked: this.state.clicked==json_string?"":json_string});
+  }
+  
+  /* Dealing with searching */
   
   update_entity_name = (entity,number) => {
     let entity_names = this.state.entity_names;
@@ -153,19 +174,7 @@ export default class Main extends React.Component<Props, State> {
     this.setState({entity_names});
   }
   
-  show_entity_names = () => {
-    let names = [];
-    for(var i = 2;i<this.state.entity_names.length;i++){
-      if(this.state.entity_names[i]!="") {
-        names.push(<li style={{textAlign: 'left'}}> {this.state.entity_names[i]} </li>);
-      }
-      else {
-        names.push(<li style={{textAlign: 'left'}}> No Name </li>);
-      }
-    }
-    return names;
-  }
-  
+  /* Dealing with entity, tag creation */ 
   create_new_entity = () => {
     let entity_list = this.state.entity_list.slice();
     let entity_names = this.state.entity_names.slice();
@@ -174,34 +183,18 @@ export default class Main extends React.Component<Props, State> {
     this.setState({entity_list,entity_names, saved: false});
   }
   
-  get_content = (start,end) => {
-    start = this.state.indices[start];
-    end = this.state.indices[end]+this.state.words[end].length
-    let real_start = -1;
-    let real_end = this.state.indices[this.state.indices.length-1]+this.state.words[this.state.words.length-1].length;
-    let start_word_num = 0;
-    let end_word_num = this.state.words.length-1;
-    for(var i = 0;i<this.state.indices.length;i++) {
-      if(this.state.indices[i]<=start) {
-        real_start = this.state.indices[i];
-        start_word_num = i;
-      }
-    }
-    
-    for(var i = this.state.indices.length-1;i>=0;i--) {
-      if(this.state.indices[i]>=end && i!=0) {
-        real_end = this.state.indices[i-1]+this.state.words[i-1].length;
-        end_word_num = i-1;
-      }
-    }
-
-    return this.state.questions[this.state.current_question].substring(real_start,real_end);
+  delete_entity = (entity_number) => {
+    let entity_list = this.state.entity_list.slice();
+    let entity_names = this.state.entity_names.slice(); 
+    entity_list.splice(entity_number, 1);
+    entity_names.splice(entity_number,1);
+    this.setState({entity_list,entity_names, saved:false})
   }
-
+  
   create_tag = (num=0) => {
     let range = 0;
     try{
-    range = getSelectionCharacterOffsetsWithin(document.getElementById("main_text"));
+      range = getSelectionCharacterOffsetsWithin(document.getElementById("main_text"));
     }
     catch {
       return;
@@ -251,50 +244,73 @@ export default class Main extends React.Component<Props, State> {
     }
   }
  
-  render_draggables = () => {
-    let all_draggables = [];
-    for(var i = 0;i<this.state.entity_list.length;i++) {
-      all_draggables.push(<Dragbox toggle_drag={this.toggle_drag} dragged={this.state.is_dragged} entity_number={i} add_bolded={this.add_bolded} remove_bolded={this.remove_bolded} update_spans={this.update_spans} delete_entity={this.delete_entity} update_entity_name={this.update_entity_name} current_spans={this.state.entity_list[i]} entity_name={this.state.entity_names[i]} color={colors[i%colors.length]} delete_span={this.delete_span} update_clicked={this.update_clicked} clicked={this.state.clicked}/>);
-    }
-    return all_draggables;
-  }
-  
-  
-  updateDescription = (current_entity, description) => {
-    this.setState({current_entity,description});
-  }
-  
-
-    
-  submit = () => {
-    let str_entity_names = JSON.stringify(this.state.entity_names);
-    let str_entity_spans = JSON.stringify(this.state.entity_list);
-    let username = this.state.name;
-    let question_id = this.state.current_question;
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", address+"/submit");
-    xhr.send(JSON.stringify({str_entity_names,str_entity_spans,username,question_id}));
-    this.setState({saved: true});
-  } 
-  
-  reload = (new_num) => {
-    this.get_noun_phrases(new_num)
-  }
-  
+  /* Question navigation */ 
   increment_question = () => {
     this.submit();
     let new_num = (this.state.current_question+1)%this.state.questions.length;
-    this.reload(new_num);
+     this.get_noun_phrases(new_num);
   }
   
   decrement_question = () => {
     this.submit();
     let new_num = (this.state.current_question-1+this.state.questions.length)%this.state.questions.length;
-    this.reload(new_num);
+     this.get_noun_phrases(new_num);
   }
   
-
-  get_styles = () => {
+ 
+  render_draggables = () => {
+    let all_draggables = [];
+    for(var i = 0;i<this.state.entity_list.length;i++) {
+      all_draggables.push(<Dragbox 
+        toggle_drag={this.toggle_drag} 
+        dragged={this.state.is_dragged} 
+        entity_number={i} 
+        add_bolded={this.add_bolded} 
+        remove_bolded={this.remove_bolded} 
+        update_spans={this.update_spans} 
+        delete_entity={this.delete_entity} 
+        update_entity_name={this.update_entity_name} 
+        current_spans={this.state.entity_list[i]} 
+        entity_name={this.state.entity_names[i]} 
+        color={colors[i%colors.length]} 
+        delete_span={this.delete_span} 
+        update_clicked={this.update_clicked} 
+        clicked={this.state.clicked}/>);
+    }
+    return all_draggables;
+  }
+  
+  /* Instructions */ 
+  show_instructions = () => {
+    this.setState({show_instructions: true});
+  }
+  
+  hide_instructions = () => {
+    this.setState({show_instructions: false});
+  }
+  
+  /* Key Input */   
+  handle_key = (key,e) => {
+    if(key>='0' && key<='9') {
+      this.create_tag(parseInt(key));
+    }
+    else {
+      let direction = 0;
+      if(key == 'a') {
+        direction = -1;
+      }
+      else if (key == 'd') {
+        direction = 1;
+      }
+      if(direction != 0 && this.state.clicked!=="") {
+        let click_data = JSON.parse(this.state.clicked);
+        this.adjust_span(direction,click_data);
+      }
+    }
+  }
+  
+  /* Rendering */ 
+  get_span_colors = () => {
     let text = this.state.questions[this.state.current_question];
         
     // Calculate the span colors
@@ -348,7 +364,11 @@ export default class Main extends React.Component<Props, State> {
         }
       }
     }
-            
+      
+    return new_spans; 
+  }
+  
+  get_underlines = (text,new_spans) => {
     let parts = []; 
     
     let num = 0;
@@ -372,30 +392,30 @@ export default class Main extends React.Component<Props, State> {
     var highlights = [];
     for(var i = 0;i<parts.length; i++) {
       let fields = parts[i];
-      if(this.state.bolded_span.length>0) {
-        if(this.state.bolded_span[0]>=fields[0] && this.state.bolded_span[0]<fields[1]) {
-            if(this.state.bolded_span[1]<fields[1]) {
+      if(this.state.underline_span.length>0) {
+        if(this.state.underline_span[0]>=fields[0] && this.state.underline_span[0]<fields[1]) {
+            if(this.state.underline_span[1]<fields[1]) {
               // Then it goes [Text][Bolded][Text]
-                highlights.push(<span key={fields[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.bolded_span[0])}</span>);
-                highlights.push(<span key={this.state.bolded_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.bolded_span[0], this.state.bolded_span[1])}</span>);
-                highlights.push(<span key={this.state.bolded_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.bolded_span[1], fields[1])}</span>);
+                highlights.push(<span key={fields[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
+                highlights.push(<span key={this.state.underline_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.underline_span[0], this.state.underline_span[1])}</span>);
+                highlights.push(<span key={this.state.underline_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.underline_span[1], fields[1])}</span>);
             }
             else {
               // Then it goes [Text][Bolded]
-              highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.bolded_span[0])}</span>);
-              highlights.push(<span key={this.state.bolded_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.bolded_span[0], fields[1])}</span>);
+              highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
+              highlights.push(<span key={this.state.underline_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.underline_span[0], fields[1])}</span>);
             }
 
         }
-        else if(this.state.bolded_span[0]<=fields[0] && this.state.bolded_span[1]>=fields[0]) {
-          if(this.state.bolded_span[1]>=fields[1]) {
+        else if(this.state.underline_span[0]<=fields[0] && this.state.underline_span[1]>=fields[0]) {
+          if(this.state.underline_span[1]>=fields[1]) {
             // Then it goes [Bolded]
             highlights.push(<span key={fields[0]} style={{border: fields[2]=='white'?'':'1px solid #000000', backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(fields[0], fields[1])}</span>);
           }
           else {
             // Then it goes [Bolded][Text]
-            highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2], border: fields[2]=='white'?'':'1px solid #000000',textDecoration: 'underline'}}>{text.substring(fields[0], this.state.bolded_span[1])}</span>);
-            highlights.push(<span key={this.state.bolded_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.bolded_span[1], fields[1])}</span>);
+            highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2], border: fields[2]=='white'?'':'1px solid #000000',textDecoration: 'underline'}}>{text.substring(fields[0], this.state.underline_span[1])}</span>);
+            highlights.push(<span key={this.state.underline_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.underline_span[1], fields[1])}</span>);
           }
         }
         else {
@@ -413,111 +433,75 @@ export default class Main extends React.Component<Props, State> {
     return highlights;
   }
   
-  delete_entity = (entity_number) => {
-    let entity_list = this.state.entity_list.slice();
-    let entity_names = this.state.entity_names.slice(); 
-    entity_list.splice(entity_number, 1);
-    entity_names.splice(entity_number,1);
-    this.setState({entity_list,entity_names, saved:false})
-  }
-  
-  show_instructions = () => {
-    this.setState({show_instructions: true});
-  }
-  
-  hide_instructions = () => {
-    this.setState({show_instructions: false});
-  }
-  
-  handle_key = (key,e) => {
-    if(key>='0' && key<='9') {
-      this.create_tag(parseInt(key));
-    }
-    else {
-      let direction = 0;
-      if(key == 'a') {
-        direction = -1;
-      }
-      else if (key == 'd') {
-        direction = 1;
-      }
-      if(direction != 0 && this.state.clicked!=="") {
-        let click_data = JSON.parse(this.state.clicked);
-        let entity_list = JSON.parse(JSON.stringify(this.state.entity_list));
-        let d = JSON.parse(JSON.stringify(entity_list[click_data.entity_number][click_data.number]));
-
-        if(direction == -1) {
-          d.start-=1;
-        }
-        else {
-          d.end+=1;
-        }
-        d.content = this.get_content(d.start,d.end);
-        entity_list[click_data.entity_number][click_data.number] = d;
-        click_data.start = d.start;
-        click_data.end = d.end
-        this.setState({entity_list,clicked:JSON.stringify(click_data)});
-      }
-    }
+  get_styles = () => {
+    let text = this.state.questions[this.state.current_question];
+    let new_spans = this.get_span_colors();
+    let highlights = this.get_underlines(text,new_spans);
+    return highlights;
   }
   
   render() {
-    if(this.state.words.length == 0 || this.state.loaded_question != this.state.current_question) {
+    if(this.state.words.length == 0) {
       return <h1> Loading </h1> 
     }
     else {
-      return  <DndProvider backend={HTML5Backend}> <div> 
-            <Grid container style={{marginTop: 50}} spacing={3}>
+      return  <DndProvider backend={HTML5Backend}> 
+                <div> 
+                  <Grid container style={{marginTop: 50}} spacing={3}>
 
-            <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
-              <div style={{marginBottom: 20}}> 
-                <button style={{marginLeft: 30}} onClick={this.decrement_question}> Previous </button>
-                <button style={{marginLeft: 30}} onClick={this.increment_question}> Next </button>
-                <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button> 
-                <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
-                <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
-                    {this.state.saved?'Saved':'Not Saved'} 
-                </div>
-              </div> 
-                    <Modal show={this.state.show_instructions} onHide={this.hide_instructions} animation={false}>
-                      <Modal.Header closeButton>
-                        <Modal.Title>Instructions</Modal.Title>
-                      </Modal.Header>
-                      <Modal.Body><Instructions /></Modal.Body>
-                      <Modal.Footer>
-                        <Button variant="secondary" onClick={this.hide_instructions}>
-                          Close
-                        </Button>
-                      </Modal.Footer>
-                    </Modal>
+                    <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
+                      <div style={{marginBottom: 20}}> 
+                        <button style={{marginLeft: 30}} onClick={this.decrement_question}> Previous </button>
+                        <button style={{marginLeft: 30}} onClick={this.increment_question}> Next </button>
+                        <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button> 
+                        <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
+                        
+                        <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
+                          {this.state.saved?'Saved':'Not Saved'} 
+                        </div>
+                      </div> 
+                      
+                      <Modal show={this.state.show_instructions} onHide={this.hide_instructions} animation={false}>
+                        <Modal.Header closeButton>
+                          <Modal.Title>Instructions</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body> <Instructions /> </Modal.Body>
+                        <Modal.Footer>
+                          <Button variant="secondary" onClick={this.hide_instructions}>
+                            Close
+                          </Button>
+                        </Modal.Footer>
+                      </Modal>
 
-              <div  style={{fontSize: 16}}>  
-              Question number: {this.state.current_question+1} (1. Highlight spans and select create span)
-              <div id="main_text"> {this.get_styles()} </div>
-              <div> <b> Answer: </b> {this.state.answers[this.state.current_question]} </div>
-              </div>
-              <br />
-              <button style={{fontSize: 24}}  onClick={this.create_tag} > Create Span </button>
-              <br />
-              {this.render_draggables()[0]}
-
-            </Grid>
-            <Divider orientation="vertical" flexItem />
-            <Grid item xs={6} style={{marginLeft: "55%", paddingLeft: 25, paddingRight: 25, borderLeft:'1px solid black',height: "100%", width: "40%"}}>
-              <div style={{height: "100%"}}>
-                {all_but_first(this.render_draggables())}  
-                <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} > 
-                    Create New Entity Cluster
-                </button>
-              </div>
-            </Grid>
-            </Grid>
-            </div> 
-              <KeyboardEventHandler
-    handleKeys={['1','2','3','4','5','6','7','8','9','a','d']}
-    onKeyEvent={(key, e) => this.handle_key(key,e)} />
-
-            </DndProvider>
+                      <div style={{fontSize: 16}}>  
+                        Question number: 
+                        {this.state.current_question+1} (1. Highlight spans and select create span)
+                        <div id="main_text"> {this.get_styles()} </div>
+                        <div> <b> Answer: </b> {this.state.answers[this.state.current_question]} </div>
+                      </div>
+                      <br />
+                      <button style={{fontSize: 24}}  onClick={this.create_tag} > 
+                      Create Span </button>
+                      <br />
+                      {this.render_draggables()[0]}
+                    </Grid>
+                    
+                    <Divider orientation="vertical" flexItem />
+                    <Grid item xs={6} style={{marginLeft: "55%", paddingLeft: 25, paddingRight: 25, borderLeft:'1px solid black',height: "100%", width: "40%"}}>
+                      <div style={{height: "100%"}}>
+                        {all_but_first(this.render_draggables())}  
+                        <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} > 
+                          Create New Entity Cluster
+                        </button>
+                      </div>
+                    </Grid>
+                  </Grid>
+                </div> 
+                
+                <KeyboardEventHandler
+                handleKeys={['1','2','3','4','5','6','7','8','9','a','d']}
+                onKeyEvent={(key, e) => this.handle_key(key,e)} />
+              </DndProvider>
    }
   }
 }
