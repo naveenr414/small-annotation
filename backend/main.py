@@ -11,6 +11,7 @@ import pickle
 from nltk.tokenize import WhitespaceTokenizer
 import os.path
 from db import Database
+from fpdf import FPDF
 
 app = FastAPI()
 origins = [
@@ -208,3 +209,67 @@ def get_autocorrect(word):
     word = word.replace("&","&amp;")    
     return db.get_autocorrect(word)
 
+@app.get("/quel/pdf/{question_num}")
+def write_pdf(question_num):
+    annotations = get_annotations(question_num.split("_")[1],
+                                  question_num.split("_")[0])
+    annotations['names'] = json.loads(annotations['names'])
+    annotations['spans'] = json.loads(annotations['spans'])
+
+    clean_annotations = []
+
+    for i in range(len(annotations['names'])):
+        if 'no entity' not in annotations['names'][i].lower() and annotations['names'][i]!='unknown' and annotations['names'][i]!='':
+            for j in range(len(annotations['spans'][i])):
+                span = annotations['spans'][i][j]
+                del span['content']
+                span = (span['start'],span['end'])
+                clean_annotations.append((annotations['names'][i],
+                                          span))
+
+    clean_annotations = sorted(clean_annotations,key=lambda k: k[1])    
+    question_num = question_num.split("_")[0]
+    f = open("questions.txt").read().strip().split("\n")[int(question_num)]
+    words = chunk_words(f)[0]
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font('Arial', '', 14)
+    annotation_pointer = 0
+    i = 0
+    while i<len(words):
+        if annotation_pointer == len(clean_annotations):
+            pdf.set_text_color(0, 0, 0)
+            pdf.set_font('', '')
+            pdf.write(5," ".join(words[i:]).replace(" .",".").replace(" ?","?").replace(" !","!").replace(" ,",",").replace(" - ","-"))
+            print("1",words[i:])
+            print(i)
+            break
+        elif clean_annotations[annotation_pointer][1][0] == i:
+            sent = (" ".join(
+                          words[clean_annotations[annotation_pointer][1][0]:clean_annotations[annotation_pointer][1][1]+1])+
+                       " ")
+            sent = sent.replace(" .",".").replace(" ?","?").replace(" !","!").replace(" ,",",").replace(" - ","-")
+            print("2",sent)
+            
+            pdf.set_text_color(0, 0, 255)
+            pdf.set_font('', 'U')
+            location = clean_annotations[annotation_pointer][0].lower().replace(" ","_")
+            id = db.get_id(location)
+            url = "https://en.wikipedia.org"
+            if len(id)>0:
+                url = 'https://en.wikipedia.org/wiki?curid={}'.format(id[0])
+            pdf.write(5,sent,url)
+            i = clean_annotations[annotation_pointer][1][1]+1
+            annotation_pointer+=1
+        else:
+            pdf.set_text_color(0, 0, 0)
+            pdf.set_font('', '')
+            if i<len(words) and words[i+1] in ['.','!',':',';','?',"'",",","-"] or words[i] in ['-',"'"]:
+                pdf.write(5,words[i])
+            else:
+                pdf.write(5,words[i]+" ")
+            print("3",i,words[i])
+            i+=1
+    
+    # Then put a blue underlined link
+    pdf.output('question.pdf', 'F')

@@ -120,7 +120,7 @@ class Database:
                 if line.strip() == '':
                     break
                 wiki_obj = json.loads(line.strip())
-                objects.append({'id':i,'title':wiki_obj['name'],'text':wiki_obj['summary'],'popularity':wiki_obj['popularity']})
+                objects.append({'id':int(wiki_obj['id']),'title':wiki_obj['name'],'text':wiki_obj['summary'],'popularity':wiki_obj['popularity']})
                 i+=1
 
                 if i%100000 == 0:
@@ -155,3 +155,10 @@ class Database:
         summaries = [i.text for i in results]
         print("Took {} time with {} count {}".format(time.time()-start,count,word))
         return [(names[i].replace("&amp;","&"),summaries[i]) for i in range(len(names))]
+
+    def get_id(self,word):
+        start = time.time()
+        with self._session_scope as session:
+            results = session.query(WikiSummary).filter(WikiSummary.title==word).limit(1)
+
+        return [i.id for i in results]
