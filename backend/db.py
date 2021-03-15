@@ -13,6 +13,7 @@ from contextlib import contextmanager
 import pickle
 import time
 import json
+import unidecode
 
 
 Base = declarative_base()
@@ -96,8 +97,8 @@ class Database:
 
             objects = []
             for i in range(len(all_qanta)):
-                objects.append({'id':all_qanta[i]['qanta_id'], 'quqestion': all_qanta[i]['text'], 'category': all_qanta[i]['category'],'wiki_answer':all_qanta[i]['page'].replace("_", " "),
-                                'sub_category': all_qanta[i]['subcategory'],'difficu;ty': all_qanta[i]['difficulty'],'tournament': all_qanta[i]['tournament'],
+                objects.append({'id':all_qanta[i]['qanta_id'], 'question': all_qanta[i]['text'], 'category': all_qanta[i]['category'],'wiki_answer':all_qanta[i]['page'].replace("_", " "),
+                                'sub_category': all_qanta[i]['subcategory'],'difficulty': all_qanta[i]['difficulty'],'tournament': all_qanta[i]['tournament'],
                                 'year': all_qanta[i]['year'],'answer':all_qanta[i]['answer']})
                 if i%100000 == 0:
                     print(i,time.time()-start)   
@@ -155,6 +156,16 @@ class Database:
         summaries = [i.text for i in results]
         print("Took {} time with {} count {}".format(time.time()-start,count,word))
         return [(names[i].replace("&amp;","&"),summaries[i]) for i in range(len(names))]
+
+    def get_question(self,question_num):
+        with self._session_scope as session:
+            results = session.query(Question).filter(Question.id == question_num)
+            results = [{'question':unidecode.unidecode(i.question),'answer':i.answer,'wiki_answer':i.wiki_answer,
+                        'sub_category':i.sub_category, 'category':i.category,
+                        'difficulty': i.difficulty, 'year':i.year,'tournament':i.tournament} for i in results]
+            results.append({})
+
+            return results[0]
 
     def get_id(self,word):
         start = time.time()

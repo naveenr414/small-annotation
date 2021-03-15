@@ -151,9 +151,9 @@ def noun_indices(question):
 
     return {'spans':list(spans_seen),'text':list(texts)}
 
-def get_annotations(username,question_num):
+def get_annotations(username,question_num,question_data):
     print("Getting annotations for {} {}".format(username,question_num))
-    answer = open("answers_wiki.txt").read().strip().split("\n")[int(question_num)]
+    answer = question_data['wiki_answer']
 
     names = '["","{}"]'.format(answer)
     spans = '[[],[]]'
@@ -164,13 +164,6 @@ def get_annotations(username,question_num):
         spans = f[1]
     return {'names':names,'spans':spans}
 
-@app.get("/quel/questions")
-def get_questions():
-    print("Get questions")
-    f = open("questions.txt").read().strip().split("\n")
-    g = open("answers.txt").read().strip().split("\n")
-    return {'questions':f,'answers':g}
-
 @app.get("/quel/question_num/{question_num}")
 def get_question_num(question_num):
     return open("questions.txt").read().strip().split("\n")[int(question_num)]
@@ -180,24 +173,23 @@ def get_noun_phrase_num(question_num):
     start = time.time()
     name = question_num.split("_")[1].lower().strip()
     question_num = question_num.split("_")[0]
+    question_data = db.get_question(int(question_num))
+    question = question_data['question']
+    answer = question_data['answer']
 
-    annotation_data = get_annotations(name,question_num)
-    
-    l = load_annotations(name)
-    
-    f = open("questions.txt").read().strip().split("\n")[int(question_num)]
-    g = open("answers.txt").read().strip().split("\n")[int(question_num)]
+    annotation_data = get_annotations("a",question_num,question_data)
+        
     print("Reading time {}".format(time.time()-start))
 
-    w,word_indices = chunk_words(f)
+    w,word_indices = chunk_words(question)
     print("Chunk word time {}".format(time.time()-start))
     print("Took {} time".format(time.time()-start))
     return {'words':w,'indices':word_indices,
             'entity_names':annotation_data['names'],
             'entity_list':annotation_data['spans'],
             'loaded_question':question_num,
-            'question': f,
-            'answer': g}
+            'question': question,
+            'answer': answer}
 
 @app.post("/quel/submit")
 async def write_phrases(noun_phrases: NounPhrase):
