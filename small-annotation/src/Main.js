@@ -20,8 +20,8 @@ let address = "/quel";
 interface Props {}
 
 interface State {
-  questions: any;
-  answers: any;
+  question: any;
+  answer: any;
   current_question: number;
   words: string[];
   indices: any;
@@ -36,12 +36,12 @@ interface State {
 }
 
 let colors = ['hsl(205, 56.49289099526066%, 41.372549019607845%)', 'hsl(28, 80.0%, 52.74509803921569%)', 'hsl(120, 45.490196078431374%, 40.0%)', 'hsl(360, 55.33596837944664%, 49.6078431372549%)', 'hsl(271, 31.55963302752294%, 57.25490196078431%)', 'hsl(10, 24.186046511627907%, 42.156862745098046%)', 'hsl(318, 52.68292682926828%, 67.84313725490196%)', 'hsl(0, 0.0%, 49.80392156862745%)', 'hsl(60, 55.6053811659193%, 43.72549019607843%)', 'hsl(186, 64.0%, 45.09803921568628%)'];
+let num_questions = 20;
 
 export default class Main extends React.Component<Props, State> {
   state: State = {
-    questions: [],
-    answers: [],
-    current_question: 0,
+    question: "",
+    answer: "",
     name: "",
     words: [],
     indices: [],
@@ -57,16 +57,7 @@ export default class Main extends React.Component<Props, State> {
   /* Loading in questions */ 
   componentDidMount = () => {
     let name = prompt("What's your name").toLowerCase();
-    this.setState({name},()=>{    this.get_questions();
-    this.get_noun_phrases(0);});
-  }
-  
-  get_questions = () => {
-    fetch(
-      address+"/questions"
-      )
-      .then((res) => res.json())
-      .then((res) => this.setState({questions:res['questions'],answers:res['answers']}));
+    this.setState({name},()=>{this.get_noun_phrases(0);});
   }
   
   get_noun_phrases = (question_num) => {
@@ -74,7 +65,14 @@ export default class Main extends React.Component<Props, State> {
       address+"/noun_phrases/"+question_num+"_"+this.state.name
       )
       .then((res) => res.json())
-      .then((res) => this.setState({current_question: question_num, words: res['words'], indices: res['indices'],entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []},()=>{this.setState({clicked: []})}));
+      .then((res) => this.setState(
+        {current_question: question_num, 
+        words: res['words'], 
+        indices: res['indices'],
+        question: res['question'],
+        answer: res['answer'],
+        entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []}
+        ,()=>{this.setState({clicked: []})}));
   }
   
   submit = () => {
@@ -167,7 +165,7 @@ export default class Main extends React.Component<Props, State> {
       d.end+=1;
     }
     let character_indicies = this.word_to_character([d.start,d.end]);
-    let content = this.state.questions[this.state.current_question].substring(character_indicies[0],character_indicies[1]);
+    let content = this.state.question.substring(character_indicies[0],character_indicies[1]);
     d.content = content;
     entity_list[click_data.entity_number][click_data.number] = d;
     click_data.start = d.start;
@@ -254,21 +252,21 @@ export default class Main extends React.Component<Props, State> {
           end_word_num = i-1;
         }
       }
-      this.update_spans({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)},num)
+      this.update_spans({'start':start_word_num,'end':end_word_num,'content':this.state.question.substring(real_start,real_end)},num)
     }
   }
  
   /* Question navigation */ 
   increment_question = () => {
     this.submit();
-    let new_num = (this.state.current_question+1)%this.state.questions.length;
+    let new_num = (this.state.current_question+1)%num_questions;
      this.get_noun_phrases(new_num);
   }
-  
+    
   decrement_question = () => {
     this.submit();
-    let new_num = (this.state.current_question-1+this.state.questions.length)%this.state.questions.length;
-     this.get_noun_phrases(new_num);
+    let new_num = (this.state.current_question-1+num_questions)%num_questions;
+    this.get_noun_phrases(new_num);
   }
   
  
@@ -325,7 +323,7 @@ export default class Main extends React.Component<Props, State> {
   
   /* Rendering */ 
   get_span_colors = () => {
-    let text = this.state.questions[this.state.current_question];
+    let text = this.state.question;
         
     // Calculate the span colors
     let spans = [];
@@ -448,7 +446,7 @@ export default class Main extends React.Component<Props, State> {
   }
   
   get_styles = () => {
-    let text = this.state.questions[this.state.current_question];
+    let text = this.state.question;
     let new_spans = this.get_span_colors();
     let highlights = this.get_underlines(text,new_spans);
     return highlights;
@@ -488,10 +486,9 @@ export default class Main extends React.Component<Props, State> {
                       </Modal>
 
                       <div style={{fontSize: 16}}>  
-                        Question number: 
-                        {this.state.current_question+1} (1. Highlight spans and select create span)
+                        Question number:  {" "} {this.state.current_question+1} (1. Highlight spans and select create span)
                         <div id="main_text"> {this.get_styles()} </div>
-                        <div> <b> Answer: </b> {this.state.answers[this.state.current_question]} </div>
+                        <div> <b> Answer: </b> {this.state.answer} </div>
                       </div>
                       <br />
                       <button style={{fontSize: 24}}  onClick={()=>{this.create_tag(0)}} > 

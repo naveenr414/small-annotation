@@ -186,12 +186,18 @@ def get_noun_phrase_num(question_num):
     l = load_annotations(name)
     
     f = open("questions.txt").read().strip().split("\n")[int(question_num)]
+    g = open("answers.txt").read().strip().split("\n")[int(question_num)]
     print("Reading time {}".format(time.time()-start))
 
     w,word_indices = chunk_words(f)
     print("Chunk word time {}".format(time.time()-start))
     print("Took {} time".format(time.time()-start))
-    return {'words':w,'indices':word_indices,'entity_names':annotation_data['names'],'entity_list':annotation_data['spans'],'loaded_question':question_num}
+    return {'words':w,'indices':word_indices,
+            'entity_names':annotation_data['names'],
+            'entity_list':annotation_data['spans'],
+            'loaded_question':question_num,
+            'question': f,
+            'answer': g}
 
 @app.post("/quel/submit")
 async def write_phrases(noun_phrases: NounPhrase):
