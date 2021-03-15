@@ -12,6 +12,7 @@ from nltk.tokenize import WhitespaceTokenizer
 import os.path
 from db import Database
 from fpdf import FPDF
+from fastapi.responses import FileResponse
 
 app = FastAPI()
 origins = [
@@ -273,3 +274,5 @@ def write_pdf(question_num):
     
     # Then put a blue underlined link
     pdf.output('question.pdf', 'F')
+    file_path = "question.pdf"
+    return FileResponse(path=file_path, filename=file_path, media_type='text')

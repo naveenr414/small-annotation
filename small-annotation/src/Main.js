@@ -87,6 +87,22 @@ export default class Main extends React.Component<Props, State> {
     xhr.send(JSON.stringify({str_entity_names,str_entity_spans,username,question_id}));
     this.setState({saved: true});
   } 
+
+  /* Download questions */ 
+  download_questions = () => {
+    fetch(
+      address+"/pdf/"+this.state.current_question+"_"+this.state.name
+      ).then(res => {
+        return res.blob();
+      })
+      .then((blob)=>{
+        const href = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = href;
+        a.download = 'question.pdf';
+        a.click();
+      });
+  }
   
   /* Util to help with word <-> character <-> span */ 
   word_to_character = (span) => {
@@ -121,7 +137,6 @@ export default class Main extends React.Component<Props, State> {
     for(var i = 0;i<entity_list.length;i++) {
       entity_list[i] = entity_list[i].slice().filter(item => item['start']!==span['start'] || item['end'] !== span['end']);
     }
-    
     entity_list[number].push(span);
     let entity_names = this.state.entity_names;
     
@@ -239,7 +254,6 @@ export default class Main extends React.Component<Props, State> {
           end_word_num = i-1;
         }
       }
-
       this.update_spans({'start':start_word_num,'end':end_word_num,'content':this.state.questions[this.state.current_question].substring(real_start,real_end)},num)
     }
   }
@@ -480,10 +494,12 @@ export default class Main extends React.Component<Props, State> {
                         <div> <b> Answer: </b> {this.state.answers[this.state.current_question]} </div>
                       </div>
                       <br />
-                      <button style={{fontSize: 24}}  onClick={this.create_tag} > 
+                      <button style={{fontSize: 24}}  onClick={()=>{this.create_tag(0)}} > 
                       Create Span </button>
                       <br />
                       {this.render_draggables()[0]}
+                      <br />
+                      <button onClick={this.download_questions}> Download PDF </button>
                     </Grid>
                     
                     <Divider orientation="vertical" flexItem />
