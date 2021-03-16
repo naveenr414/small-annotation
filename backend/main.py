@@ -153,16 +153,30 @@ def noun_indices(question):
 
 def get_annotations(username,question_num,question_data):
     print("Getting annotations for {} {}".format(username,question_num))
+    mentions = db.get_mentions(username,question_num)
+    
     answer = question_data['wiki_answer']
+    names = ["","{}".format(answer)]
+    spans = [[{'start':-1,'end':-1,'content':''}],[{'start':-1,'end':-1,'content':''}]]
 
-    names = '["","{}"]'.format(answer)
-    spans = '[[],[]]'
+    wiki_page_to_num = {}
 
-    if os.path.isfile("../data/{}_{}.txt".format(username,question_num)):
-        f = open("../data/{}_{}.txt".format(username,question_num)).read().strip().split("\n")
-        names = f[0]
-        spans = f[1]
-    return {'names':names,'spans':spans}
+    if len(mentions)>0:
+        names = [""]
+        spans = [[]]
+
+        for i in mentions:
+            if i['wiki_page'] not in wiki_page_to_num:
+                wiki_page_to_num[i['wiki_page']] = len(names)
+                names.append(i['wiki_page'])
+                spans.append([])
+            
+            spans[wiki_page_to_num[i['wiki_page']]].append({'start':i['start'],'end':i['end'],'content':i['content']})
+        if answer not in wiki_page_to_num:
+            names.append(answer)
+            spans.append([])
+        
+    return {'names':json.dumps(names),'spans':json.dumps(spans)}
 
 @app.get("/quel/question_num/{question_num}")
 def get_question_num(question_num):
@@ -176,12 +190,12 @@ def get_noun_phrase_num(question_num):
     question_data = db.get_question(int(question_num))
     question = question_data['question']
     answer = question_data['answer']
+    w,word_indices = chunk_words(question)
 
-    annotation_data = get_annotations("a",question_num,question_data)
+    annotation_data = get_annotations(name,question_num,question_data)
         
     print("Reading time {}".format(time.time()-start))
 
-    w,word_indices = chunk_words(question)
     print("Chunk word time {}".format(time.time()-start))
     print("Took {} time".format(time.time()-start))
     return {'words':w,'indices':word_indices,
@@ -195,13 +209,21 @@ def get_noun_phrase_num(question_num):
 async def write_phrases(noun_phrases: NounPhrase):
     question_id = noun_phrases.question_id
     username = noun_phrases.username
-    w = open("../data/{}_{}.txt".format(username,question_id),"w")
-    w.write(noun_phrases.str_entity_names)
-    w.write("\n")
-    w.write(noun_phrases.str_entity_spans)
-    w.write("\n")
-    w.close()
-    print("Wrote to {}_{}".format(username,question_id))
+    db.remove_mentions(username,int(question_id))
+    entity_names = json.loads(noun_phrases.str_entity_names)
+    entity_spans = json.loads(noun_phrases.str_entity_spans)
+
+    print(entity_names,entity_spans)
+
+    mentions = []
+
+    for i in range(len(entity_names)):
+        for j in entity_spans[i]:
+            mentions.append({'user_id':username,'question_id':question_id,'start':j['start'],
+                             'end':j['end'],'wiki_page':entity_names[i],
+                             'content':j['content']})
+    print("Mentions {}".format(mentions))
+    db.insert_mentions(mentions)
 
 @app.get("/quel/autocorrect/{word}")
 def get_autocorrect(word):
@@ -217,7 +239,7 @@ def write_pdf(question_num):
 
     clean_annotations = []
 
-    for i in range(len(annotations['names'])):
+    for i in range(1,len(annotations['names'])):
         if 'no entity' not in annotations['names'][i].lower() and annotations['names'][i]!='unknown' and annotations['names'][i]!='':
             for j in range(len(annotations['spans'][i])):
                 span = annotations['spans'][i][j]

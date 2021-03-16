@@ -90,6 +90,11 @@ class Dragbox extends React.Component<Props, State> {
   render = () => {
     let spans = [];
     for(var i = 0;i<this.props.current_spans.length;i++) {
+      if(this.props.current_spans[i].start<0 || 
+          this.props.current_spans[i].end<0) {
+            continue;
+      }
+      
       let json_string = JSON.stringify({start: this.props.current_spans[i].start, end: this.props.current_spans[i].end, number: i, entity_number: this.props.entity_number});
       spans.push(<Span remove_bolded={this.props.remove_bolded} add_bolded={this.props.add_bolded} content={this.props.current_spans[i].content} start={this.props.current_spans[i].start} end={this.props.current_spans[i].end} delete_span={this.props.delete_span} update_clicked={()=>{this.props.update_clicked(json_string)}} toggle_drag={this.props.toggle_drag} number={i} clicked={this.props.clicked === json_string} />);
     }

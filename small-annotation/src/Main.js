@@ -330,6 +330,10 @@ export default class Main extends React.Component<Props, State> {
     for(var i = 0;i<this.state.entity_list.length;i++) {
       for(var j = 0;j<this.state.entity_list[i].length;j++) {
         let current_tag = this.state.entity_list[i][j];
+        if (current_tag.start<0 || current_tag.end <0 ) {
+          continue; 
+        }
+        
         let current_color = colors[i%colors.length];
         if (i == 0) {
           current_color = "#DDDDDD";

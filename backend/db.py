@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, ForeignKey, Column, Text, create_engine,and_,desc
+from sqlalchemy import Integer, ForeignKey, Column, Text, create_engine,and_,desc, Time
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import (
     Load,
@@ -21,9 +21,12 @@ Base = declarative_base()
 class Mention(Base):
     __tablename__ = "mention"
     id = Column(Integer, primary_key=True)
-    question_id = Column(Integer, ForeignKey("question.id"), nullable=False)
+    user_id = Column(Text(), index=True)
+    question_id = Column(Integer, ForeignKey("question.id"), nullable=False,index=True)
     start= Column(Integer)
     end= Column(Integer)
+    wiki_page = Column(Text(),index=True)
+    content = Column(Text())
 
 class WikiSummary(Base):
     __tablename__ = "wiki"
@@ -34,8 +37,16 @@ class WikiSummary(Base):
 
 class User(Base):
     __tablename__ = "user"
-    id = Column(Integer, primary_key=True)
+    id = Column(Text(), primary_key=True)
     password = Column(Text(), nullable=False)
+
+class UserEdits(Base):
+    __tablename__ = "user_edits"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Text(),index=True)
+    question_id = Column(Integer, ForeignKey("question.id"), nullable=False,index=True)
+    start_time = Column(Time())
+    update_time = Column(Time())
 
 class Question(Base):
     __tablename__ = "question"
@@ -81,9 +92,13 @@ class Database:
         self.create_all()
 
     def reset_and_populate(self):
+        print("Resetting and populating database")
         self.drop_all()
+        print("Finished dropping")
         self.create_all()
+        print("Finished creating")
         self.populate()
+        print("Finished populating")
 
     def populate(self):
         with self._session_scope as session:
@@ -156,6 +171,27 @@ class Database:
         summaries = [i.text for i in results]
         print("Took {} time with {} count {}".format(time.time()-start,count,word))
         return [(names[i].replace("&amp;","&"),summaries[i]) for i in range(len(names))]
+
+    def get_mentions(self,user,question_num):
+        with self._session_scope as session:
+            question_num = int(question_num)
+
+            results = session.query(Mention).filter(and_(Mention.user_id == user,
+                                                         Mention.question_id==question_num))
+            
+            results = [{'start':i.start,'end':i.end,'wiki_page':i.wiki_page,'content':i.content} for i in results]
+            return results
+
+    def remove_mentions(self,user,question_num):
+        with self._session_scope as session:
+            results = session.query(Mention).filter(and_(Mention.user_id == user,
+                                                         Mention.question_id==question_num)).delete()
+            session.commit()
+            
+    def insert_mentions(self,mentions):
+        with self._session_scope as session:
+            session.bulk_insert_mappings(Mention,mentions)
+            session.commit()
 
     def get_question(self,question_num):
         with self._session_scope as session:
