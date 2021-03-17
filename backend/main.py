@@ -51,7 +51,6 @@ print("Took {} time".format(time.time()-start))
 
 start = time.time()
 db = Database()
-db.reset_and_populate()
 print("Took {} time to create databases".format(time.time()-start))
 
 @app.get("/quel/")
