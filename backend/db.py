@@ -187,11 +187,19 @@ class Database:
             results = session.query(Mention).filter(and_(Mention.user_id == user,
                                                          Mention.question_id==question_num)).delete()
             session.commit()
+            return True
             
     def insert_mentions(self,mentions):
         with self._session_scope as session:
             session.bulk_insert_mappings(Mention,mentions)
             session.commit()
+            return True
+
+    def get_mentions(self):
+        with self._session_scope as session:
+            results = session.query(Mention)
+            return [{'start':i.start,'end':i.end,'wiki_page':i.wiki_page,
+                     'content':i.content,'user_id':i.user_id,'question_id':i.question_id} for i in results]
 
     def get_question(self,question_num):
         with self._session_scope as session:

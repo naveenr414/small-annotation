@@ -222,13 +222,35 @@ async def write_phrases(noun_phrases: NounPhrase):
             mentions.append({'user_id':username,'question_id':question_id,'start':j['start'],
                              'end':j['end'],'wiki_page':entity_names[i],
                              'content':j['content']})
-    print("Mentions {}".format(mentions))
     db.insert_mentions(mentions)
+
+@app.get("/quel/mentions/all")
+def get_all_mentions():
+    return db.get_mentions()
 
 @app.get("/quel/autocorrect/{word}")
 def get_autocorrect(word):
     word = word.replace("&","&amp;")    
     return db.get_autocorrect(word)
+
+@app.get("/quel/status")
+def status_check():
+    if not db:
+        return "Error in DB"
+    if not db.get_mentions():
+        return "Error in selecting from DB"
+    if not db.insert_mentions([{'start':-1,'end':-1,'content':'','wiki_page':'','user_id':'test','question_id':0}]):
+        return "Error in inserting to DB"
+    if not db.remove_mentions('test',0):
+        return "Error in deleting from DB"
+    if not db.get_autocorrect("john"):
+        return "Error with autocorrect"
+    if not db.get_id("magna_carta"):
+        return "Error with get id"
+    if not db.get_question(0):
+        return "Error with get question"
+
+    return "No Errors Found"
 
 @app.get("/quel/pdf/{question_num}")
 def write_pdf(question_num):
