@@ -51,6 +51,7 @@ print("Took {} time".format(time.time()-start))
 
 start = time.time()
 db = Database()
+db.reset_and_populate()
 print("Took {} time to create databases".format(time.time()-start))
 
 @app.get("/quel/")
@@ -153,7 +154,7 @@ def noun_indices(question):
 
 def get_annotations(username,question_num,question_data):
     print("Getting annotations for {} {}".format(username,question_num))
-    mentions = db.get_mentions(username,question_num)
+    mentions = db.get_mentions_by_user(username,question_num)
     
     answer = question_data['wiki_answer']
     names = ["","{}".format(answer)]
@@ -191,6 +192,7 @@ def get_noun_phrase_num(question_num):
     question = question_data['question']
     answer = question_data['answer']
     w,word_indices = chunk_words(question)
+    db.user_starts(name,int(question_num))
 
     annotation_data = get_annotations(name,question_num,question_data)
         
@@ -223,10 +225,16 @@ async def write_phrases(noun_phrases: NounPhrase):
                              'end':j['end'],'wiki_page':entity_names[i],
                              'content':j['content']})
     db.insert_mentions(mentions)
+    db.user_updates(username,int(question_id))
 
 @app.get("/quel/mentions/all")
 def get_all_mentions():
     return db.get_mentions()
+
+@app.get("/quel/edits/all")
+def get_all_mentions():
+    return db.get_edits()
+
 
 @app.get("/quel/autocorrect/{word}")
 def get_autocorrect(word):

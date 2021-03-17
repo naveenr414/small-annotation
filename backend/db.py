@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, ForeignKey, Column, Text, create_engine,and_,desc, Time
+from sqlalchemy import Integer, ForeignKey, Column, Text, create_engine,and_,desc, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import (
     Load,
@@ -14,6 +14,7 @@ import pickle
 import time
 import json
 import unidecode
+import datetime
 
 
 Base = declarative_base()
@@ -42,11 +43,11 @@ class User(Base):
 
 class UserEdits(Base):
     __tablename__ = "user_edits"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,autoincrement=True)
     user_id = Column(Text(),index=True)
     question_id = Column(Integer, ForeignKey("question.id"), nullable=False,index=True)
-    start_time = Column(Time())
-    update_time = Column(Time())
+    start_time = Column(DateTime())
+    update_time = Column(DateTime())
 
 class Question(Base):
     __tablename__ = "question"
@@ -150,6 +151,22 @@ class Database:
             session.commit()
             print("Commit time {}".format(time.time()-start))
 
+    def user_starts(self,user_id,question_id):
+        with self._session_scope as session:
+            t = datetime.datetime.now()
+            if session.query(UserEdits).filter(and_(UserEdits.user_id == user_id,UserEdits.question_id == question_id)).count() == 0:
+                session.bulk_insert_mappings(UserEdits,[{'id': None, 'user_id':user_id,'question_id':question_id,'start_time':t,'update_time': t}])
+
+            return True
+
+    def user_updates(self,user_id,question_id):
+        with self._session_scope as session:
+            t = datetime.datetime.now()
+            edit = session.query(UserEdits).filter(and_(UserEdits.user_id == user_id,UserEdits.question_id == question_id)).limit(1)
+            start_time = [i.start_time for i in edit][0]
+            session.bulk_insert_mappings(UserEdits,[{'user_id':user_id,'question_id':question_id,'start_time':start_time,'update_time':t}])
+            return True
+
     def get_autocorrect(self,word):
         start = time.time()
         with self._session_scope as session:
@@ -172,7 +189,7 @@ class Database:
         print("Took {} time with {} count {}".format(time.time()-start,count,word))
         return [(names[i].replace("&amp;","&"),summaries[i]) for i in range(len(names))]
 
-    def get_mentions(self,user,question_num):
+    def get_mentions_by_user(self,user,question_num):
         with self._session_scope as session:
             question_num = int(question_num)
 
@@ -200,6 +217,12 @@ class Database:
             results = session.query(Mention)
             return [{'start':i.start,'end':i.end,'wiki_page':i.wiki_page,
                      'content':i.content,'user_id':i.user_id,'question_id':i.question_id} for i in results]
+
+    def get_edits(self):
+        with self._session_scope as session:
+            results = session.query(UserEdits)
+            return [{'start_time':i.start_time,'update_time':i.update_time,'user_id':i.user_id,
+                     'question_id':i.question_id} for i in results]
 
     def get_question(self,question_num):
         with self._session_scope as session:
