@@ -199,8 +199,10 @@ export default class Main extends React.Component<Props, State> {
   delete_entity = (entity_number) => {
     let entity_list = this.state.entity_list.slice();
     let entity_names = this.state.entity_names.slice(); 
+    entity_list[0]=entity_list[0].concat(entity_list[entity_number]);
     entity_list.splice(entity_number, 1);
     entity_names.splice(entity_number,1);
+    
     this.setState({entity_list,entity_names, saved:false})
   }
   
