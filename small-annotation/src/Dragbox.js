@@ -78,6 +78,18 @@ class Dragbox extends React.Component<Props, State> {
     }
   }
   
+  num_spans = () => {
+    let i = 0;
+    for(var j = 0;j<this.props.current_spans.length;j++) {
+      if(this.props.current_spans[j].start>=0 && 
+      this.props.current_spans[j].end>=0) {
+        i++;
+      }
+      
+    }
+    
+    return i;
+  }
   
   save_search_results = () => {
     this.setState({show_search: false, entity_name: this.state.entity_search},()=>{this.props.update_entity_name(this.state.entity_search,this.props.entity_number);});
@@ -113,7 +125,7 @@ class Dragbox extends React.Component<Props, State> {
           <Modal.Header closeButton>
             <Modal.Title>Search</Modal.Title>
           </Modal.Header>
-          <Modal.Body> <Search update_entity_name={this.update_entity_name} entity_number={this.props.entity_number} default_search={this.props.current_spans.length==1?this.props.current_spans[0]['content']:""} /> </Modal.Body>
+          <Modal.Body> <Search update_entity_name={this.update_entity_name} entity_number={this.props.entity_number} default_search={this.num_spans() == 1?this.props.current_spans[this.props.current_spans.length-1]['content']:""} /> </Modal.Body>
           <Modal.Footer>
             <Button variant="primary" onClick={this.save_search_results}>
               Save
