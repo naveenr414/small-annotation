@@ -180,7 +180,7 @@ def get_annotations(username,question_num,question_data):
 
 @app.get("/quel/question_num/{question_num}")
 def get_question_num(question_num):
-    return open("questions.txt").read().strip().split("\n")[int(question_num)]
+    return db.get_question(int(question_num))
 
 @app.get("/quel/noun_phrases/{question_num}")
 def get_noun_phrase_num(question_num):
@@ -261,8 +261,9 @@ def status_check():
 
 @app.get("/quel/pdf/{question_num}")
 def write_pdf(question_num):
+    question_data = db.get_question(int(question_num.split("_")[0]))
     annotations = get_annotations(question_num.split("_")[1],
-                                  question_num.split("_")[0])
+                                  question_num.split("_")[0],question_data)
     annotations['names'] = json.loads(annotations['names'])
     annotations['spans'] = json.loads(annotations['spans'])
 
@@ -277,9 +278,10 @@ def write_pdf(question_num):
                 clean_annotations.append((annotations['names'][i],
                                           span))
 
-    clean_annotations = sorted(clean_annotations,key=lambda k: k[1])    
+    clean_annotations = sorted(clean_annotations,key=lambda k: k[1])
+    clean_annotations = [i for i in clean_annotations if min(i[1])>=0]
     question_num = question_num.split("_")[0]
-    f = open("questions.txt").read().strip().split("\n")[int(question_num)]
+    f = db.get_question(int(question_num))['question']
     words = chunk_words(f)[0]
     pdf = FPDF()
     pdf.add_page()
@@ -291,15 +293,12 @@ def write_pdf(question_num):
             pdf.set_text_color(0, 0, 0)
             pdf.set_font('', '')
             pdf.write(5," ".join(words[i:]).replace(" .",".").replace(" ?","?").replace(" !","!").replace(" ,",",").replace(" - ","-"))
-            print("1",words[i:])
-            print(i)
             break
         elif clean_annotations[annotation_pointer][1][0] == i:
             sent = (" ".join(
                           words[clean_annotations[annotation_pointer][1][0]:clean_annotations[annotation_pointer][1][1]+1])+
                        " ")
             sent = sent.replace(" .",".").replace(" ?","?").replace(" !","!").replace(" ,",",").replace(" - ","-")
-            print("2",sent)
             
             pdf.set_text_color(0, 0, 255)
             pdf.set_font('', 'U')
@@ -314,11 +313,10 @@ def write_pdf(question_num):
         else:
             pdf.set_text_color(0, 0, 0)
             pdf.set_font('', '')
-            if i<len(words) and words[i+1] in ['.','!',':',';','?',"'",",","-"] or words[i] in ['-',"'"]:
+            if i+1<len(words) and words[i+1] in ['.','!',':',';','?',"'",",","-"] or words[i] in ['-',"'"]:
                 pdf.write(5,words[i])
             else:
                 pdf.write(5,words[i]+" ")
-            print("3",i,words[i])
             i+=1
     
     # Then put a blue underlined link
