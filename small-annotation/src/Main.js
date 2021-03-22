@@ -207,6 +207,8 @@ export default class Main extends React.Component<Props, State> {
   }
   
   create_tag = (num=0) => {
+
+    
     let range = 0;
     try{
       range = getSelectionCharacterOffsetsWithin(document.getElementById("main_text"));
@@ -229,7 +231,9 @@ export default class Main extends React.Component<Props, State> {
     else {
       return;
     }
-
+    if(num>=this.state.entity_list.length) {
+      return;
+    }
     
     if(start-end == 0) {
       alert("No selection selected");

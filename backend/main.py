@@ -188,20 +188,31 @@ def get_noun_phrase_num(question_num):
     name = question_num.split("_")[1].lower().strip()
     question_num = question_num.split("_")[0]
     question_data = db.get_question(int(question_num))
-    question = question_data['question']
-    answer = question_data['answer']
-    w,word_indices = chunk_words(question)
-    db.user_starts(name,int(question_num))
 
-    annotation_data = get_annotations(name,question_num,question_data)
+    w = ["Empty"]
+    word_indices = [0]
+    entity_names = "[]"
+    entity_list = "[]"
+    question = "No Question"
+    answer = "No Answer"
+
+    if question_data != {}:    
+        question = question_data['question']
+        answer = question_data['answer']
+        w,word_indices = chunk_words(question)
+        db.user_starts(name,int(question_num))
+
+        annotation_data = get_annotations(name,question_num,question_data)
+        entity_names = annotation_data['names']
+        entity_list = annotation_data['spans']
         
     print("Reading time {}".format(time.time()-start))
 
     print("Chunk word time {}".format(time.time()-start))
     print("Took {} time".format(time.time()-start))
     return {'words':w,'indices':word_indices,
-            'entity_names':annotation_data['names'],
-            'entity_list':annotation_data['spans'],
+            'entity_names':entity_names,
+            'entity_list':entity_list,
             'loaded_question':question_num,
             'question': question,
             'answer': answer}
