@@ -203,8 +203,7 @@ export default class Main extends React.Component<Props, State> {
     entity_list.splice(entity_number, 1);
     entity_names.splice(entity_number,1);
     
-    this.submit();
-    this.setState({entity_list,entity_names, saved:true})
+    this.setState({entity_list,entity_names, saved:true},()=>{this.submit();})
   }
   
   create_tag = (num=0) => {

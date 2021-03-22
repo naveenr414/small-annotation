@@ -203,8 +203,8 @@ def get_noun_phrase_num(question_num):
         db.user_starts(name,int(question_num))
 
         annotation_data = get_annotations(name,question_num,question_data)
-        entity_names = annotation_data['names']
-        entity_list = annotation_data['spans']
+        entity_names = json.dumps(json.loads(annotation_data['names'])+[""])
+        entity_list = json.dumps(json.loads(annotation_data['spans'])+[[]])
         
     print("Reading time {}".format(time.time()-start))
 
@@ -225,11 +225,9 @@ async def write_phrases(noun_phrases: NounPhrase):
     entity_names = json.loads(noun_phrases.str_entity_names)
     entity_spans = json.loads(noun_phrases.str_entity_spans)
 
-    print(entity_names,entity_spans)
-
     mentions = []
 
-    for i in range(len(entity_names)):
+    for i in range(1,len(entity_names)):
         for j in entity_spans[i]:
             mentions.append({'user_id':username,'question_id':question_id,'start':j['start'],
                              'end':j['end'],'wiki_page':entity_names[i],
