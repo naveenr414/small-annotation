@@ -258,7 +258,7 @@ export default class Main extends React.Component<Props, State> {
           end_word_num = i-1;
         }
       }
-      this.update_spans({'start':start_word_num,'end':end_word_num,'content':this.state.question.substring(real_start,real_end)},num)
+      this.update_spans({'start':start_word_num,'end':end_word_num,'content':this.state.question.substring(real_start,real_end).trim()},num)
     }
   }
  

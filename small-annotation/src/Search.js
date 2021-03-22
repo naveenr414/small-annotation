@@ -3,8 +3,9 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import Typography from "@material-ui/core/Typography";
 import TextField from '@material-ui/core/TextField';
 import {toNormalString,toNiceString} from "./Util";
+import KeyboardEventHandler from 'react-keyboard-event-handler';
 
-interface Props {update_entity_name: any, entity_number: number, default_search: string,}
+interface Props {update_entity_name: any, entity_number: number, default_search: string, save: any, close: any}
 
 let timeout_number = -1;
 let search_timeout = -1;
@@ -16,6 +17,7 @@ interface State {
   definitions: any;
   current_entity: string;
 }
+
 
 let address = "/quel";
 
@@ -157,7 +159,7 @@ export default class Search extends React.Component<Props, State> {
           value={this.state.value}
           getOptionLabel={(option) => option}
           options={this.state.suggestions}
-          renderInput={(params) => <TextField {...params} label="Entity" onKeyDown={this.checkKeyPress} 
+          renderInput={(params) => <TextField {...params} label="Entity" onKeyDown={this.handle_key} 
           />}
           onInputChange={this.update_suggestions}  
           onChange={(event: any,value: any,reason: any) =>{if(reason === "select-option"  ) {
@@ -175,7 +177,13 @@ export default class Search extends React.Component<Props, State> {
     );
     
   };
-
+  
+  handle_key = ({key}) => {
+    if(key === 'Enter') {
+      this.props.save();
+      this.props.close();
+    }
+  }
   
   render() {
     return (

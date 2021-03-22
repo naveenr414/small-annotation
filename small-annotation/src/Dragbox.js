@@ -117,7 +117,7 @@ class Dragbox extends React.Component<Props, State> {
         <br /> 
         <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.props.entity_name:"Unassigned tags (2. Drag spans to associated entity cluster on right)"} 
         </span> 
-        {this.props.entity_number>0?<button style={{marginLeft: 100}} onClick={()=>{this.setState({show_search: true})}} > Change Entity
+        {this.props.entity_number>0?<button style={{marginLeft: 100}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
         </button> :''}
         {this.props.entity_number>0?<button style={{marginLeft: 100}} onClick={this.delete_entity} > Delete Entity Cluster
         </button>:''}
@@ -125,7 +125,7 @@ class Dragbox extends React.Component<Props, State> {
           <Modal.Header closeButton>
             <Modal.Title>Search</Modal.Title>
           </Modal.Header>
-          <Modal.Body> <Search update_entity_name={this.update_entity_name} entity_number={this.props.entity_number} default_search={this.num_spans() == 1?this.props.current_spans[this.props.current_spans.length-1]['content']:""} /> </Modal.Body>
+          <Modal.Body> <Search close={this.close_search} save={this.save_search_results} update_entity_name={this.update_entity_name} entity_number={this.props.entity_number} default_search={this.num_spans() == 1?this.props.current_spans[this.props.current_spans.length-1]['content']:""} /> </Modal.Body>
           <Modal.Footer>
             <Button variant="primary" onClick={this.save_search_results}>
               Save
