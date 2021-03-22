@@ -143,15 +143,15 @@ export default class Main extends React.Component<Props, State> {
       entity_names.push("");
     }
     
-    this.setState({entity_list,entity_names,clicked:"",saved: false,underline_span: []});
+    this.setState({entity_list,entity_names,clicked:"",saved: true,underline_span: []},()=>{this.submit();});
   }
   
   delete_span = (span) => {
     let entity_list = this.state.entity_list.slice();
     for(var i = 0;i<entity_list.length;i++) {
       entity_list[i] = entity_list[i].slice().filter(item => item['start']!==span['start'] || item['end'] !== span['end']);
-    }    
-    this.setState({entity_list,clicked:"",saved: false, underline_span: []});
+    }  
+    this.setState({entity_list,clicked:"",saved: true, underline_span: []},()=>{this.submit();});
   }
   
   adjust_span = (direction,click_data) => {
@@ -184,7 +184,7 @@ export default class Main extends React.Component<Props, State> {
   update_entity_name = (entity,number) => {
     let entity_names = this.state.entity_names;
     entity_names[number] = entity;
-    this.setState({entity_names});
+    this.setState({entity_names},()=>{this.submit()});
   }
   
   /* Dealing with entity, tag creation */ 
@@ -193,7 +193,7 @@ export default class Main extends React.Component<Props, State> {
     let entity_names = this.state.entity_names.slice();
     entity_list.push([]);
     entity_names.push("");
-    this.setState({entity_list,entity_names, saved: false});
+    this.setState({entity_list,entity_names, saved: true},()=>{this.submit();});
   }
   
   delete_entity = (entity_number) => {
@@ -203,7 +203,8 @@ export default class Main extends React.Component<Props, State> {
     entity_list.splice(entity_number, 1);
     entity_names.splice(entity_number,1);
     
-    this.setState({entity_list,entity_names, saved:false})
+    this.submit();
+    this.setState({entity_list,entity_names, saved:true})
   }
   
   create_tag = (num=0) => {
