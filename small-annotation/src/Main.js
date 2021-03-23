@@ -159,14 +159,17 @@ export default class Main extends React.Component<Props, State> {
     let d = JSON.parse(JSON.stringify(entity_list[click_data.entity_number][click_data.number]));
 
     d.start+=direction[0];
+    d.start = Math.max(0,d.start);
     d.end+=direction[1];
+    d.end = Math.min(d.end,this.state.words.length-1);
+    d.end = Math.max(d.end,d.start);
     let character_indicies = this.word_to_character([d.start,d.end]);
     let content = this.state.question.substring(character_indicies[0],character_indicies[1]);
     d.content = content;
     entity_list[click_data.entity_number][click_data.number] = d;
     click_data.start = d.start;
     click_data.end = d.end
-    this.setState({entity_list,clicked:JSON.stringify(click_data)});
+    this.setState({entity_list,clicked:JSON.stringify(click_data)},()=>{this.submit()});
   }
   
   /* Dealing with clicking on spans */ 
@@ -355,40 +358,56 @@ export default class Main extends React.Component<Props, State> {
     spans = spans.sort(function(a, b) {
       return a[0] - b[0];
     });
+    
+    console.log(JSON.stringify(spans));
         
     let new_spans = []
     i =0;
     
-    while(spans.length>0){ 
+    // Use a stack based approach, where we add on the smallest span at each point
+    let stack = []
+    
+    while(i<this.state.question.length) {
+      while(spans.length>0 && i>=spans[0][0]) {
+        let current_span = spans.shift();
+        if(i<current_span[1]) {
+          stack.push(current_span);
+        }
+      }
       
-      let current_span = spans.shift();
-      if(new_spans.length == 0) {
-        new_spans.push(current_span);
+      if(stack.length == 0) {
+        if(spans.length == 0) {
+          break;
+        }
+        else {
+          i = spans[0][0];
+          stack.push(spans.shift());
+        }
       }
       else {
+        // Find the smallest thing on the stack 
+        let smallest = 0;
+        for(var j = 1;j<stack.length;j++) {
+          if(stack[j][1]-stack[j][0]<stack[smallest][1]-stack[smallest][0]) {
+            smallest = j;
+          }
+        }
         
-        current_span[0] = Math.max(current_span[0],new_spans.slice(-1)[0][0]);
-        if(current_span[0]<new_spans.slice(-1)[0][0]) {
-          alert("There's an issue!");
-        }
-        if(intersects(current_span,new_spans.slice(-1)[0])) {
-          if (span_length(current_span)<span_length(new_spans.slice(-1)[0]) && new_spans[new_spans.length-1][0]<=current_span[0]) {
-            new_spans[new_spans.length-1][1] = current_span[0];
-            new_spans.push(current_span);
-            if(new_spans[new_spans.length-2][1]>current_span[1]) {
-              new_spans.push([current_span[1],new_spans[new_spans.length-2][1],new_spans[new_spans.length-2][2]]);
-            }
+        let next_i = Math.min(stack[smallest][1],spans.length>0?spans[0][0]:stack[smallest][1]);
+        new_spans.push([i,next_i,stack[smallest][2]]);
+        i = next_i;
+        let new_stack = [];
+        for(var j = 0;j<stack.length;j++) {
+          if(stack[j][0]<=i && stack[j][1]>i) {
+            new_stack.push(stack[j]);
           }
-          else {
-            current_span[0] = new_spans[new_spans.length-1][1];
-            new_spans.push(current_span);
-          }
-        } else {
-          new_spans.push(current_span);
         }
+        stack = new_stack;
       }
     }
-      
+    
+    console.log(JSON.stringify(new_spans));
+   
     return new_spans; 
   }
   
@@ -416,17 +435,17 @@ export default class Main extends React.Component<Props, State> {
     var highlights = [];
     for(var i = 0;i<parts.length; i++) {
       let fields = parts[i];
-      if(this.state.underline_span.length>0) {
-        if(this.state.underline_span[0]>=fields[0] && this.state.underline_span[0]<fields[1]) {
+      if(this.state.underline_span.length>0 && !this.state.clicked) {
+        if(this.state.underline_span[0]>fields[0] && this.state.underline_span[0]<fields[1]) {
             if(this.state.underline_span[1]<fields[1]) {
               // Then it goes [Text][Bolded][Text]
-                highlights.push(<span key={fields[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
+                highlights.push(<span key={fields[0]+"textboldedtext"} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
                 highlights.push(<span key={this.state.underline_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.underline_span[0], this.state.underline_span[1])}</span>);
                 highlights.push(<span key={this.state.underline_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.underline_span[1], fields[1])}</span>);
             }
             else {
               // Then it goes [Text][Bolded]
-              highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
+              highlights.push(<span key={fields[0]+"textbolded"} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
               highlights.push(<span key={this.state.underline_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.underline_span[0], fields[1])}</span>);
             }
 
@@ -434,26 +453,26 @@ export default class Main extends React.Component<Props, State> {
         else if(this.state.underline_span[0]<=fields[0] && this.state.underline_span[1]>=fields[0]) {
           if(this.state.underline_span[1]>=fields[1]) {
             // Then it goes [Bolded]
-            highlights.push(<span key={fields[0]} style={{border: fields[2]=='white'?'':'1px solid #000000', backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(fields[0], fields[1])}</span>);
+            highlights.push(<span key={fields[0]+"bolded"} style={{border: fields[2]=='white'?'':'1px solid #000000', backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(fields[0], fields[1])}</span>);
           }
           else {
             // Then it goes [Bolded][Text]
-            highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2], border: fields[2]=='white'?'':'1px solid #000000',textDecoration: 'underline'}}>{text.substring(fields[0], this.state.underline_span[1])}</span>);
+            highlights.push(<span key={fields[0]+"boldedtext"} style={{backgroundColor:fields[2], border: fields[2]=='white'?'':'1px solid #000000',textDecoration: 'underline'}}>{text.substring(fields[0], this.state.underline_span[1])}</span>);
             highlights.push(<span key={this.state.underline_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.underline_span[1], fields[1])}</span>);
           }
         }
         else {
           // Then it goes [Text]
-          highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>)
+          highlights.push(<span key={fields[0]+"else"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>)
         }
       }
       else {
           // Then it goes [Text]
-          highlights.push(<span key={fields[0]} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>)
+          highlights.push(<span key={fields[0]+"else"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>)
         }
 
     }
-       
+           
     return highlights;
   }
   
