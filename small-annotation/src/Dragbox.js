@@ -117,9 +117,9 @@ class Dragbox extends React.Component<Props, State> {
         <br /> 
         <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.props.entity_name:"Unassigned tags (2. Drag spans to associated entity cluster on right)"} 
         </span> 
-        {this.props.entity_number>0?<button style={{marginLeft: 100}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
+        {this.props.entity_number>0?<button style={{marginLeft: "10%"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
         </button> :''}
-        {this.props.entity_number>0?<button style={{marginLeft: 100}} onClick={this.delete_entity} > Delete Entity Cluster
+        {this.props.entity_number>0?<button style={{marginLeft: "10%"}} onClick={this.delete_entity} > Delete Entity Cluster
         </button>:''}
         <Modal size="lg" show={this.state.show_search} onHide={this.close_search} animation={false}>
           <Modal.Header closeButton>

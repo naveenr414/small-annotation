@@ -158,12 +158,8 @@ export default class Main extends React.Component<Props, State> {
     let entity_list = JSON.parse(JSON.stringify(this.state.entity_list));
     let d = JSON.parse(JSON.stringify(entity_list[click_data.entity_number][click_data.number]));
 
-    if(direction == -1) {
-      d.start-=1;
-    }
-    else {
-      d.end+=1;
-    }
+    d.start+=direction[0];
+    d.end+=direction[1];
     let character_indicies = this.word_to_character([d.start,d.end]);
     let content = this.state.question.substring(character_indicies[0],character_indicies[1]);
     d.content = content;
@@ -313,14 +309,20 @@ export default class Main extends React.Component<Props, State> {
       this.create_tag(parseInt(key));
     }
     else {
-      let direction = 0;
+      let direction = [0,0];
       if(key == 'a') {
-        direction = -1;
+        direction = [0,-1];
       }
       else if (key == 'd') {
-        direction = 1;
+        direction = [0,1];
       }
-      if(direction != 0 && this.state.clicked!=="") {
+      else if (key == 'w') {
+        direction = [1,0];
+      }
+      else if (key == 's') {
+        direction = [-1,0];
+      }
+      if(direction != [0,0] && this.state.clicked!=="") {
         let click_data = JSON.parse(this.state.clicked);
         this.adjust_span(direction,click_data);
       }
@@ -522,7 +524,7 @@ export default class Main extends React.Component<Props, State> {
                 </div> 
                 
                 <KeyboardEventHandler
-                handleKeys={['1','2','3','4','5','6','7','8','9','a','d']}
+                handleKeys={['1','2','3','4','5','6','7','8','9','a','d','w','s']}
                 onKeyEvent={(key, e) => this.handle_key(key,e)} />
               </DndProvider>
    }

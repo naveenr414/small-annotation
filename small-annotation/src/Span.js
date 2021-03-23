@@ -50,7 +50,7 @@ class Span extends React.Component<Props, State> {
   render() {
      const { isDragging, connectDragSource, src } = this.props;
      return connectDragSource(
-       <div onMouseOver={()=>{this.props.add_bolded([this.props.start,this.props.end])}} onMouseLeave={()=>{this.props.remove_bolded([this.props.start,this.props.end])}} style={{fontSize: 16,margin: 3,border: "1px dashed #111111", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: this.props.clicked?"red":"rgba(255, 255, 255, 0.7)", display: "inline", marginTop: 10}} onClick={()=>{this.props.update_clicked()}}>
+       <div onMouseOver={()=>{this.props.add_bolded([this.props.start,this.props.end])}} onMouseLeave={()=>{this.props.remove_bolded([this.props.start,this.props.end])}} style={{fontSize: 16,margin: 3,border: "1px dashed #111111", borderRadius: 4, padding: "0 8px", lineHeight: 1,color: "#666666", background: this.props.clicked?"#DDDDDD":"rgba(255, 255, 255, 0.7)", display: "inline", marginTop: 10}} onClick={()=>{this.props.update_clicked()}}>
 
         {this.props.content}
          <img
