@@ -157,26 +157,39 @@ def get_annotations(username,question_num,question_data):
     
     answer = question_data['wiki_answer']
     names = ["","{}".format(answer)]
-    spans = [[{'start':-1,'end':-1,'content':''}],[{'start':-1,'end':-1,'content':''}]]
+    spans = [[],[]]
 
-    wiki_page_to_num = {}
+    spans = {}
+    names = {}
+    names[0] = ""
+    names[1] = answer
+
+    spans[0] = [{'start':-1,'end':-1,'content':''}]
+    spans[1] = [{'start':-1,'end':-1,'content':''}]
+
+    num_to_wiki = {}
+
+    wiki_pages = set()
 
     if len(mentions)>0:
-        names = [""]
-        spans = [[]]
+        names = {0:""}
+        spans = {0:[]}
 
         for i in mentions:
-            if i['wiki_page'] not in wiki_page_to_num:
-                wiki_page_to_num[i['wiki_page']] = len(names)
-                names.append(i['wiki_page'])
-                spans.append([])
-            
-            spans[wiki_page_to_num[i['wiki_page']]].append({'start':i['start'],'end':i['end'],'content':i['content']})
-        if answer not in wiki_page_to_num:
-            names.append(answer)
-            spans.append([])
+            if i['number'] not in names:
+                names[i['number']] = i['wiki_page']
+                spans[i['number']] = []
+                wiki_pages.add(i['wiki_page'])
+            spans[i['number']].append({'start':i['start'],'end':i['end'],'content':i['content']})
+
+        if answer not in wiki_pages:
+            names[0.5] = answer
+            spans[0.5] = []
+
+    keys = sorted(list(names.keys()))
         
-    return {'names':json.dumps(names),'spans':json.dumps(spans)}
+    return {'names':json.dumps([names[i] for i in keys]),
+            'spans':json.dumps([spans[i] for i in keys])}
 
 @app.get("/quel/question_num/{question_num}")
 def get_question_num(question_num):
@@ -231,7 +244,7 @@ async def write_phrases(noun_phrases: NounPhrase):
         for j in entity_spans[i]:
             mentions.append({'user_id':username,'question_id':question_id,'start':j['start'],
                              'end':j['end'],'wiki_page':entity_names[i],
-                             'content':j['content']})
+                             'content':j['content'],'number': i})
     db.insert_mentions(mentions)
     db.user_updates(username,int(question_id))
 

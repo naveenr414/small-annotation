@@ -22,6 +22,7 @@ Base = declarative_base()
 class Mention(Base):
     __tablename__ = "mention"
     id = Column(Integer, primary_key=True)
+    number = Column(Integer)
     user_id = Column(Text(), index=True)
     question_id = Column(Integer, ForeignKey("question.id"), nullable=False,index=True)
     start= Column(Integer)
@@ -196,7 +197,7 @@ class Database:
             results = session.query(Mention).filter(and_(Mention.user_id == user,
                                                          Mention.question_id==question_num))
             
-            results = [{'start':i.start,'end':i.end,'wiki_page':i.wiki_page,'content':i.content} for i in results]
+            results = [{'start':i.start,'end':i.end,'wiki_page':i.wiki_page,'content':i.content,'number':i.number} for i in results]
             return results
 
     def remove_mentions(self,user,question_num):
