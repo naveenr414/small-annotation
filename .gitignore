@@ -1,6 +1,9 @@
 all_wiki.p
 small-annotation/node_modules/
 backend/__pycache__/
+backend/*.json
+backend/*.p
+backend/question.pdf
 data/
 Caddyfile
 npm-debug.log

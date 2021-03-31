@@ -21,7 +21,9 @@ class Span extends React.Component<Props, State> {
         <li> To do this, click Create New Entity Cluster, and drag the appropriate spans </li>
         <li> Drag entity to box corresponding to new entity </li>
         <li> Then set the cluster name, by clicking on edit entity name, searching for the entity, and then clicking save. If no entity is present, then select the “No Entity” option within the save window. </li> 
+        <li> You can also enter the number of the entity box after highlighting</li> 
       </ol>
+      To edit a span, click on the span, and then use the a-d keys to move the left endpoint, and the s-w keys to move the right endpoint 
     </div>
   }
 }

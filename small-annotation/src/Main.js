@@ -335,7 +335,7 @@ export default class Main extends React.Component<Props, State> {
   /* Rendering */ 
   get_span_colors = () => {
     let text = this.state.question;
-        
+                
     // Calculate the span colors
     let spans = [];
     for(var i = 0;i<this.state.entity_list.length;i++) {

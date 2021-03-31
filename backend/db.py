@@ -104,6 +104,32 @@ class Database:
 
     def populate(self):
         with self._session_scope as session:
+            # Mentions
+            print("Populating mentions")
+            w = open("baseline_entities.json")
+            i = 0
+            start = time.time()
+            objects = []
+            while True:
+                line = w.readline()
+                if line.strip() == '':
+                    break
+                wiki_obj = json.loads(line.strip())
+
+                j = 0
+                for mention in wiki_obj['clusters']:
+                    for span in mention['clusters']:
+                            objects.append({'user_id':'system','question_id':wiki_obj['qanta_id'],'start':span[0],
+                                            'end':span[1],'wiki_page':mention['name'],'number':j,'content':span[2]})
+                    j+=1
+                i+=1
+                if i%10000 == 0:
+                    print(i,time.time()-start)                
+                    session.bulk_insert_mappings(Mention,objects)
+                    objects = []
+            session.bulk_insert_mappings(Mention,objects)
+            print("Mentions time {}".format(time.time()-start))
+
             # Load in qanta questions
             start = time.time()
             dev = json.load(open("qanta.dev.2018.04.18.json"))['questions']
@@ -123,12 +149,14 @@ class Database:
                     session.bulk_insert_mappings(Question,objects)
                     objects = []
             session.bulk_insert_mappings(Question,objects)
-            objects = []                    
+            objects = []
+            dev = []
+            test = []
+            train = []
             print("Qanta time {}".format(time.time()-start))
             
             # Wiki
             w = open("all_wiki.json")
-            num_to_read_in = 100000
             start = time.time()
             
             objects = []
@@ -143,12 +171,12 @@ class Database:
 
                 if i%100000 == 0:
                     print(i,time.time()-start)                
-
-                if i%100000 == 0:
                     session.bulk_insert_mappings(WikiSummary,objects)
                     objects = []
             session.bulk_insert_mappings(WikiSummary,objects)
-            objects = []                    
+            print("Wiki time {}".format(time.time()-start))
+
+
             session.commit()
             print("Commit time {}".format(time.time()-start))
 
@@ -198,6 +226,7 @@ class Database:
                                                          Mention.question_id==question_num))
             
             results = [{'start':i.start,'end':i.end,'wiki_page':i.wiki_page,'content':i.content,'number':i.number} for i in results]
+            print(results)
             return results
 
     def remove_mentions(self,user,question_num):
