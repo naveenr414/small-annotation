@@ -116,7 +116,7 @@ class Database:
                     break
                 wiki_obj = json.loads(line.strip())
 
-                j = 0
+                j = 2
                 for mention in wiki_obj['clusters']:
                     for span in mention['clusters']:
                             objects.append({'user_id':'system','question_id':wiki_obj['qanta_id'],'start':span[0],
@@ -124,10 +124,11 @@ class Database:
                     j+=1
                 i+=1
                 if i%10000 == 0:
-                    print(i,time.time()-start)                
+                    print(i,time.time()-start,len(objects))                
                     session.bulk_insert_mappings(Mention,objects)
                     objects = []
             session.bulk_insert_mappings(Mention,objects)
+            print(len(objects))
             print("Mentions time {}".format(time.time()-start))
 
             # Load in qanta questions

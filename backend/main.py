@@ -154,6 +154,9 @@ def noun_indices(question):
 def get_annotations(username,question_num,question_data):
     print("Getting annotations for {} {}".format(username,question_num))
     mentions = db.get_mentions_by_user(username,question_num)
+
+    if len(mentions) == 0:
+        mentions = db.get_mentions_by_user("system",question_num)
     
     answer = question_data['wiki_answer']
     names = ["","{}".format(answer)]

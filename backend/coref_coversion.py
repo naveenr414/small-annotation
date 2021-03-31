@@ -77,10 +77,13 @@ def process(question,f,g):
         else:
             clusters.append({'name':k['entity'],'clusters':[k['span']]})
 
-    for i in range(len(clusters)):
-        for j in range(len(clusters[i]['clusters'])):
-            temp = clusters[i]['clusters'][j]
-            clusters[i]['clusters'][j] = [nums[temp[0]],nums[temp[1]-1],question[temp[0]:temp[1]]]
+    try:
+        for i in range(len(clusters)):
+            for j in range(len(clusters[i]['clusters'])):
+                temp = clusters[i]['clusters'][j]
+                clusters[i]['clusters'][j] = [nums[temp[0]],nums[temp[1]-1],question[temp[0]:temp[1]]]
+    except:
+        return []
 
     return clusters
 
@@ -100,7 +103,7 @@ for i in coref_file:
 blink_file = []
 coref_file = []
 
-question_list = json.load(open("qanta.train.2018.04.18.json"))['questions']
+question_list = json.load(open("qanta.train.2018.04.18.json"))['questions']+json.load(open("qanta.dev.2018.04.18.json"))['questions']+json.load(open("qanta.test.2018.04.18.json"))['questions']
 
 w = open("baseline_entities.json","w")
 
