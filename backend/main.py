@@ -13,6 +13,7 @@ import os.path
 from db import Database
 from fpdf import FPDF
 from fastapi.responses import FileResponse
+import suggest_questions
 
 app = FastAPI()
 origins = [
@@ -153,10 +154,12 @@ def noun_indices(question):
 
 def get_annotations(username,question_num,question_data):
     print("Getting annotations for {} {}".format(username,question_num))
-    mentions = db.get_mentions_by_user(username,question_num)
+    mentions = db.get_mentions_by_user(username,str(question_num))
 
     if len(mentions) == 0:
         mentions = db.get_mentions_by_user("system",question_num)
+
+    print("System mentions {}".format(len(mentions)))
     
     answer = question_data['wiki_answer']
     names = ["","{}".format(answer)]
@@ -203,6 +206,7 @@ def get_noun_phrase_num(question_num):
     start = time.time()
     name = question_num.split("_")[1].lower().strip()
     question_num = question_num.split("_")[0]
+    question_num = suggest_questions.get_random_question()
     question_data = db.get_question(int(question_num))
 
     w = ["Empty"]
