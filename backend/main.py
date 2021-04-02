@@ -14,6 +14,7 @@ from db import Database
 from fpdf import FPDF
 from fastapi.responses import FileResponse
 import suggest_questions
+import random
 
 app = FastAPI()
 origins = [
@@ -43,6 +44,9 @@ class NounPhrase(BaseModel):
 
 nlp = spacy.load("en_core_web_sm")
 tokenizer = Tokenizer(nlp.vocab)
+
+user_category = {}
+user_num = {}
 
 start = time.time()
 print("Starting loading of pickle file")
@@ -206,7 +210,14 @@ def get_noun_phrase_num(question_num):
     start = time.time()
     name = question_num.split("_")[1].lower().strip()
     question_num = question_num.split("_")[0]
-    question_num = suggest_questions.get_random_question()
+
+    if name not in user_category:
+        user_category[name] = random.sample(suggest_questions.category_list,1)[0]
+        user_num[name] = random.randint(0,3)
+        print("Category {}".format(user_category[name]))
+    question_num = suggest_questions.get_random_question(user_category[name].split("_")[0],
+                                                         user_category[name].split("_")[1],
+                                                         user_num[name])
     question_data = db.get_question(int(question_num))
 
     w = ["Empty"]
