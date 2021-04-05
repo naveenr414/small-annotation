@@ -205,19 +205,7 @@ def get_annotations(username,question_num,question_data):
 def get_question_num(question_num):
     return db.get_question(int(question_num))
 
-@app.get("/quel/noun_phrases/{question_num}")
-def get_noun_phrase_num(question_num):
-    start = time.time()
-    name = question_num.split("_")[1].lower().strip()
-    question_num = question_num.split("_")[0]
-
-    if name not in user_category:
-        user_category[name] = random.sample(suggest_questions.category_list,1)[0]
-        user_num[name] = random.randint(0,3)
-        print("Category {}".format(user_category[name]))
-    question_num = suggest_questions.get_random_question(user_category[name].split("_")[0],
-                                                         user_category[name].split("_")[1],
-                                                         user_num[name])
+def load_question(name,question_num):
     question_data = db.get_question(int(question_num))
 
     w = ["Empty"]
@@ -247,6 +235,29 @@ def get_noun_phrase_num(question_num):
             'loaded_question':question_num,
             'question': question,
             'answer': answer}
+
+@app.get("/quel/noun_phrases_suggested/{question_num}")
+def get_noun_phrase_suggested_num(question_num):
+    print("Getting suggested")
+    start = time.time()
+    name = question_num.split("_")[1].lower().strip()
+    question_num = question_num.split("_")[0]
+
+    if name not in user_category:
+        user_category[name] = random.sample(suggest_questions.category_list,1)[0]
+        user_num[name] = random.randint(0,3)
+        print("Category {}".format(user_category[name]))
+    question_num = suggest_questions.get_random_question(user_category[name].split("_")[0],
+                                                         user_category[name].split("_")[1],
+                                                         user_num[name])
+    return load_question(name,question_num)
+
+@app.get("/quel/noun_phrases/{question_num}")
+def get_noun_phrase(question_num):
+    start = time.time()
+    name = question_num.split("_")[1].lower().strip()
+    question_num = question_num.split("_")[0]
+    return load_question(name,question_num)
 
 @app.post("/quel/submit")
 async def write_phrases(noun_phrases: NounPhrase):

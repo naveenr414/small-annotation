@@ -59,6 +59,21 @@ export default class Main extends React.Component<Props, State> {
     let name = prompt("What's your name").toLowerCase();
     this.setState({name},()=>{this.get_noun_phrases(0);});
   }
+
+  get_noun_phrases_suggested = (question_num) => {
+    fetch(
+      address+"/noun_phrases_suggested/"+question_num+"_"+this.state.name
+      )
+      .then((res) => res.json())
+      .then((res) => this.setState(
+        {current_question: question_num, 
+        words: res['words'], 
+        indices: res['indices'],
+        question: res['question'],
+        answer: res['answer'],
+        entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []}
+        ,()=>{this.setState({clicked: []})}));
+  }
   
   get_noun_phrases = (question_num) => {
     fetch(
@@ -266,6 +281,12 @@ export default class Main extends React.Component<Props, State> {
     this.submit();
     let new_num = (this.state.current_question+1)%num_questions;
      this.get_noun_phrases(new_num);
+  }
+  
+  new_suggested = () => {
+    this.submit();
+    let new_num = (this.state.current_question+1)%num_questions;
+    this.get_noun_phrases_suggested(new_num);
   }
     
   decrement_question = () => {
@@ -496,6 +517,7 @@ export default class Main extends React.Component<Props, State> {
                       <div style={{marginBottom: 20}}> 
                         <button style={{marginLeft: 30}} onClick={this.decrement_question}> Previous </button>
                         <button style={{marginLeft: 30}} onClick={this.increment_question}> Next </button>
+                        <button style={{marginLeft: 30}} onClick={this.new_suggested}> Suggested Question </button>
                         <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button> 
                         <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
                         
