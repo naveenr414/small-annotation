@@ -15,6 +15,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Divider from '@material-ui/core/Divider';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import {getCookie} from "./Util";
+import {Redirect} from 'react-router-dom';
 
 let address = "/quel";
 
@@ -506,7 +507,10 @@ export default class Main extends React.Component<Props, State> {
   }
   
   render() {
-    if(this.state.words.length == 0) {
+    if (getCookie("token") === "") {
+      return <Redirect to="/login" />;
+    }
+    else if(this.state.words.length == 0) {
       return <h1> Loading </h1> 
     }
     else {
