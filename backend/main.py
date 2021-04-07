@@ -15,6 +15,7 @@ from fpdf import FPDF
 from fastapi.responses import FileResponse
 import suggest_questions
 import random
+import security
 
 app = FastAPI()
 origins = [
@@ -35,6 +36,7 @@ app.add_middleware(
     allow_methods=["*", "POST","GET"],
     allow_headers=["*", "POST","GET"],
 )
+app.include_router(security.router, prefix="/quel/token")
 
 class NounPhrase(BaseModel):
     str_entity_names: str
@@ -255,14 +257,15 @@ def get_noun_phrase_suggested_num(question_num):
 @app.get("/quel/noun_phrases/{question_num}")
 def get_noun_phrase(question_num):
     start = time.time()
-    name = question_num.split("_")[1].lower().strip()
+    print(question_num)
+    name = security.decode_token(question_num.split("_")[1].strip())
     question_num = question_num.split("_")[0]
     return load_question(name,question_num)
 
 @app.post("/quel/submit")
 async def write_phrases(noun_phrases: NounPhrase):
     question_id = noun_phrases.question_id
-    username = noun_phrases.username
+    username = security.decode_token(noun_phrases.username)
     db.remove_mentions(username,int(question_id))
     entity_names = json.loads(noun_phrases.str_entity_names)
     entity_spans = json.loads(noun_phrases.str_entity_spans)

@@ -14,6 +14,7 @@ import Instructions from './Instructions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Divider from '@material-ui/core/Divider';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
+import {getCookie} from "./Util";
 
 let address = "/quel";
 
@@ -56,7 +57,7 @@ export default class Main extends React.Component<Props, State> {
   
   /* Loading in questions */ 
   componentDidMount = () => {
-    let name = prompt("What's your name").toLowerCase();
+    let name = getCookie("token");
     this.setState({name},()=>{this.get_noun_phrases(0);});
   }
 

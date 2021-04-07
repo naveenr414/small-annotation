@@ -271,3 +271,20 @@ class Database:
             results = session.query(WikiSummary).filter(WikiSummary.title==word).limit(1)
 
         return [i.id for i in results]
+
+    def insert_email_password(self,username,password):
+        with self._session_scope as session:
+            if session.query(User).filter(User.id==username).count()>0:
+                return False
+            print("Inserted!")
+            session.bulk_insert_mappings(User,[{'id':username,'password':password}])
+            return True
+
+    def get_password(self,username):
+        with self._session_scope as session:
+            passwords = session.query(User).filter(User.id==username)
+            passwords = [i for i in passwords]
+            if len(passwords) == 0:
+                return None
+            print("Searching for passwords")
+            return passwords[0].password
