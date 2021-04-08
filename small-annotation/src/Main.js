@@ -14,7 +14,7 @@ import Instructions from './Instructions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Divider from '@material-ui/core/Divider';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
-import {getCookie} from "./Util";
+import {getCookie,setCookie} from "./Util";
 import {Redirect} from 'react-router-dom';
 
 let address = "/quel";
@@ -506,6 +506,11 @@ export default class Main extends React.Component<Props, State> {
     return highlights;
   }
   
+  logout = () => {
+    setCookie("token","");
+    this.setState({clicked: this.state.clicked});
+  }
+  
   render() {
     if (getCookie("token") === "") {
       return <Redirect to="/login" />;
@@ -525,7 +530,8 @@ export default class Main extends React.Component<Props, State> {
                         <button style={{marginLeft: 30}} onClick={this.new_suggested}> Suggested Question </button>
                         <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button> 
                         <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
-                        
+                        <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
+                        <button  style={{marginLeft: 30}}  onClick={this.logout}>Logout</button> <br /> <br />
                         <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
                           {this.state.saved?'Saved':'Not Saved'} 
                         </div>

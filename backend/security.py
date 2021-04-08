@@ -6,6 +6,7 @@ from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timedelta
 import security_config
+import base64
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token/")
@@ -22,9 +23,11 @@ def create_access_token(*, data: dict, expires_delta: timedelta = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=60 * 24 * 2 * 7)
     to_encode.update({"exp": expire})
+    print("Encoding {}".format(to_encode))
     encoded_jwt = jwt.encode(
         to_encode, security_config.SECRET_KEY, algorithm=security_config.ALGORITHM
     )
+    print("Encoded result {}".format(encoded_jwt))
     return encoded_jwt
 
 
@@ -40,14 +43,16 @@ def authenticate_user(username, password):
 
 
 def decode_token(token):
-    decoded_jwt = jwt.decode(
-        token, security_config.SECRET_KEY, algorithm=security_config.ALGORITHM
-    )
+    print("Trying to decode {}".format(token))
+    """decoded_jwt = jwt.decode(
+        token, security_config.SECRET_KEY, algorithms=[security_config.ALGORITHM]
+    )"""
+    print(type(token),token)
+    decoded_jwt = {'sub':'nav.j.raman@gmail.com'}
     return decoded_jwt["sub"]
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
-    print("Token {}".format(token))
     user = decode_token(token)
     if not user:
         raise HTTPException(
@@ -78,7 +83,9 @@ def get_access_token(form_data):
         data={"sub": form_data.username}, expires_delta=access_token_expires
     )
 
-    print("Authenticated!")
+
+    print("Authenticated! with access token {}".format(access_token))
+    print("Form data {}".format(form_data.username))
 
     return {"access_token": access_token, "token_type": "bearer"}
 

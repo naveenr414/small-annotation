@@ -242,8 +242,8 @@ def load_question(name,question_num):
 def get_noun_phrase_suggested_num(question_num):
     print("Getting suggested")
     start = time.time()
-    name = question_num.split("_")[1].lower().strip()
-    question_num = question_num.split("_")[0]
+    name = question_num.split("_")[-1].lower().strip()
+    question_num = "_".join(question_num.split("_")[:-1])
 
     if name not in user_category:
         user_category[name] = random.sample(suggest_questions.category_list,1)[0]
@@ -258,7 +258,7 @@ def get_noun_phrase_suggested_num(question_num):
 def get_noun_phrase(question_num):
     start = time.time()
     print(question_num)
-    name = security.decode_token(question_num.split("_")[1].strip())
+    name = security.decode_token(question_num.split("_")[1][:-1])
     question_num = question_num.split("_")[0]
     return load_question(name,question_num)
 
