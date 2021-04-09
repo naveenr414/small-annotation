@@ -272,6 +272,12 @@ class Database:
 
         return [i.id for i in results]
 
+    def get_all_useredits(self,username):
+        with self._session_scope as session:
+            edits = session.query(UserEdits).filter(UserEdits.user_id == username)
+            results = [{'question_id':i.question_id,'start_time':i.start_time,'update_time':i.update_time} for i in edits]
+            return results
+
     def insert_email_password(self,username,password):
         with self._session_scope as session:
             if session.query(User).filter(User.id==username).count()>0:

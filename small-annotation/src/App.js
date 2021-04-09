@@ -4,6 +4,7 @@ import './App.css';
 import Main from "./Main";
 import Login from "./Login";
 import Register from "./Register";
+import User from "./User";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 function App() {
@@ -14,6 +15,9 @@ function App() {
         <Route path="/login">
           <Login />
         </Route>
+        <Route path="/user"> 
+          <User />
+        </Route>  
         <Route path="/register">
           <Register />
         </Route>

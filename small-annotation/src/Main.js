@@ -37,7 +37,7 @@ interface State {
   clicked: any;
 }
 
-let colors = ['hsl(205, 56.49289099526066%, 41.372549019607845%)', 'hsl(28, 80.0%, 52.74509803921569%)', 'hsl(120, 45.490196078431374%, 40.0%)', 'hsl(360, 55.33596837944664%, 49.6078431372549%)', 'hsl(271, 31.55963302752294%, 57.25490196078431%)', 'hsl(10, 24.186046511627907%, 42.156862745098046%)', 'hsl(318, 52.68292682926828%, 67.84313725490196%)', 'hsl(0, 0.0%, 49.80392156862745%)', 'hsl(60, 55.6053811659193%, 43.72549019607843%)', 'hsl(186, 64.0%, 45.09803921568628%)'];
+let colors = ["#4E79A7","#A0CB38","#F28E2B","#FFBE7D","#59A14F","#8CD17D","#B6992D","#F1CE63","#499894","#86BCB6"];
 let num_questions = 20;
 
 export default class Main extends React.Component<Props, State> {
@@ -130,14 +130,29 @@ export default class Main extends React.Component<Props, State> {
   
   /* Dealing with underlining */
   add_bolded = (underline_span) => {
-    this.setState({underline_span: this.word_to_character(underline_span)});
+    if(this.state.clicked == "") {
+      this.setState({underline_span: this.word_to_character(underline_span)});
+    }
   }
   
   remove_bolded = (underline_span) => {
     underline_span = this.word_to_character(underline_span);
+        
     if(this.state.underline_span[0] == underline_span[0] 
     && this.state.underline_span[1] == underline_span[1]) {
-      this.setState({underline_span: []});
+      if(this.state.clicked == "") {
+        this.setState({underline_span: []});
+      }
+      else {
+        let json_info = JSON.parse(this.state.clicked);
+        if(JSON.stringify(this.word_to_character([json_info.start,json_info.end])) == 
+        JSON.stringify(this.state.underline_span)) {
+          
+        }
+        else {
+           this.setState({underline_span: []});
+        }
+      }
     }
   }
   
@@ -192,7 +207,12 @@ export default class Main extends React.Component<Props, State> {
   /* Dealing with clicking on spans */ 
   
   update_clicked = (json_string) => {
-    this.setState({clicked: this.state.clicked==json_string?"":json_string});
+    if(json_string!=="" && this.state.clicked!==json_string) {
+      let click_data = JSON.parse(json_string);
+      this.setState({clicked: json_string,underline_span: this.word_to_character([click_data.start,click_data.end])});
+    } else {
+      this.setState({clicked: ""});
+    }
   }
   
   /* Dealing with searching */
@@ -458,29 +478,29 @@ export default class Main extends React.Component<Props, State> {
     var highlights = [];
     for(var i = 0;i<parts.length; i++) {
       let fields = parts[i];
-      if(this.state.underline_span.length>0 && !this.state.clicked) {
+      if(this.state.underline_span.length>0) {
         if(this.state.underline_span[0]>fields[0] && this.state.underline_span[0]<fields[1]) {
             if(this.state.underline_span[1]<fields[1]) {
               // Then it goes [Text][Bolded][Text]
-                highlights.push(<span key={fields[0]+"textboldedtext"} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
-                highlights.push(<span key={this.state.underline_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.underline_span[0], this.state.underline_span[1])}</span>);
-                highlights.push(<span key={this.state.underline_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.underline_span[1], fields[1])}</span>);
+                highlights.push(<span key={fields[0]+"textboldedtext"} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
+                highlights.push(<span key={this.state.underline_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:'yellow', textDecoration: 'underline'}}>{text.substring(this.state.underline_span[0], this.state.underline_span[1])}</span>);
+                highlights.push(<span key={this.state.underline_span[1]} style={{backgroundColor:fields[2]}}>{text.substring(this.state.underline_span[1], fields[1])}</span>);
             }
             else {
               // Then it goes [Text][Bolded]
               highlights.push(<span key={fields[0]+"textbolded"} style={{backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
-              highlights.push(<span key={this.state.underline_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(this.state.underline_span[0], fields[1])}</span>);
+              highlights.push(<span key={this.state.underline_span[0]} style={{backgroundColor:'yellow', textDecoration: 'underline'}}>{text.substring(this.state.underline_span[0], fields[1])}</span>);
             }
 
         }
         else if(this.state.underline_span[0]<=fields[0] && this.state.underline_span[1]>=fields[0]) {
           if(this.state.underline_span[1]>=fields[1]) {
             // Then it goes [Bolded]
-            highlights.push(<span key={fields[0]+"bolded"} style={{border: fields[2]=='white'?'':'1px solid #000000', backgroundColor:fields[2], textDecoration: 'underline'}}>{text.substring(fields[0], fields[1])}</span>);
+            highlights.push(<span key={fields[0]+"bolded"} style={{backgroundColor:'yellow', textDecoration: 'underline'}}>{text.substring(fields[0], fields[1])}</span>);
           }
           else {
             // Then it goes [Bolded][Text]
-            highlights.push(<span key={fields[0]+"boldedtext"} style={{backgroundColor:fields[2], border: fields[2]=='white'?'':'1px solid #000000',textDecoration: 'underline'}}>{text.substring(fields[0], this.state.underline_span[1])}</span>);
+            highlights.push(<span key={fields[0]+"boldedtext"} style={{backgroundColor:'yellow', textDecoration: 'underline'}}>{text.substring(fields[0], this.state.underline_span[1])}</span>);
             highlights.push(<span key={this.state.underline_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.underline_span[1], fields[1])}</span>);
           }
         }
@@ -491,11 +511,11 @@ export default class Main extends React.Component<Props, State> {
       }
       else {
           // Then it goes [Text]
-          highlights.push(<span key={fields[0]+"else"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>)
+          highlights.push(<span key={fields[0]+"else2"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>)
         }
 
     }
-           
+    
     return highlights;
   }
   
@@ -503,6 +523,7 @@ export default class Main extends React.Component<Props, State> {
     let text = this.state.question;
     let new_spans = this.get_span_colors();
     let highlights = this.get_underlines(text,new_spans);
+    console.log(highlights);
     return highlights;
   }
   

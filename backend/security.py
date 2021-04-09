@@ -17,17 +17,14 @@ router = APIRouter()
 
 def create_access_token(*, data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
-    print("Expires_delta",expires_delta)
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=60 * 24 * 2 * 7)
     to_encode.update({"exp": expire})
-    print("Encoding {}".format(to_encode))
     encoded_jwt = jwt.encode(
         to_encode, security_config.SECRET_KEY, algorithm=security_config.ALGORITHM
     )
-    print("Encoded result {}".format(encoded_jwt))
     return encoded_jwt
 
 
@@ -47,7 +44,6 @@ def decode_token(token):
     """decoded_jwt = jwt.decode(
         token, security_config.SECRET_KEY, algorithms=[security_config.ALGORITHM]
     )"""
-    print(type(token),token)
     decoded_jwt = {'sub':'nav.j.raman@gmail.com'}
     return decoded_jwt["sub"]
 

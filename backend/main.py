@@ -238,6 +238,12 @@ def load_question(name,question_num):
             'question': question,
             'answer': answer}
 
+@app.get("/quel/user/{token}")
+def get_user_info(token):
+    username = security.decode_token(token)
+    edits = db.get_all_useredits(username)
+    return {'username':security.decode_token(token),'edits':edits}
+
 @app.get("/quel/noun_phrases_suggested/{question_num}")
 def get_noun_phrase_suggested_num(question_num):
     print("Getting suggested")
