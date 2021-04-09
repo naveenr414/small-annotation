@@ -125,7 +125,7 @@ class Dragbox extends React.Component<Props, State> {
           <Modal.Header closeButton>
             <Modal.Title>Search</Modal.Title>
           </Modal.Header>
-          <Modal.Body> <Search close={this.close_search} save={this.save_search_results} update_entity_name={this.update_entity_name} entity_number={this.props.entity_number} default_search={this.num_spans() == 1?this.props.current_spans[this.props.current_spans.length-1]['content']:""} /> </Modal.Body>
+          <Modal.Body> <Search close={this.close_search} save={this.save_search_results} update_entity_name={this.update_entity_name} entity_number={this.props.entity_number} default_search={this.props.entity_name!==""?this.props.entity_name:this.num_spans() == 1?this.props.current_spans[this.props.current_spans.length-1]['content']:""} /> </Modal.Body>
           <Modal.Footer>
             <Button variant="primary" onClick={this.save_search_results}>
               Save
