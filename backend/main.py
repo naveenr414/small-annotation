@@ -254,6 +254,9 @@ def get_noun_phrase(question_num):
     start = time.time()
     name = security.decode_token(question_num.split("_")[1][:-1])
     question_num = question_num.split("_")[0]
+    question_num = random.randint(0,120000)
+    while db.get_question(question_num) == {}:
+        question_num = random.randint(0,120000)
     return load_question(name,question_num)
 
 @app.get("/quel/category/{username}")

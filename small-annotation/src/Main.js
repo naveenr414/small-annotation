@@ -19,7 +19,9 @@ import {Redirect} from 'react-router-dom';
 
 let address = "/quel";
 
-interface Props {}
+interface Props {
+  suggested: boolean;
+}
 
 interface State {
   question: any;
@@ -61,7 +63,12 @@ export default class Main extends React.Component<Props, State> {
   /* Loading in questions */ 
   componentDidMount = () => {
     let name = getCookie("token");
-    this.setState({name},()=>{this.get_noun_phrases(0);});
+    if(this.props.suggested) {
+      this.setState({name},()=>{this.get_noun_phrases_suggested(0);});
+    }
+    else {
+      this.setState({name},()=>{this.get_noun_phrases(0);});
+    }
   }
 
   get_noun_phrases_suggested = (question_num) => {
@@ -550,13 +557,13 @@ export default class Main extends React.Component<Props, State> {
 
                     <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
                       <div style={{marginBottom: 20}}> 
-                        <button style={{marginLeft: 30}} onClick={this.decrement_question}> Previous </button>
-                        <button style={{marginLeft: 30}} onClick={this.increment_question}> Next </button>
+                        <button style={{marginLeft: 30}} onClick={this.increment_question}> Random Question </button>
                         <button style={{marginLeft: 30}} onClick={this.new_suggested}> Suggested Question </button>
                         <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button> 
                         <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
                         <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
                         <button  style={{marginLeft: 30}}  onClick={this.logout}>Logout</button> <br /> <br />
+                        <button  style={{marginLeft: 30}}><a href="/user"> User Info </a> </button> <br /> <br />
                         <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
                           {this.state.saved?'Saved':'Not Saved'} 
                         </div>

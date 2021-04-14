@@ -74,9 +74,9 @@ export default class User extends React.Component<Props, State> {
     return <div> <h1> {this.state.username} </h1> <br />
     
     <div style={{marginLeft: 50}}> 
-      <Button style={{marginBottom: 50}} variant="contained">Random Question</Button> <br />
+      <Button style={{marginBottom: 50}} variant="contained"><a href="/"> Random Question </a> </Button> <br />
       <div style={{marginBottom: 50}}> 
-        <Button variant="contained">Suggested Question</Button> 
+        <Button variant="contained"><a href="/suggested"> Suggested Question</a></Button> 
         <Select
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"

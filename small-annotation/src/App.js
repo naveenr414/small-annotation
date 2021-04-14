@@ -33,8 +33,11 @@ function App() {
         <Route path="/register">
           <Register />
         </Route>
+        <Route path="/suggested">
+          <Main suggested={true}/>
+        </Route>
         <Route path="/">
-          <Main/>
+          <Main suggested={false} />
         </Route>
       </Switch>
     </Router>
