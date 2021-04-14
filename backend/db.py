@@ -225,9 +225,9 @@ class Database:
 
             results = session.query(Mention).filter(and_(Mention.user_id == user,
                                                          Mention.question_id==question_num))
+
             
             results = [{'start':i.start,'end':i.end,'wiki_page':i.wiki_page,'content':i.content,'number':i.number} for i in results]
-            print(results)
             return results
 
     def remove_mentions(self,user,question_num):

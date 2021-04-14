@@ -35,6 +35,7 @@ interface State {
   underline_span: any;
   is_dragged: boolean;
   clicked: any;
+  qanta_id: any;
 }
 
 let colors = ["#4E79A7","#A0CB38","#F28E2B","#FFBE7D","#59A14F","#8CD17D","#B6992D","#F1CE63","#499894","#86BCB6"];
@@ -54,6 +55,7 @@ export default class Main extends React.Component<Props, State> {
     underline_span: [],
     is_dragged: false,
     clicked: "",
+    qanta_id: "",
   }
   
   /* Loading in questions */ 
@@ -73,6 +75,7 @@ export default class Main extends React.Component<Props, State> {
         indices: res['indices'],
         question: res['question'],
         answer: res['answer'],
+        qanta_id: res['question_num'],
         entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []}
         ,()=>{this.setState({clicked: []})}));
   }
@@ -88,6 +91,7 @@ export default class Main extends React.Component<Props, State> {
         indices: res['indices'],
         question: res['question'],
         answer: res['answer'],
+        qanta_id: res['question_num'],
         entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []}
         ,()=>{this.setState({clicked: []})}));
   }
@@ -96,7 +100,7 @@ export default class Main extends React.Component<Props, State> {
     let str_entity_names = JSON.stringify(this.state.entity_names);
     let str_entity_spans = JSON.stringify(this.state.entity_list);
     let username = this.state.name;
-    let question_id = this.state.current_question;
+    let question_id = this.state.qanta_id.toString();
     var xhr = new XMLHttpRequest();
     xhr.open("POST", address+"/submit");
     xhr.send(JSON.stringify({str_entity_names,str_entity_spans,username,question_id}));
@@ -393,7 +397,7 @@ export default class Main extends React.Component<Props, State> {
           current_color = "#DDDDDD";
         } 
         let start_character = this.state.indices[current_tag.start];
-        let end_character = this.state.indices[current_tag.end]+this.state.words[current_tag.end].length;
+        let end_character = this.state.indices[Math.min(current_tag.end,this.state.words.length-1)]+this.state.words[Math.min(current_tag.end,this.state.words.length-1)].length;
         spans.push([start_character,end_character,current_color]);
       }
     }

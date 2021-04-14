@@ -2,6 +2,7 @@ import json
 import spacy
 nlp = spacy.load("en_core_web_sm",exclude=["ner","tagger"])
 import time
+import unidecode
 
 def chunk_words(question):
     start = time.time()
@@ -53,7 +54,7 @@ def process(question,f,g):
     k = 0
 
     while i<len(tokens):
-        while k<len(question) and question[k:k+len(tokens[i])].lower()!=tokens[i].lower():
+        while k<len(question) and unidecode.unidecode(question[k:k+len(tokens[i])].lower())!=unidecode.unidecode(tokens[i].lower()):
             k+=1
         tokens_to_char[i] = (k,k+len(tokens[i]))
         i+=1
@@ -77,19 +78,23 @@ def process(question,f,g):
         else:
             clusters.append({'name':k['entity'],'clusters':[k['span']]})
 
-    try:
-        for i in range(len(clusters)):
-            for j in range(len(clusters[i]['clusters'])):
-                temp = clusters[i]['clusters'][j]
+    for i in range(len(clusters)):
+        for j in range(len(clusters[i]['clusters'])):
+            temp = clusters[i]['clusters'][j]
+            try:
                 clusters[i]['clusters'][j] = [nums[temp[0]],nums[temp[1]-1],question[temp[0]:temp[1]]]
-    except:
-        return []
+            except:
+                return []
 
     return clusters
 
+print("Loading blink")
 blink_file = open("all_blink.json").read().strip().split("\n")
+
+print("Loading coref")
 coref_file = open("coref_preds.json").read().strip().split("\n")
 
+print("Processing blink,coref")
 blink_data = {}
 coref_data = {}
 for i in blink_file:
@@ -103,13 +108,16 @@ for i in coref_file:
 blink_file = []
 coref_file = []
 
+print("Loading questions")
 question_list = json.load(open("qanta.train.2018.04.18.json"))['questions']+json.load(open("qanta.dev.2018.04.18.json"))['questions']+json.load(open("qanta.test.2018.04.18.json"))['questions']
 
 w = open("baseline_entities.json","w")
 
+print("Going through and converting, there are {} questions".format(len(question_list)))
 start = time.time()
 for i in range(len(question_list)):
     question_num = int(question_list[i]['qanta_id'])
+    
     if question_num in blink_data:
         f = blink_data[question_num]
     else:
@@ -123,7 +131,7 @@ for i in range(len(question_list)):
 
     w.write("{}\n".format(json.dumps({'clusters':clusters,'qanta_id':question_num})))
 
-    if (i+1)%10000 == 0:
+    if (i+1)%5000 == 0:
         print(i+1,clusters,time.time()-start)
 
 w.close()

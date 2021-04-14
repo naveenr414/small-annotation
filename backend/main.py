@@ -44,6 +44,11 @@ class NounPhrase(BaseModel):
     username: str
     question_id: int
 
+class Preference(BaseModel):
+    username: str
+    category: str
+    subcategory: str
+
 nlp = spacy.load("en_core_web_sm")
 tokenizer = Tokenizer(nlp.vocab)
 
@@ -95,17 +100,6 @@ def load_annotations(person_name):
         annotations[question_num].append((start,end,annotation,is_nel))
 
     return annotations
-
-def write_annotations_dict(person_name,d):
-    w = open("../data/{}_annotations.csv".format(person_name),"w")
-
-    print("Writing {}".format(d))
-
-    w.write("question_num,start,end,annotation,is_named_entity\n")
-    for k in d:
-        for i in d[k]:
-            w.write("{},{},{},{},{}\n".format(k,i[0],i[1],i[2],i[3]))
-    w.close()
         
 
 def write_annotation(question_num,start,end,annotation,is_nel,person_name):
@@ -159,13 +153,10 @@ def noun_indices(question):
     return {'spans':list(spans_seen),'text':list(texts)}
 
 def get_annotations(username,question_num,question_data):
-    print("Getting annotations for {} {}".format(username,question_num))
     mentions = db.get_mentions_by_user(username,str(question_num))
 
     if len(mentions) == 0:
         mentions = db.get_mentions_by_user("system",question_num)
-
-    print("System mentions {}".format(len(mentions)))
     
     answer = question_data['wiki_answer']
     names = ["","{}".format(answer)]
@@ -217,7 +208,7 @@ def load_question(name,question_num):
     question = "No Question"
     answer = "No Answer"
 
-    if question_data != {}:    
+    if question_data != {}:
         question = question_data['question']
         answer = question_data['answer']
         w,word_indices = chunk_words(question)
@@ -227,16 +218,14 @@ def load_question(name,question_num):
         entity_names = json.dumps(json.loads(annotation_data['names'])+[""])
         entity_list = json.dumps(json.loads(annotation_data['spans'])+[[]])
         
-    print("Reading time {}".format(time.time()-start))
 
-    print("Chunk word time {}".format(time.time()-start))
-    print("Took {} time".format(time.time()-start))
     return {'words':w,'indices':word_indices,
             'entity_names':entity_names,
             'entity_list':entity_list,
             'loaded_question':question_num,
             'question': question,
-            'answer': answer}
+            'answer': answer,
+            'question_num': question_num}
 
 @app.get("/quel/user/{token}")
 def get_user_info(token):
@@ -251,22 +240,44 @@ def get_noun_phrase_suggested_num(question_num):
     name = question_num.split("_")[-1].lower().strip()
     question_num = "_".join(question_num.split("_")[:-1])
 
+    name = security.decode_token(name)
     if name not in user_category:
         user_category[name] = random.sample(suggest_questions.category_list,1)[0]
         user_num[name] = random.randint(0,3)
-        print("Category {}".format(user_category[name]))
-    question_num = suggest_questions.get_random_question(user_category[name].split("_")[0],
-                                                         user_category[name].split("_")[1],
-                                                         user_num[name])
+    print("Category {}".format(user_category[name]))
+    question_num = suggest_questions.get_random_question(user_category[name],user_num[name])
+    print("Question num {}".format(question_num))
     return load_question(name,question_num)
 
 @app.get("/quel/noun_phrases/{question_num}")
 def get_noun_phrase(question_num):
     start = time.time()
-    print(question_num)
     name = security.decode_token(question_num.split("_")[1][:-1])
     question_num = question_num.split("_")[0]
     return load_question(name,question_num)
+
+@app.get("/quel/category/{username}")
+def get_category(username):
+    if username not in user_category:
+        user_category[username] = "Literature"
+        return "Literature"
+    return user_category[username]
+    
+
+@app.post("/quel/user_preferences")
+async def update_preferences(preference: Preference):
+    if preference.subcategory == "Any":
+        new_category = preference.category
+    else:
+        new_category = "{}_{}".format(preference.category,preference.subcategory)
+
+    name = preference.username
+    print("Preference name {}".format(name))
+    if name not in user_category or user_category[name]!=new_category:
+        user_category[name] = new_category
+        user_num[name] = random.randint(0,3)
+
+    print("Setting user preference to {}".format(new_category))
 
 @app.post("/quel/submit")
 async def write_phrases(noun_phrases: NounPhrase):

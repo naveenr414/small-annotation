@@ -6,10 +6,6 @@ import random
 categories = pickle.load(open("kmeans_subcategories.p","rb"))
 category_list = list(categories.keys())
 
-def get_random_question(category,subcategory,num):
-    question_list = categories["{}_{}".format(category,subcategory)]
-    return random.sample(question_list[num],1)[0]
-
-
-
+def get_random_question(category,num):
+    return random.sample(categories[category][num],1)[0]
 
