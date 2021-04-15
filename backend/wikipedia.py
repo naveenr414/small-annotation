@@ -81,4 +81,3 @@ def create_subcategories():
     pickle.dump(buckets,open('kmeans_subcategories.p','wb'))
     return buckets
 
-create_subcategories()

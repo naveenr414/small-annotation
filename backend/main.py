@@ -16,6 +16,7 @@ from fastapi.responses import FileResponse
 import suggest_questions
 import random
 import security
+from sqlalchemy import func
 
 app = FastAPI()
 origins = [
@@ -265,7 +266,14 @@ def get_category(username):
         user_category[username] = "Literature"
         return "Literature"
     return user_category[username]
-    
+
+@app.get("/quel/entity/{entity_name}")
+def get_questions_entity(entity_name):
+    e = entity_name.split("_")
+    category = e[-2]
+    difficulty = e[-1]
+    entity_name = "_".join(e[:-2])
+    return db.get_question_answers(db.get_questions_by_entity(entity_name),category,difficulty)
 
 @app.post("/quel/user_preferences")
 async def update_preferences(preference: Preference):

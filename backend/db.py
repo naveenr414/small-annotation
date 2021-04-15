@@ -9,6 +9,7 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.orm.scoping import ScopedSession
 from contextlib import contextmanager
+from sqlalchemy import func
 
 import pickle
 import time
@@ -229,6 +230,25 @@ class Database:
             
             results = [{'start':i.start,'end':i.end,'wiki_page':i.wiki_page,'content':i.content,'number':i.number} for i in results]
             return results
+
+    def get_questions_by_entity(self,entity):
+        with self._session_scope as session:
+            results = session.query(Mention).filter(and_(Mention.user_id == "system",func.lower(Mention.wiki_page)==entity.lower()))
+            return list(set([i.question_id for i in results]))
+
+    def get_question_answers(self,question_ids,category,difficulty):
+        with self._session_scope as session:
+            data = []
+
+            difficulty_converter = {'College': ['regular_college','easy_college','hard_college','college'],'High School': ['hs','regular_high_school','hard_high_school','easy_high_school','national_high_school'],
+                                    'Open':['open'],'Middle School':['middle school','ms']}
+            
+            for i in question_ids:
+                results = session.query(Question).filter(Question.id==i).limit(1)
+                data += [{'question':i.question,'answer':i.answer.replace("{","").replace("}",""),'difficulty': i.difficulty, 'tournament': i.tournament}
+                         for i in results if (category == 'Any' or category == i.category) and (difficulty == 'Any' or i.difficulty.lower() in difficulty_converter[difficulty])]
+
+            return data
 
     def remove_mentions(self,user,question_num):
         with self._session_scope as session:
