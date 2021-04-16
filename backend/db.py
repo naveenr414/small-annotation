@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, ForeignKey, Column, Text, create_engine,and_,desc, DateTime
+from sqlalchemy import Integer, ForeignKey, Column, Text, create_engine,and_,or_, desc, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import (
     Load,
@@ -220,33 +220,49 @@ class Database:
         print("Took {} time with {} count {}".format(time.time()-start,count,word))
         return [(names[i].replace("&amp;","&"),summaries[i]) for i in range(len(names))]
 
+    def get_questions_user(self,user):
+        with self._session_scope as session:
+            results = session.query(UserEdits).filter(UserEdits.user_id==user)
+            return set([i.question_id for i in results])
+
     def get_mentions_by_user(self,user,question_num):
         with self._session_scope as session:
             question_num = int(question_num)
 
             results = session.query(Mention).filter(and_(Mention.user_id == user,
                                                          Mention.question_id==question_num))
-
-            
             results = [{'start':i.start,'end':i.end,'wiki_page':i.wiki_page,'content':i.content,'number':i.number} for i in results]
             return results
 
     def get_questions_by_entity(self,entity):
         with self._session_scope as session:
-            results = session.query(Mention).filter(and_(Mention.user_id == "system",func.lower(Mention.wiki_page)==entity.lower()))
-            return list(set([i.question_id for i in results]))
+            results = session.query(Mention).filter(and_(Mention.user_id == "system",func.lower(Mention.wiki_page)==entity.lower().replace("_"," ")))
+            questions = session.query(Question).filter(func.lower(Question.wiki_answer) == entity)
+            return list(set([i.question_id for i in results]).union(set([i.id for i in questions])))
 
     def get_question_answers(self,question_ids,category,difficulty):
         with self._session_scope as session:
             data = []
 
             difficulty_converter = {'College': ['regular_college','easy_college','hard_college','college'],'High School': ['hs','regular_high_school','hard_high_school','easy_high_school','national_high_school'],
-                                    'Open':['open'],'Middle School':['middle school','ms']}
+                                    'Open':['open'],'Middle School':['middle_school','ms']}
             
             for i in question_ids:
                 results = session.query(Question).filter(Question.id==i).limit(1)
                 data += [{'question':i.question,'answer':i.answer.replace("{","").replace("}",""),'difficulty': i.difficulty, 'tournament': i.tournament}
                          for i in results if (category == 'Any' or category == i.category) and (difficulty == 'Any' or i.difficulty.lower() in difficulty_converter[difficulty])]
+
+            return data
+        
+    def get_tournament_entities(self,question_ids,tournament,year):
+        with self._session_scope as session:
+            data = []
+
+            
+            for i in question_ids:
+                results = session.query(Question).filter(Question.id==i).limit(1)
+                data += [{'question':i.question,'answer':i.answer.replace("{","").replace("}",""),'difficulty': i.difficulty, 'tournament': i.tournament}
+                         for i in results if i.tournament == tournament and int(i.year) == int(year)]
 
             return data
 
@@ -256,7 +272,23 @@ class Database:
                                                          Mention.question_id==question_num)).delete()
             session.commit()
             return True
+
+    def get_tournament(self,year,tournament):
+        with self._session_scope as session:
+            results = session.query(Question).filter(and_(Question.tournament==tournament,Question.year==year))
+            mentions = [{'question': i.id, 'page': i.wiki_answer} for i in results]
+            results = [i.id for i in results]
+
+            print("Got {} questions".format(len(results)))
+
+
+            for i in results:
+                results = session.query(Mention).filter(Mention.question_id == i)
+                mentions+=[{'question': j.question_id, 'page': j.wiki_page} for j in results if (j.user_id == "system") and (j.wiki_page!="")]
             
+
+            return mentions
+    
     def insert_mentions(self,mentions):
         with self._session_scope as session:
             session.bulk_insert_mappings(Mention,mentions)

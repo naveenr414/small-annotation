@@ -29,13 +29,28 @@ export default class Info extends React.Component<Props, State> {
     }
   }
   
+  download_questions = () => {
+    fetch(
+      address+"/pdf/"+this.state.username
+      ).then(res => {
+        return res.blob();
+      })
+      .then((blob)=>{
+        const href = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = href;
+        a.download = 'question.pdf';
+        a.click();
+      });
+  }
+  
   render() {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
     }
     
-    return <div> <h1> {this.state.username} </h1> <br />
-      User Info
+    return <div style={{marginLeft: 30}}> <h1> {this.state.username} </h1> <br />
+      <button onClick={this.download_questions}> Download PDF </button>
         
     </div>
     

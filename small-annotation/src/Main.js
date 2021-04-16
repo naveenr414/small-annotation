@@ -115,20 +115,7 @@ export default class Main extends React.Component<Props, State> {
   } 
 
   /* Download questions */ 
-  download_questions = () => {
-    fetch(
-      address+"/pdf/"+this.state.current_question+"_"+this.state.name
-      ).then(res => {
-        return res.blob();
-      })
-      .then((blob)=>{
-        const href = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = href;
-        a.download = 'question.pdf';
-        a.click();
-      });
-  }
+
   
   /* Util to help with word <-> character <-> span */ 
   word_to_character = (span) => {
@@ -592,7 +579,7 @@ export default class Main extends React.Component<Props, State> {
                       <br />
                       {this.render_draggables()[0]}
                       <br />
-                      <button onClick={this.download_questions}> Download PDF </button>
+                      
                     </Grid>
                     
                     <Divider orientation="vertical" flexItem />

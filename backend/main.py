@@ -275,6 +275,36 @@ def get_questions_entity(entity_name):
     entity_name = "_".join(e[:-2])
     return db.get_question_answers(db.get_questions_by_entity(entity_name),category,difficulty)
 
+@app.get("/quel/tournament_entity/{entity_name}")
+def get_questions_entity(entity_name):
+    e = entity_name.split("_")
+    tourney = e[-1]
+    year = e[-2]
+    entity_name = "_".join(e[:-2])
+    results = db.get_questions_by_entity(entity_name)
+    print(results)
+    results = db.get_tournament_entities(results,tourney,year)
+    print(results)
+    return results
+
+@app.get("/quel/tournament/{tournament}")
+def get_tournament(tournament):
+    year,tournament = tournament.split("_")
+    tourney_data = db.get_tournament(int(year),tournament)
+
+    print("Searching for {} {}".format(year,tournament))
+
+    entity_popularity = {}
+    for i in tourney_data:
+        if i['page'] not in entity_popularity:
+            entity_popularity[i['page']] = set()
+        entity_popularity[i['page']].add(i['question'])
+
+    data = [(i,len(entity_popularity[i])) for i in entity_popularity]
+    data = sorted(data,key=lambda k: k[1],reverse=True)[:10]
+    print(data)
+    return data
+
 @app.post("/quel/user_preferences")
 async def update_preferences(preference: Preference):
     if preference.subcategory == "Any":
@@ -341,66 +371,78 @@ def status_check():
 
     return "No Errors Found"
 
-@app.get("/quel/pdf/{question_num}")
-def write_pdf(question_num):
-    question_data = db.get_question(int(question_num.split("_")[0]))
-    annotations = get_annotations(question_num.split("_")[1],
-                                  question_num.split("_")[0],question_data)
-    annotations['names'] = json.loads(annotations['names'])
-    annotations['spans'] = json.loads(annotations['spans'])
-
-    clean_annotations = []
-
-    for i in range(1,len(annotations['names'])):
-        if 'no entity' not in annotations['names'][i].lower() and annotations['names'][i]!='unknown' and annotations['names'][i]!='':
-            for j in range(len(annotations['spans'][i])):
-                span = annotations['spans'][i][j]
-                del span['content']
-                span = (span['start'],span['end'])
-                clean_annotations.append((annotations['names'][i],
-                                          span))
-
-    clean_annotations = sorted(clean_annotations,key=lambda k: k[1])
-    clean_annotations = [i for i in clean_annotations if min(i[1])>=0]
-    question_num = question_num.split("_")[0]
-    f = db.get_question(int(question_num))['question']
-    words = chunk_words(f)[0]
+@app.get("/quel/pdf/{username}")
+def write_pdf(username):
+    all_questions = db.get_questions_user(username)
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font('Arial', '', 14)
-    annotation_pointer = 0
-    i = 0
-    while i<len(words):
-        if annotation_pointer == len(clean_annotations):
-            pdf.set_text_color(0, 0, 0)
-            pdf.set_font('', '')
-            pdf.write(5," ".join(words[i:]).replace(" .",".").replace(" ?","?").replace(" !","!").replace(" ,",",").replace(" - ","-"))
-            break
-        elif clean_annotations[annotation_pointer][1][0] == i:
-            sent = (" ".join(
-                          words[clean_annotations[annotation_pointer][1][0]:clean_annotations[annotation_pointer][1][1]+1])+
-                       " ")
-            sent = sent.replace(" .",".").replace(" ?","?").replace(" !","!").replace(" ,",",").replace(" - ","-")
+
+    count = 1
+    for question_num in all_questions:
+        pdf.set_font('Arial', '', 14)
+
+        print("Question_num {}".format(question_num))
             
-            pdf.set_text_color(0, 0, 255)
-            pdf.set_font('', 'U')
-            location = clean_annotations[annotation_pointer][0].lower().replace(" ","_")
-            id = db.get_id(location)
-            url = "https://en.wikipedia.org"
-            if len(id)>0:
-                url = 'https://en.wikipedia.org/wiki?curid={}'.format(id[0])
-            pdf.write(5,sent,url)
-            i = clean_annotations[annotation_pointer][1][1]+1
-            annotation_pointer+=1
-        else:
-            pdf.set_text_color(0, 0, 0)
-            pdf.set_font('', '')
-            if i+1<len(words) and words[i+1] in ['.','!',':',';','?',"'",",","-"] or words[i] in ['-',"'"]:
-                pdf.write(5,words[i])
+        question_data = db.get_question(question_num)
+        annotations = get_annotations(username,
+                                      question_num,question_data)
+        annotations['names'] = json.loads(annotations['names'])
+        annotations['spans'] = json.loads(annotations['spans'])
+
+
+        clean_annotations = []
+
+        for i in range(1,len(annotations['names'])):
+            if 'no entity' not in annotations['names'][i].lower() and annotations['names'][i]!='unknown' and annotations['names'][i]!='':
+                for j in range(len(annotations['spans'][i])):
+                    span = annotations['spans'][i][j]
+                    del span['content']
+                    span = (span['start'],span['end'])
+                    clean_annotations.append((annotations['names'][i],
+                                              span))
+
+        clean_annotations = sorted(clean_annotations,key=lambda k: k[1])
+        clean_annotations = [i for i in clean_annotations if min(i[1])>=0]
+        f = db.get_question(int(question_num))['question']
+        words = chunk_words(f)[0]
+        annotation_pointer = 0
+        i = 0
+
+        pdf.write(5,"{}. ".format(count))
+        
+        while i<len(words):
+            if annotation_pointer == len(clean_annotations):
+                pdf.set_text_color(0, 0, 0)
+                pdf.set_font('', '')
+                pdf.write(5," ".join(words[i:]).replace(" .",".").replace(" ?","?").replace(" !","!").replace(" ,",",").replace(" - ","-"))
+                break
+            elif clean_annotations[annotation_pointer][1][0] == i:
+                sent = (" ".join(
+                              words[clean_annotations[annotation_pointer][1][0]:clean_annotations[annotation_pointer][1][1]+1])+
+                           " ")
+                sent = sent.replace(" .",".").replace(" ?","?").replace(" !","!").replace(" ,",",").replace(" - ","-")
+                
+                pdf.set_text_color(0, 0, 255)
+                pdf.set_font('', 'U')
+                location = clean_annotations[annotation_pointer][0].lower().replace(" ","_")
+                id = db.get_id(location)
+                url = "https://en.wikipedia.org"
+                if len(id)>0:
+                    url = 'https://en.wikipedia.org/wiki?curid={}'.format(id[0])
+                pdf.write(5,sent,url)
+                i = clean_annotations[annotation_pointer][1][1]+1
+                annotation_pointer+=1
             else:
-                pdf.write(5,words[i]+" ")
-            i+=1
-    
+                pdf.set_text_color(0, 0, 0)
+                pdf.set_font('', '')
+                if i+1<len(words) and words[i+1] in ['.','!',':',';','?',"'",",","-"] or words[i] in ['-',"'"]:
+                    pdf.write(5,words[i])
+                else:
+                    pdf.write(5,words[i]+" ")
+                i+=1
+        pdf.write(5,"\n\n\n\n")
+        count+=1
+        
     # Then put a blue underlined link
     pdf.output('question.pdf', 'F')
     file_path = "question.pdf"
