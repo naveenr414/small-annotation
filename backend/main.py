@@ -371,6 +371,45 @@ def status_check():
 
     return "No Errors Found"
 
+@app.get("/quel/leaderboard")
+def get_leaderboard():
+    all_mentions = db.get_all_mentions()
+    questions = set([i['question'] for i in all_mentions])
+    system_mentions = set()
+    for i in questions:
+        mentions = db.get_mentions_by_user("system",i)
+        for j in mentions:
+            del j['content']
+            del j['number']
+            j['question'] = i
+            system_mentions = system_mentions.union(["{}_{}_{}_{}".format(j['question'],j['start'],j['end'],j['wiki_page'])])
+
+    print(len(system_mentions))
+
+    print("Mentions length before {}".format(len(all_mentions)))
+    all_mentions = [j for j in all_mentions if ("{}_{}_{}_{}".format(j['question'],j['start'],j['end'],j['wiki_page'])) not in system_mentions]
+
+    user_num_questions = {}
+    user_num_mentions = {}
+
+    for i in all_mentions:
+        if i['user'] not in user_num_questions:
+            user_num_questions[i['user']] = set()
+            user_num_mentions[i['user']] = 0
+        user_num_mentions[i['user']]+=1
+        user_num_questions[i['user']] = user_num_questions[i['user']].union([i['question']])
+
+    l = []
+    for i in user_num_questions:
+        l.append((i,len(user_num_questions[i]),user_num_mentions[i]))
+
+    l = sorted(l,key=lambda k: k[1],reverse=True)
+    print(l)
+    print("Mentions length after {}".format(len(all_mentions)))
+
+    return l
+            
+
 @app.get("/quel/pdf/{username}")
 def write_pdf(username):
     all_questions = db.get_questions_user(username)

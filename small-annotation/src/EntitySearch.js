@@ -101,7 +101,7 @@ export default class EntitySearch extends React.Component<Props, State> {
     return <div style={{marginLeft: 30}}> <h1> Search Entity  </h1>
 <br />
     <b> Entity: </b>  <TextField id="standard-basic" onChange={(event)=>{this.setState({search_entity: event.target.value})}} /> Category:  
-            <Select
+        <Select
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"
           value={this.state.category_option}
