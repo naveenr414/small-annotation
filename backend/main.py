@@ -17,6 +17,7 @@ import suggest_questions
 import random
 import security
 from sqlalchemy import func
+from collections import Counter
 
 app = FastAPI()
 origins = [
@@ -408,6 +409,18 @@ def get_leaderboard():
     print("Mentions length after {}".format(len(all_mentions)))
 
     return l
+
+@app.get("/quel/topics/{username}")
+def get_topic_distro(username):
+    user_mentions = db.get_questions_user(username)
+    topics = []
+
+    for i in user_mentions:
+        topics.append(db.get_topic(i))
+
+    print("Topics {}".format(topics))
+
+    return Counter(topics)
             
 
 @app.get("/quel/pdf/{username}")

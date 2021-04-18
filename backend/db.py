@@ -230,6 +230,11 @@ class Database:
             results = session.query(UserEdits).filter(UserEdits.user_id==user)
             return set([i.question_id for i in results])
 
+    def get_topic(self,question_id):
+        with self._session_scope as session:
+            results = session.query(Question).filter(Question.id == question_id).limit(1)
+            return [i.category for i in results][0]
+
     def get_mentions_by_user(self,user,question_num):
         with self._session_scope as session:
             question_num = int(question_num)

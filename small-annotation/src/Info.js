@@ -7,6 +7,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import {Bar} from 'react-chartjs-2';
 
 interface State {
 
@@ -15,10 +16,22 @@ interface State {
 let address = "/quel";
 
 
+
 export default class Info extends React.Component<Props, State> {
   state: State = {
     username: "",
+    categories: {},
     leaderboard: [],
+      
+  }
+  
+  get_top_categories = () => {
+        fetch(
+      address+"/topics/"+this.state.username
+      ).then(res=>res.json())
+      .then(res => {
+        this.setState({categories: res,});
+      })
   }
   
   get_user_info = () => {
@@ -26,7 +39,7 @@ export default class Info extends React.Component<Props, State> {
       address+"/user/"+getCookie("token")
       ).then(res=>res.json())
       .then(res => {
-        this.setState({username: res['username'],});
+        this.setState({username: res['username']},()=>{this.get_top_categories();});
       })
   }
   
@@ -43,6 +56,7 @@ export default class Info extends React.Component<Props, State> {
     if(getCookie("token") !== "") {
       this.get_user_info();
       this.get_leaderboard();
+
     }
   }
   
@@ -61,14 +75,46 @@ export default class Info extends React.Component<Props, State> {
       });
   }
   
+  render_chart = () => {
+    let data = {labels: Object.keys(this.state.categories).concat(['']),
+  datasets: [
+    {
+      label: 'Questions',
+      backgroundColor: 'rgba(75,192,192,1)',
+      borderColor: 'rgba(0,0,0,1)',
+      borderWidth: 2,
+      data: Object.values(this.state.categories).concat([0]),
+    }
+    ]};
+    
+    
+    return      <Bar
+          data={data}
+          options={{
+            title:{
+              display:true,
+              text:'Questions by Category',
+              fontSize:20
+            },
+            legend:{
+              display:true,
+              position:'right'
+            }
+          }}
+        />
+  }
+  
   render() {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
     }
-    
+
+ 
     return <div style={{marginLeft: 30}}> <h1> {this.state.username} </h1> <br />
       <button onClick={this.download_questions}> Download PDF </button>
-      <Table aria-label="simple table" style={{width: 500}}>
+       <br />
+       <b> Leaderboard </b>
+     <Table aria-label="simple table" style={{width: 500}}>
         <TableHead>
           <TableRow>
             <TableCell><b>Username</b></TableCell>
@@ -88,8 +134,7 @@ export default class Info extends React.Component<Props, State> {
           ))}
         </TableBody>
       </Table>
-
-     
+      {this.render_chart()}
     </div>
     
   }
