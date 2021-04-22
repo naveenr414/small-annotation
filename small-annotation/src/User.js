@@ -86,7 +86,7 @@ export default class User extends React.Component<Props, State> {
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"
           value={this.state.category_option}
-          onChange={(event)=>{this.setState({category_option:event.target.value},()=>{this.update_options()})}}
+          onChange={(event)=>{this.setState({category_option:event.target.value, subcategory_option: "Any"},()=>{this.update_options()})}}
         >
           {categories.map((option, index) => (
             <MenuItem

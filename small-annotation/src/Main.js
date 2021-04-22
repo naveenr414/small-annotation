@@ -552,8 +552,8 @@ export default class Main extends React.Component<Props, State> {
                         <button style={{marginLeft: 30}} onClick={this.new_suggested}> Suggested Question </button>
                         <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button> 
                         <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
-                        <button  style={{marginLeft: 30}}  onClick={this.logout}>Logout</button> <br /> <br />
                         <button  style={{marginLeft: 30}}><a href="/user"> User Info </a> </button> <br /> <br />
+                        <button  style={{marginLeft: 30}}  onClick={this.logout}>Logout</button> <br /> <br />
                         <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
                           {this.state.saved?'Saved':'Not Saved'} 
                         </div>

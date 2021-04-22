@@ -244,8 +244,10 @@ def get_user_info(token):
 def get_noun_phrase_suggested_num(question_num):
     print("Getting suggested")
     start = time.time()
-    name = question_num.split("_")[-1].lower().strip()
-    question_num = "_".join(question_num.split("_")[:-1])
+    name = "_".join(question_num.split("_")[1:])
+    question_num = question_num.split("_")[0]
+
+    print("Name {}".format(name))
 
     name = security.decode_token(name)
     if name not in user_category:
@@ -259,7 +261,8 @@ def get_noun_phrase_suggested_num(question_num):
 @app.get("/quel/noun_phrases/{question_num}")
 def get_noun_phrase(question_num):
     start = time.time()
-    name = security.decode_token(question_num.split("_")[1][:-1])
+    print("QUESTION NUM {}".format(question_num))
+    name = security.decode_token("_".join(question_num.split("_")[1:]))
     question_num = question_num.split("_")[0]
     question_num = random.randint(0,120000)
     while db.get_question(question_num) == {}:

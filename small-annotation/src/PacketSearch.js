@@ -20,8 +20,8 @@ export default class PacketSearch extends React.Component<Props, State> {
   state: State = {
     username: "",
     difficulty_option: "High School", 
-    year_option: 2016,
-    tournament_option: "BHSAT",
+    year_option: 2015,
+    tournament_option: tournaments['High School'][2015][0],
     summary_stats: [],
     results: [],
     search_entity: "",
@@ -93,7 +93,7 @@ export default class PacketSearch extends React.Component<Props, State> {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
     }
-    
+
     return <div style={{marginLeft: 30}}> <h1> Tournament Search </h1> 
         <Button style={{marginBottom: 50}} variant="contained" ><a href="/user"> Back </a> </Button>
     <br />
@@ -101,7 +101,8 @@ export default class PacketSearch extends React.Component<Props, State> {
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"
           value={this.state.difficulty_option}
-          onChange={(event)=>{this.setState({difficulty_option:event.target.value})}}
+          onChange={(event)=>{this.setState({difficulty_option:event.target.value, year_option: tournaments[event.target.value][this.state.year_option]!=undefined?this.state.year_option:2015,
+          tournament_option: tournaments[event.target.value][2015][0]})}}
         >
           {Object.keys(tournaments).map((option, index) => (
             <MenuItem
@@ -115,7 +116,8 @@ export default class PacketSearch extends React.Component<Props, State> {
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"
           value={this.state.year_option}
-          onChange={(event)=>{this.setState({year_option:parseInt(event.target.value)})}}
+          onChange={(event)=>{this.setState({year_option:parseInt(event.target.value),
+          tournament_option: tournaments[this.state.difficulty_option][parseInt(event.target.value)][0]})}}
 
         >
           {Object.keys(tournaments[this.state.difficulty_option]).map((option, index) => (
@@ -133,7 +135,7 @@ export default class PacketSearch extends React.Component<Props, State> {
           onChange={(event)=>{this.setState({tournament_option:event.target.value})}}
 
         >
-          {tournaments[this.state.difficulty_option][this.state.year_option].map((option, index) => (
+          {tournaments[this.state.difficulty_option][this.state.year_option]!=undefined && tournaments[this.state.difficulty_option][this.state.year_option].map((option, index) => (
             <MenuItem
               value={option}
             >
