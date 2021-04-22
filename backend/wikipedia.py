@@ -5,7 +5,7 @@ import json
 
 
 
-questions = json.load(open("qanta.train.2018.04.18.json"))['questions']+json.load(open("qanta.test.2018.04.18.json"))['questions']+json.load(open("qanta.dev.2018.04.18.json"))['questions']
+questions = json.load(open("qanta.train.2018.04.18.json"))['questions']#+json.load(open("qanta.test.2018.04.18.json"))['questions']+json.load(open("qanta.dev.2018.04.18.json"))['questions']
 
 
 pages = set()

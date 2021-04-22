@@ -246,8 +246,10 @@ class Database:
 
     def get_questions_by_entity(self,entity):
         with self._session_scope as session:
-            results = session.query(Mention).filter(and_(Mention.user_id == "system",func.lower(Mention.wiki_page)==entity.lower().replace("_"," ")))
-            questions = session.query(Question).filter(func.lower(Question.wiki_answer) == entity)
+            print("Entity {}".format(entity))
+            entity = entity.strip("_").replace("_"," ")
+            results = session.query(Mention).filter(and_(Mention.user_id == "system",func.lower(Mention.wiki_page)==entity.lower().replace(" ","_")))
+            questions = session.query(Question).filter(func.lower(Question.wiki_answer) == entity.lower().replace("_"," "))
             return list(set([i.question_id for i in results]).union(set([i.id for i in questions])))
 
     def get_question_answers(self,question_ids,category,difficulty):
@@ -289,13 +291,9 @@ class Database:
             mentions = [{'question': i.id, 'page': i.wiki_answer} for i in results]
             results = [i.id for i in results]
 
-            print("Got {} questions".format(len(results)))
-
-
             for i in results:
                 results = session.query(Mention).filter(Mention.question_id == i)
                 mentions+=[{'question': j.question_id, 'page': j.wiki_page} for j in results if (j.user_id == "system") and (j.wiki_page!="")]
-            
 
             return mentions
     

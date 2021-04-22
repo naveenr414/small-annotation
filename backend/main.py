@@ -290,6 +290,7 @@ def get_questions_entity(entity_name):
     tourney = e[-1]
     year = e[-2]
     entity_name = "_".join(e[:-2])
+    print(entity_name)
     results = db.get_questions_by_entity(entity_name)
     print(results)
     results = db.get_tournament_entities(results,tourney,year)
@@ -307,6 +308,7 @@ def get_tournament(tournament):
     for i in tourney_data:
         if i['page'] not in entity_popularity:
             entity_popularity[i['page']] = set()
+
         entity_popularity[i['page']].add(i['question'])
 
     data = [(i,len(entity_popularity[i])) for i in entity_popularity]
