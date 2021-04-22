@@ -38,6 +38,7 @@ interface State {
   is_dragged: boolean;
   clicked: any;
   qanta_id: any;
+  metadata: any;
 }
 
 let colors = ["#4E79A7","#A0CB38","#F28E2B","#FFBE7D","#59A14F","#8CD17D","#B6992D","#F1CE63","#499894","#86BCB6"];
@@ -58,6 +59,7 @@ export default class Main extends React.Component<Props, State> {
     is_dragged: false,
     clicked: "",
     qanta_id: "",
+    metadata: {'difficulty': '', 'category': '', 'tournament': '', 'year': ''},
   }
   
   /* Loading in questions */ 
@@ -78,6 +80,7 @@ export default class Main extends React.Component<Props, State> {
       .then((res) => res.json())
       .then((res) => this.setState(
         {current_question: question_num, 
+        metadata: res['metadata'],
         words: res['words'], 
         indices: res['indices'],
         question: res['question'],
@@ -96,6 +99,7 @@ export default class Main extends React.Component<Props, State> {
         {current_question: question_num, 
         words: res['words'], 
         indices: res['indices'],
+        metadata: res['metadata'],
         question: res['question'],
         answer: res['answer'],
         qanta_id: res['question_num'],
@@ -548,7 +552,6 @@ export default class Main extends React.Component<Props, State> {
                         <button style={{marginLeft: 30}} onClick={this.new_suggested}> Suggested Question </button>
                         <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button> 
                         <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
-                        <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
                         <button  style={{marginLeft: 30}}  onClick={this.logout}>Logout</button> <br /> <br />
                         <button  style={{marginLeft: 30}}><a href="/user"> User Info </a> </button> <br /> <br />
                         <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
@@ -569,7 +572,9 @@ export default class Main extends React.Component<Props, State> {
                       </Modal>
 
                       <div style={{fontSize: 16}}>  
-                        Question number:  {" "} {this.state.current_question+1} (1. Highlight spans and select create span)
+                        (1. Highlight spans and select create span)  <br />
+                        <b> Category</b>:  {" "} {this.state.metadata.category}, from {this.state.metadata.tournament} {this.state.metadata.year} 
+                       
                         <div id="main_text"> {this.get_styles()} </div>
                         <div> <b> Answer: </b> {this.state.answer} </div>
                       </div>

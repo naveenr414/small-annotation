@@ -28,6 +28,11 @@ export default class User extends React.Component<Props, State> {
     button_clicked: "",
   }
   
+  logout = () => {
+    setCookie("token","");
+    this.setState({username: ""});
+  }
+  
   get_user_info = () => {
     fetch(
       address+"/user/"+getCookie("token")
@@ -110,8 +115,10 @@ export default class User extends React.Component<Props, State> {
       </div> 
       <Button style={{marginBottom: 50}} variant="contained" ><a href="/entitysearch"> Search for Entity </a> </Button> <br />
       <Button style={{marginBottom: 50}} variant="contained" ><a href="/packetsearch"> Search by Packet </a> </Button> <br />
-      <Button style={{marginBottom: 50}} variant="contained"><a href="/info"> User stats </a> </Button> 
-    </div> 
+      <Button style={{marginBottom: 50}} variant="contained"><a href="/info"> User stats </a> </Button> <br />
+      <Button style={{marginBottom: 50}} variant="contained" onClick={this.logout}><a href="#"> Logout </a> </Button> 
+
+      </div> 
     
     </div>
     

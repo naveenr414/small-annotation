@@ -97,9 +97,14 @@ export default class EntitySearch extends React.Component<Props, State> {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
     }
-    
-    return <div style={{marginLeft: 30}}> <h1> Search Entity  </h1>
+
+
+    return <div style={{marginLeft: 30}}> 
+
+    <h1> Search Entity  </h1>
 <br />
+        <Button style={{marginBottom: 50}} variant="contained" ><a href="/user"> Back </a> </Button>
+    <br />
     <b> Entity: </b>  <TextField id="standard-basic" onChange={(event)=>{this.setState({search_entity: event.target.value})}} /> Category:  
         <Select
           style={{marginLeft: 20, marginRight: 20}}

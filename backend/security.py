@@ -41,10 +41,9 @@ def authenticate_user(username, password):
 
 def decode_token(token):
     print("Trying to decode {}".format(token))
-    """decoded_jwt = jwt.decode(
+    decoded_jwt = jwt.decode(
         token, security_config.SECRET_KEY, algorithms=[security_config.ALGORITHM]
-    )"""
-    decoded_jwt = {'sub':'nav.j.raman@gmail.com'}
+    )
     return decoded_jwt["sub"]
 
 

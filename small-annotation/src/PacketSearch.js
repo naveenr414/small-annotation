@@ -95,6 +95,8 @@ export default class PacketSearch extends React.Component<Props, State> {
     }
     
     return <div style={{marginLeft: 30}}> <h1> Tournament Search </h1> 
+        <Button style={{marginBottom: 50}} variant="contained" ><a href="/user"> Back </a> </Button>
+    <br />
         <Select
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"

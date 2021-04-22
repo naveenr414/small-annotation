@@ -209,9 +209,12 @@ def load_question(name,question_num):
     entity_list = "[]"
     question = "No Question"
     answer = "No Answer"
+    metadata = {'difficulty': '', 'category': '', 'year': '', 'tournament': ''}
 
     if question_data != {}:
         question = question_data['question']
+        for i in metadata:
+            metadata[i] = question_data[i]
         answer = question_data['answer']
         w,word_indices = chunk_words(question)
         db.user_starts(name,int(question_num))
@@ -219,7 +222,8 @@ def load_question(name,question_num):
         annotation_data = get_annotations(name,question_num,question_data)
         entity_names = json.dumps(json.loads(annotation_data['names'])+[""])
         entity_list = json.dumps(json.loads(annotation_data['spans'])+[[]])
-        
+
+    print("Metadata {}".format(metadata))
 
     return {'words':w,'indices':word_indices,
             'entity_names':entity_names,
@@ -227,7 +231,8 @@ def load_question(name,question_num):
             'loaded_question':question_num,
             'question': question,
             'answer': answer,
-            'question_num': question_num}
+            'question_num': question_num,
+            'metadata': metadata}
 
 @app.get("/quel/user/{token}")
 def get_user_info(token):
