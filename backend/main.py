@@ -18,6 +18,7 @@ import random
 import security
 from sqlalchemy import func
 from collections import Counter
+import unidecode
 
 app = FastAPI()
 origins = [
@@ -225,6 +226,14 @@ def load_question(name,question_num):
 
     print("Metadata {}".format(metadata))
 
+    category = ""
+    if name in user_category:
+        category = user_category[name]
+        if category.split("_")[-1]!=category.split("_")[0]:
+            category = category.split("_")[-1]+" "+category.split("_")[0]
+        else:
+            category = category.split("_")[0]
+
     return {'words':w,'indices':word_indices,
             'entity_names':entity_names,
             'entity_list':entity_list,
@@ -232,7 +241,8 @@ def load_question(name,question_num):
             'question': question,
             'answer': answer,
             'question_num': question_num,
-            'metadata': metadata}
+            'metadata': metadata,
+            'category': category}
 
 @app.get("/quel/user/{token}")
 def get_user_info(token):
@@ -253,7 +263,7 @@ def get_noun_phrase_suggested_num(question_num):
     if name not in user_category:
         user_category[name] = random.sample(suggest_questions.category_list,1)[0]
         user_num[name] = random.randint(0,3)
-    print("Category {}".format(user_category[name]))
+    print("Category {} {}".format(user_category[name],user_num[name]))
     question_num = suggest_questions.get_random_question(user_category[name],user_num[name])
     print("Question num {}".format(question_num))
     return load_question(name,question_num)
@@ -435,17 +445,22 @@ def get_topic_distro(username):
 
 @app.get("/quel/pdf/{username}")
 def write_pdf(username):
+    username,category = username.split("_")[0],username.split("_")[1]
     all_questions = db.get_questions_user(username)
     pdf = FPDF()
     pdf.add_page()
 
     count = 1
     for question_num in all_questions:
+        if count>50:
+            break
+        
         pdf.set_font('Arial', '', 14)
-
-        print("Question_num {}".format(question_num))
             
         question_data = db.get_question(question_num)
+        if question_data['category']!=category and category!='Any':
+            continue
+        
         annotations = get_annotations(username,
                                       question_num,question_data)
         annotations['names'] = json.loads(annotations['names'])
@@ -470,7 +485,7 @@ def write_pdf(username):
         annotation_pointer = 0
         i = 0
 
-        pdf.write(5,"{}. ".format(count))
+        pdf.write(5,"{}. Category: {}, Tournament: {} {}\n".format(count,question_data['category'],question_data['tournament'],question_data['year']))
         
         while i<len(words):
             if annotation_pointer == len(clean_annotations):
@@ -502,6 +517,11 @@ def write_pdf(username):
                 else:
                     pdf.write(5,words[i]+" ")
                 i+=1
+        pdf.set_font('Arial', 'B', 14)
+        pdf.write(5,'\nAnswer:')
+        pdf.set_font('Arial', '', 14)
+        pdf.write(5,' {}'.format(unidecode.unidecode(question_data['answer'])))
+        
         pdf.write(5,"\n\n\n\n")
         count+=1
         

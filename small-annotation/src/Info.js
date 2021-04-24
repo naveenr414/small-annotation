@@ -9,6 +9,8 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import {Bar} from 'react-chartjs-2';
 import Button from '@material-ui/core/Button';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 
 
 interface State {
@@ -17,11 +19,13 @@ interface State {
 
 let address = "/quel";
 
+const categories = ['Any','Literature', 'Social Science', 'History', 'Science', 'Fine Arts', 'Trash', 'Religion', 'Philosophy', 'Geography', 'Mythology', 'Current Events'];
 
 
 export default class Info extends React.Component<Props, State> {
   state: State = {
     username: "",
+    category_option: "Any",
     categories: {},
     leaderboard: [],
       
@@ -64,7 +68,7 @@ export default class Info extends React.Component<Props, State> {
   
   download_questions = () => {
     fetch(
-      address+"/pdf/"+this.state.username
+      address+"/pdf/"+this.state.username+"_"+this.state.category_option
       ).then(res => {
         return res.blob();
       })
@@ -116,6 +120,21 @@ export default class Info extends React.Component<Props, State> {
           <Button style={{marginBottom: 50}} variant="contained" ><a href="/user"> Back </a> </Button>
     <br />
       <button onClick={this.download_questions}> Download PDF </button>
+       
+       <Select
+          style={{marginLeft: 20, marginRight: 20}}
+          labelId="demo-simple-select-label"
+          value={this.state.category_option}
+          onChange={(event)=>{this.setState({category_option:event.target.value})}}
+        >
+          {categories.map((option, index) => (
+            <MenuItem
+              value={option}
+            >
+              {option}
+            </MenuItem>
+          ))}
+        </Select>
        <br />
        <b> Leaderboard </b>
      <Table aria-label="simple table" style={{width: 500}}>

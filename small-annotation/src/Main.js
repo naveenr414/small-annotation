@@ -39,6 +39,7 @@ interface State {
   clicked: any;
   qanta_id: any;
   metadata: any;
+  suggested_category: any;
 }
 
 let colors = ["#4E79A7","#A0CB38","#F28E2B","#FFBE7D","#59A14F","#8CD17D","#B6992D","#F1CE63","#499894","#86BCB6"];
@@ -86,6 +87,7 @@ export default class Main extends React.Component<Props, State> {
         question: res['question'],
         answer: res['answer'],
         qanta_id: res['question_num'],
+        suggested_category: res['category'],
         entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []}
         ,()=>{this.setState({clicked: []})}));
   }
@@ -102,6 +104,7 @@ export default class Main extends React.Component<Props, State> {
         metadata: res['metadata'],
         question: res['question'],
         answer: res['answer'],
+        suggested_category: res['category'],
         qanta_id: res['question_num'],
         entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []}
         ,()=>{this.setState({clicked: []})}));
@@ -549,7 +552,7 @@ export default class Main extends React.Component<Props, State> {
                     <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
                       <div style={{marginBottom: 20}}> 
                         <button style={{marginLeft: 30}} onClick={this.increment_question}> Random Question </button>
-                        <button style={{marginLeft: 30}} onClick={this.new_suggested}> Suggested Question </button>
+                        <button style={{marginLeft: 30}} onClick={this.new_suggested}> Suggested Question {this.state.suggested_category!=""?"("+this.state.suggested_category+")":""} </button>
                         <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button> 
                         <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
                         <button  style={{marginLeft: 30}}><a href="/user"> User Info </a> </button> <br /> <br />
