@@ -16,6 +16,7 @@ import time
 import json
 import unidecode
 import datetime
+import re
 
 
 Base = declarative_base()
@@ -267,15 +268,28 @@ class Database:
 
             return data
         
-    def get_tournament_entities(self,question_ids,tournament,year):
+    def get_tournament_entities(self,entity_name,tournament,year):
         with self._session_scope as session:
+            entity_name = entity_name.replace("_", " ")
             data = []
+            year = int(year)
+            tournament_questions = [{'id':i.id,'answer':i.answer.replace("{","").replace("}",""),'question':i.question} for i in session.query(Question).filter(and_(Question.tournament==tournament,Question.year==year))]
 
-            
-            for i in question_ids:
-                results = session.query(Question).filter(Question.id==i).limit(1)
-                data += [{'question':i.question,'answer':i.answer.replace("{","").replace("}",""),'difficulty': i.difficulty, 'tournament': i.tournament}
-                         for i in results if i.tournament == tournament and int(i.year) == int(year)]
+            print(len(tournament_questions))
+            for i in tournament_questions:
+                has_entity = False
+                if entity_name in i['answer'].lower():
+                    next_char = i['answer'].lower().index(entity_name)
+                    s = i['answer'].lower()[next_char:]
+                    if len(s) == len(entity_name) or not s[len(entity_name)].isalpha():
+                            has_entity = True
+                else:
+                    mentions = session.query(Mention).filter(and_(Mention.question_id == i['id'],func.lower(Mention.wiki_page)==entity_name.lower())).count()
+                    has_entity = mentions>0
+                    
+                if has_entity:
+                    data.append({'question':i['question'],'answer':i['answer']})
+
 
             return data
 

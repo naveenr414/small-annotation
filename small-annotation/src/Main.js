@@ -111,7 +111,6 @@ export default class Main extends React.Component<Props, State> {
   }
   
   submit = () => {
-    alert("Submitting");
     let str_entity_names = JSON.stringify(this.state.entity_names);
     let str_entity_spans = JSON.stringify(this.state.entity_list);
     let username = this.state.name;

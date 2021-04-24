@@ -115,20 +115,6 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
 
   };
   
-  get_user_info = () => {
-    fetch(
-      address+"/user/"+getCookie("token")
-      ).then(res=>res.json())
-      .then(res => {
-        this.setState({username: res['username'],});
-      })
-  }
-  componentDidMount = ()=> {
-    if(getCookie("token") !== "") {
-      this.get_user_info();
-    }
-  }
-  
   get_results = () => {
     this.setState({loading: true});
         fetch(
@@ -196,7 +182,9 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
 
     <h1> Search Entity  </h1>
 <br />
-        <Button style={{marginBottom: 50}} variant="contained" ><a href="/user"> Back </a> </Button>
+          <div style={{marginBottom: 50}}> <Button style={{marginLeft: 30}} variant="contained" ><a href="/user"> Back </a> </Button>
+        <Button style={{marginLeft: 30}} variant="contained"><a href="/"> Random Question</a></Button> 
+        <Button style={{marginLeft: 30}} variant="contained"><a href="/suggested"> Suggested Question</a></Button> </div>
     <br />
     <b> Entity: </b> 
 

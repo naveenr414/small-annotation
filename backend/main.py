@@ -284,7 +284,7 @@ def get_category(username):
     if username not in user_category:
         user_category[username] = "Literature"
         return "Literature"
-    return user_category[username]
+    return user_category[security.decode_token(username)]
 
 @app.get("/quel/entity/{entity_name}")
 def get_questions_entity(entity_name):
@@ -306,10 +306,8 @@ def get_questions_entity(entity_name):
     tourney = e[-1]
     year = e[-2]
     entity_name = "_".join(e[:-2])
-    print(entity_name)
-    results = db.get_questions_by_entity(entity_name)
-    print(results)
-    results = db.get_tournament_entities(results,tourney,year)
+
+    results = db.get_tournament_entities(entity_name,tourney,year)
     print(results)
     return results
 
@@ -339,7 +337,8 @@ async def update_preferences(preference: Preference):
     else:
         new_category = "{}_{}".format(preference.category,preference.subcategory)
 
-    name = preference.username
+
+    name = security.decode_token(preference.username)
     print("Preference name {}".format(name))
     if name not in user_category or user_category[name]!=new_category:
         user_category[name] = new_category
@@ -431,20 +430,30 @@ def get_leaderboard():
         l.append((i,len(user_num_questions[i]),user_num_mentions[i]))
 
     l = sorted(l,key=lambda k: k[1],reverse=True)
-    print(l)
-    print("Mentions length after {}".format(len(all_mentions)))
 
     return l
 
 @app.get("/quel/topics/{username}")
 def get_topic_distro(username):
-    user_mentions = db.get_questions_user(username)
-    topics = []
+    username = security.decode_token(username)
 
+    all_mentions = db.get_all_mentions()
+    questions = set([i['question'] for i in all_mentions])
+    system_mentions = set()
+    for i in questions:
+        mentions = db.get_mentions_by_user("system",i)
+        for j in mentions:
+            del j['content']
+            del j['number']
+            j['question'] = i
+            system_mentions = system_mentions.union(["{}_{}_{}_{}".format(j['question'],j['start'],j['end'],j['wiki_page'])])
+
+    print("Mentions length before {}".format(len(all_mentions)))
+    user_mentions = [j['question'] for j in all_mentions if ("{}_{}_{}_{}".format(j['question'],j['start'],j['end'],j['wiki_page'])) not in system_mentions]
+
+    topics = []
     for i in user_mentions:
         topics.append(db.get_topic(i))
-
-    print("Topics {}".format(topics))
 
     return Counter(topics)
             
@@ -452,6 +461,7 @@ def get_topic_distro(username):
 @app.get("/quel/pdf/{username}")
 def write_pdf(username):
     username,category = username.split("_")[0],username.split("_")[1]
+    username = security.decode_token(username)
     all_questions = db.get_questions_user(username)
     pdf = FPDF()
     pdf.add_page()

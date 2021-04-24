@@ -225,19 +225,7 @@ export default class PacketSearch extends React.Component<Props, State> {
     }
   }
   
-  get_user_info = () => {
-    fetch(
-      address+"/user/"+getCookie("token")
-      ).then(res=>res.json())
-      .then(res => {
-        this.setState({username: res['username']});
-      })
-  }
-  componentDidMount = ()=> {
-    if(getCookie("token") !== "") {
-      this.get_user_info();
-    }
-  }
+
   
   render_top_entities = () => {
     if(this.state.loading_info) {
@@ -263,7 +251,7 @@ export default class PacketSearch extends React.Component<Props, State> {
     else {
       let ret = [];
       for(var i = 0; i<this.state.results.length;i++) {
-        ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {this.state.results[i]['question']} <br /> <b> Answer: </b> {this.state.results[i]['answer']} <br /> <b> Tournament: </b> {this.state.results[i]['tournament']} </div>);
+        ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {this.state.results[i]['question']} <br /> <b> Answer: </b> {this.state.results[i]['answer']} <br /> </div>);
                   
       }
       
@@ -277,7 +265,9 @@ export default class PacketSearch extends React.Component<Props, State> {
     }
 
     return <div style={{marginLeft: 30}}> <h1> Tournament Search </h1> 
-        <Button style={{marginBottom: 50}} variant="contained" ><a href="/user"> Back </a> </Button>
+          <div style={{marginBottom: 50}}> <Button style={{marginLeft: 30}} variant="contained" ><a href="/user"> Back </a> </Button>
+        <Button style={{marginLeft: 30}} variant="contained"><a href="/"> Random Question</a></Button> 
+        <Button style={{marginLeft: 30}} variant="contained"><a href="/suggested"> Suggested Question</a></Button> </div>
     <br />
         <Select
           style={{marginLeft: 20, marginRight: 20}}

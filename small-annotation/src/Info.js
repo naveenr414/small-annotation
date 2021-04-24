@@ -30,11 +30,12 @@ export default class Info extends React.Component<Props, State> {
     categories: {},
     leaderboard: [],
     loading_text: "",
+    leaderboard_loading: false,
   }
   
   get_top_categories = () => {
         fetch(
-      address+"/topics/"+this.state.username
+      address+"/topics/"+getCookie("token")
       ).then(res=>res.json())
       .then(res => {
         this.setState({categories: res,});
@@ -51,11 +52,12 @@ export default class Info extends React.Component<Props, State> {
   }
   
   get_leaderboard = () => {
+    this.setState({leaderboard_loading: true});
         fetch(
       address+"/leaderboard"
       ).then(res=>res.json())
       .then(res => {
-        this.setState({leaderboard: res});
+        this.setState({leaderboard: res,leaderboard_loading: false});
       })
   }
   
@@ -70,7 +72,7 @@ export default class Info extends React.Component<Props, State> {
   download_questions = () => {
     this.setState({loading_text: "Loading PDF"});
     fetch(
-      address+"/pdf/"+this.state.username+"_"+this.state.category_option
+      address+"/pdf/"+getCookie("token")+"_"+this.state.category_option
       ).then(res => {
         return res.blob();
       })
@@ -102,7 +104,7 @@ export default class Info extends React.Component<Props, State> {
           options={{
             title:{
               display:true,
-              text:'Questions by Category',
+              text:'Questions viewed by Category',
               fontSize:20
             },
             legend:{
@@ -113,31 +115,13 @@ export default class Info extends React.Component<Props, State> {
         />
   }
   
-  render() {
-    if(getCookie("token") == "") {
-      return <Redirect to="/login" />;
+  get_info = () => {
+    if(this.state.leaderboard_loading) {
+      return <CircularProgress />;
     }
-
- 
-    return <div style={{marginLeft: 30}}> <h1> {this.state.username} </h1> <br />
-          <Button style={{marginBottom: 50}} variant="contained" ><a href="/user"> Back </a> </Button>
-    <br />
-      <button onClick={this.download_questions}> Download PDF </button>
-       <Select
-          style={{marginLeft: 20, marginRight: 20}}
-          labelId="demo-simple-select-label"
-          value={this.state.category_option}
-          onChange={(event)=>{this.setState({category_option:event.target.value})}}
-        >
-          {categories.map((option, index) => (
-            <MenuItem
-              value={option}
-            >
-              {option}
-            </MenuItem>
-          ))}
-        </Select>
-                <br /> {this.state.loading_text!=''?<CircularProgress />:''}
+    else {
+      return <div> 
+                {this.state.loading_text!=''?<CircularProgress />:''}
 
        <br /> 
        <b> Leaderboard </b>
@@ -162,7 +146,41 @@ export default class Info extends React.Component<Props, State> {
         </TableBody>
       </Table>
       {this.render_chart()}
-    </div>
+      </div>
+    }
+  }
+  
+  render() {
+    if(getCookie("token") == "") {
+      return <Redirect to="/login" />;
+    }
+
+ 
+    return <div style={{marginLeft: 30}}> <h1> {this.state.username} </h1> <br />
+          <div style={{marginBottom: 50}}> <Button style={{marginLeft: 30}} variant="contained" ><a href="/user"> Back </a> </Button>
+        <Button style={{marginLeft: 30}} variant="contained"><a href="/"> Random Question</a></Button> 
+        <Button style={{marginLeft: 30}} variant="contained"><a href="/suggested"> Suggested Question</a></Button> </div>
+   
+   <br />
+      <button onClick={this.download_questions}> Download PDF </button> 
+                   <Select
+          style={{marginLeft: 20, marginRight: 20}}
+          labelId="demo-simple-select-label"
+          value={this.state.category_option}
+          onChange={(event)=>{this.setState({category_option:event.target.value})}}
+        >
+          {categories.map((option, index) => (
+            <MenuItem
+              value={option}
+            >
+              {option}
+            </MenuItem>
+          ))}
+        </Select>
+
+      <br /> <br />
+        {this.get_info()}
+   </div>
     
   }
 }

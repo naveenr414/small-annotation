@@ -41,7 +41,7 @@ export default class User extends React.Component<Props, State> {
         this.setState({username: res['username'],
         edits: res['edits']});
         
-        fetch(address+"/category/"+res['username']).then(res=>res.json()).then(res => {
+        fetch(address+"/category/"+getCookie("token")).then(res=>res.json()).then(res => {
           if(res.includes("_")) {
             let temp = res.split("_");
             this.setState({category_option: temp[0],subcategory_option: temp[1]});
@@ -65,7 +65,7 @@ export default class User extends React.Component<Props, State> {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", address+"/user_preferences");
     xhr.send(JSON.stringify(
-      {username: this.state.username,
+      {username: getCookie("token"),
       category: this.state.category_option,
       subcategory: this.state.subcategory_option,}));
   }
