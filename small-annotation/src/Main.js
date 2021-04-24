@@ -111,6 +111,7 @@ export default class Main extends React.Component<Props, State> {
   }
   
   submit = () => {
+    alert("Submitting");
     let str_entity_names = JSON.stringify(this.state.entity_names);
     let str_entity_spans = JSON.stringify(this.state.entity_list);
     let username = this.state.name;
@@ -118,7 +119,7 @@ export default class Main extends React.Component<Props, State> {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", address+"/submit");
     xhr.send(JSON.stringify({str_entity_names,str_entity_spans,username,question_id}));
-    this.setState({saved: true});
+    this.setState({saved: true,underline_span: []});
   } 
 
   /* Download questions */ 
@@ -184,6 +185,7 @@ export default class Main extends React.Component<Props, State> {
   }
   
   delete_span = (span) => {
+    alert("Deleting span");
     let entity_list = this.state.entity_list.slice();
     for(var i = 0;i<entity_list.length;i++) {
       entity_list[i] = entity_list[i].slice().filter(item => item['start']!==span['start'] || item['end'] !== span['end']);
@@ -244,7 +246,7 @@ export default class Main extends React.Component<Props, State> {
     entity_list.splice(entity_number, 1);
     entity_names.splice(entity_number,1);
     
-    this.setState({entity_list,entity_names, saved:true},()=>{this.submit();})
+    this.setState({entity_list,entity_names, saved:true,},()=>{this.submit();})
   }
   
   create_tag = (num=0) => {
@@ -553,7 +555,6 @@ export default class Main extends React.Component<Props, State> {
                       <div style={{marginBottom: 20}}> 
                         <button style={{marginLeft: 30}} onClick={this.increment_question}> Random Question </button>
                         <button style={{marginLeft: 30}} onClick={this.new_suggested}> Suggested Question {this.state.suggested_category!=""?"("+this.state.suggested_category+")":""} </button>
-                        <button style={{marginLeft: 30}} onClick={this.submit}> Save Question </button> 
                         <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
                         <button  style={{marginLeft: 30}}><a href="/user"> User Info </a> </button> <br /> <br />
                         <button  style={{marginLeft: 30}}  onClick={this.logout}>Logout</button> <br /> <br />

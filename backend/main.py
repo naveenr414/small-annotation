@@ -288,11 +288,17 @@ def get_category(username):
 
 @app.get("/quel/entity/{entity_name}")
 def get_questions_entity(entity_name):
+    print("Getting entity name! {}".format(entity_name))
+    entity_name = entity_name.strip("_")
     e = entity_name.split("_")
     category = e[-2]
     difficulty = e[-1]
     entity_name = "_".join(e[:-2])
-    return db.get_question_answers(db.get_questions_by_entity(entity_name),category,difficulty)
+    questions = db.get_questions_by_entity(entity_name)
+    print("Got questions")
+    results = db.get_question_answers(questions,category,difficulty)
+    print(len(results))
+    print("Got results!")
 
 @app.get("/quel/tournament_entity/{entity_name}")
 def get_questions_entity(entity_name):

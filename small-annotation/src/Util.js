@@ -10,7 +10,7 @@ export function titleCase(string: string) {
     else {
       sentence[i] = sentence[i][0].toUpperCase() + sentence[i].slice(1);
       sentence[i] =
-        sentence[i][0] === "("
+        sentence[i][0] === "(" && sentence[i].length>1
           ? "(" + sentence[i][1].toUpperCase() + sentence[i].slice(2)
           : sentence[i];
     }

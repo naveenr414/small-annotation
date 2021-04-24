@@ -11,6 +11,7 @@ import {Bar} from 'react-chartjs-2';
 import Button from '@material-ui/core/Button';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 
 interface State {
@@ -28,7 +29,7 @@ export default class Info extends React.Component<Props, State> {
     category_option: "Any",
     categories: {},
     leaderboard: [],
-      
+    loading_text: "",
   }
   
   get_top_categories = () => {
@@ -67,12 +68,14 @@ export default class Info extends React.Component<Props, State> {
   }
   
   download_questions = () => {
+    this.setState({loading_text: "Loading PDF"});
     fetch(
       address+"/pdf/"+this.state.username+"_"+this.state.category_option
       ).then(res => {
         return res.blob();
       })
       .then((blob)=>{
+        this.setState({loading_text: ""});
         const href = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = href;
@@ -120,7 +123,6 @@ export default class Info extends React.Component<Props, State> {
           <Button style={{marginBottom: 50}} variant="contained" ><a href="/user"> Back </a> </Button>
     <br />
       <button onClick={this.download_questions}> Download PDF </button>
-       
        <Select
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"
@@ -135,7 +137,9 @@ export default class Info extends React.Component<Props, State> {
             </MenuItem>
           ))}
         </Select>
-       <br />
+                <br /> {this.state.loading_text!=''?<CircularProgress />:''}
+
+       <br /> 
        <b> Leaderboard </b>
      <Table aria-label="simple table" style={{width: 500}}>
         <TableHead>

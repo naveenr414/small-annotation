@@ -1,14 +1,17 @@
- import * as React from "react";
+import * as React from "react";
 import {getCookie,setCookie} from "./Util";
 import {Redirect} from 'react-router-dom';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import {toNormalString,toNiceString} from "./Util";
+import Autocomplete from '@material-ui/lab/Autocomplete';
 
 
 interface State {
-
+  
 }
 
 let address = "/quel";
@@ -25,7 +28,92 @@ export default class EntitySearch extends React.Component<Props, State> {
     search_entity: "",
     results: [],
     start:0,
+    loading: false,
+    value: "",
+    autocorrect: [],
   }
+  
+updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
+    this.setState({
+      value: value,
+    });
+
+        
+    
+    let current_target = toNormalString(value);
+    let tagged_word = current_target; 
+   
+    if (current_target !== "") {
+      
+      fetch(
+        address+"/autocorrect/" +
+          current_target
+      )
+        .then((res) => res.json())
+        .then((res) => {
+          
+          let suggestions = res;
+            for(var i = 0;i<suggestions.length;i++) {
+              suggestions[i] = toNiceString(suggestions[i][0]+" ");
+            }
+            
+          if(suggestions.length<5 && current_target.length>0) {
+            let target_string = "";
+            let split_string = current_target.replace(/_$/,'').split("_");
+            for(var i = 0;i<split_string.length;i++) {
+              target_string+="%2B"+split_string[i];
+              if(i+1<split_string.length) {
+                target_string+="%20";
+              }
+            }
+            target_string+="&nhits=5";
+            fetch("/api/?q="+target_string).then((res2)=>res2.json()).then((res2)=>{
+              for(var i = 0;i<5-suggestions.length;i++) {
+                if(i<res2["hits"].length) {
+                  let name = res2["hits"][i].doc.clean_name;
+                  if(!suggestions.includes(name)){
+                    suggestions.push(name);
+                  }
+                  
+                }
+              }
+                            
+              for(var i = 0;i<suggestions.length;i++) {
+                suggestions[i] = toNiceString(suggestions[i]+" ");
+              }
+              
+              suggestions = Array.from(new Set(suggestions));
+              this.setState({ autocorrect: suggestions },function() {
+                return 0;
+              });
+            });
+          }
+          else {
+
+            
+            if(suggestions.length == 0) {
+              suggestions = ["No Entity Found"]
+            }
+            else {
+              suggestions.push("No Entity Found");
+            }
+            this.setState({ autocorrect: suggestions },function() {
+              return 0;
+            });
+          }
+          
+
+          
+          
+        });
+    }
+    else {
+      
+       this.setState({ autocorrect: [] });
+    }
+    
+
+  };
   
   get_user_info = () => {
     fetch(
@@ -42,11 +130,12 @@ export default class EntitySearch extends React.Component<Props, State> {
   }
   
   get_results = () => {
+    this.setState({loading: true});
         fetch(
-      address+"/entity/"+this.state.search_entity.replaceAll(" ","_")+"_"+this.state.category_option+"_"+this.state.difficulty_option
+      address+"/entity/"+this.state.value.replaceAll(" ","_")+"_"+this.state.category_option+"_"+this.state.difficulty_option
       ).then(res=>res.json())
       .then(res => {
-        this.setState({results: res});
+        this.setState({results: res, loading: false});
       })
   }
   
@@ -76,7 +165,11 @@ export default class EntitySearch extends React.Component<Props, State> {
   }
   
   render_results = () => {
-    if(this.state.results.length == 0) {
+    if (this.state.loading) {
+      return  <CircularProgress />
+
+    }
+    else if(this.state.results.length == 0) {
       return <div> No results found </div> 
     }
     else {
@@ -105,7 +198,20 @@ export default class EntitySearch extends React.Component<Props, State> {
 <br />
         <Button style={{marginBottom: 50}} variant="contained" ><a href="/user"> Back </a> </Button>
     <br />
-    <b> Entity: </b>  <TextField id="standard-basic" onChange={(event)=>{this.setState({search_entity: event.target.value})}} /> Category:  
+    <b> Entity: </b> 
+
+
+
+        <Autocomplete
+          style={{ fontSize: 24 }}
+          value={this.state.value}
+          onInputChange={this.updateAutocorrect}  
+          getOptionLabel={(option) => option}
+          options={this.state.autocorrect}
+          renderInput={(params) => <TextField {...params} label="Entity" 
+          />}
+          openOnFocus={true}
+        />
         <Select
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"

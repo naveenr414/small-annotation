@@ -75,7 +75,7 @@ def create_subcategories():
 
     for i in categories:
         a,b = zip(*categories[i])
-        if len(a)>k*k:
+        if len(a)>k*k and (i == "Mythology_Norse" or "Norse" not in i):
             buckets[i] = get_buckets(k,a,b)
 
     pickle.dump(buckets,open('kmeans_subcategories.p','wb'))

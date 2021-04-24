@@ -7,6 +7,7 @@ import TextField from '@material-ui/core/TextField';
 import {toNormalString,toNiceString} from "./Util";
 
 const he = require('he');
+let address = "/quel";
 
 interface State {
   value: string;

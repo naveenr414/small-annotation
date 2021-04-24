@@ -5,6 +5,9 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import {toNormalString,toNiceString} from "./Util";
+import Autocomplete from '@material-ui/lab/Autocomplete';
 
 
 interface State {
@@ -25,27 +28,199 @@ export default class PacketSearch extends React.Component<Props, State> {
     summary_stats: [],
     results: [],
     search_entity: "",
+    loading_info: false,
+      loading_search: false,
+    value: "",
+    autocorrect: [],
+
   }
   
   get_results = () => {
+    this.setState({loading_search: true});
         fetch(
-      address+"/tournament_entity/"+this.state.search_entity.replaceAll(" ","_")+"_"+this.state.year_option+"_"+this.state.tournament_option
+      address+"/tournament_entity/"+this.state.value.replaceAll(" ","_")+"_"+this.state.year_option+"_"+this.state.tournament_option
       ).then(res=>res.json())
       .then(res => {
-        this.setState({results: res});
+        this.setState({results: res, loading_search: false});
       })
   }
   
-  
+  updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
+    this.setState({
+      value: value,
+    });
+
+        
+    
+    let current_target = toNormalString(value);
+    let tagged_word = current_target; 
+   
+    if (current_target !== "") {
+      
+      fetch(
+        address+"/autocorrect/" +
+          current_target
+      )
+        .then((res) => res.json())
+        .then((res) => {
+          
+          let suggestions = res;
+            for(var i = 0;i<suggestions.length;i++) {
+              suggestions[i] = toNiceString(suggestions[i][0]+" ");
+            }
+            
+          if(suggestions.length<5 && current_target.length>0) {
+            let target_string = "";
+            let split_string = current_target.replace(/_$/,'').split("_");
+            for(var i = 0;i<split_string.length;i++) {
+              target_string+="%2B"+split_string[i];
+              if(i+1<split_string.length) {
+                target_string+="%20";
+              }
+            }
+            target_string+="&nhits=5";
+            fetch("/api/?q="+target_string).then((res2)=>res2.json()).then((res2)=>{
+              for(var i = 0;i<5-suggestions.length;i++) {
+                if(i<res2["hits"].length) {
+                  let name = res2["hits"][i].doc.clean_name;
+                  if(!suggestions.includes(name)){
+                    suggestions.push(name);
+                  }
+                  
+                }
+              }
+                            
+              for(var i = 0;i<suggestions.length;i++) {
+                suggestions[i] = toNiceString(suggestions[i]+" ");
+              }
+              
+              suggestions = Array.from(new Set(suggestions));
+              this.setState({ autocorrect: suggestions },function() {
+                return 0;
+              });
+            });
+          }
+          else {
+
+            
+            if(suggestions.length == 0) {
+              suggestions = ["No Entity Found"]
+            }
+            else {
+              suggestions.push("No Entity Found");
+            }
+            this.setState({ autocorrect: suggestions },function() {
+              return 0;
+            });
+          }
+          
+
+          
+          
+        });
+    }
+    else {
+      
+       this.setState({ autocorrect: [] });
+    }
+    
+
+  };
+
+  updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
+    this.setState({
+      value: value,
+    });
+
+        
+    
+    let current_target = toNormalString(value);
+    let tagged_word = current_target; 
+   
+    if (current_target !== "") {
+      
+      fetch(
+        address+"/autocorrect/" +
+          current_target
+      )
+        .then((res) => res.json())
+        .then((res) => {
+          
+          let suggestions = res;
+            for(var i = 0;i<suggestions.length;i++) {
+              suggestions[i] = toNiceString(suggestions[i][0]+" ");
+            }
+            
+          if(suggestions.length<5 && current_target.length>0) {
+            let target_string = "";
+            let split_string = current_target.replace(/_$/,'').split("_");
+            for(var i = 0;i<split_string.length;i++) {
+              target_string+="%2B"+split_string[i];
+              if(i+1<split_string.length) {
+                target_string+="%20";
+              }
+            }
+            target_string+="&nhits=5";
+            fetch("/api/?q="+target_string).then((res2)=>res2.json()).then((res2)=>{
+              for(var i = 0;i<5-suggestions.length;i++) {
+                if(i<res2["hits"].length) {
+                  let name = res2["hits"][i].doc.clean_name;
+                  if(!suggestions.includes(name)){
+                    suggestions.push(name);
+                  }
+                  
+                }
+              }
+                            
+              for(var i = 0;i<suggestions.length;i++) {
+                suggestions[i] = toNiceString(suggestions[i]+" ");
+              }
+              
+              suggestions = Array.from(new Set(suggestions));
+              this.setState({ autocorrect: suggestions },function() {
+                return 0;
+              });
+            });
+          }
+          else {
+
+            
+            if(suggestions.length == 0) {
+              suggestions = ["No Entity Found"]
+            }
+            else {
+              suggestions.push("No Entity Found");
+            }
+            this.setState({ autocorrect: suggestions },function() {
+              return 0;
+            });
+          }
+          
+
+          
+          
+        });
+    }
+    else {
+      
+       this.setState({ autocorrect: [] });
+    }
+    
+
+  };
+
   search = () => {
+
     if(this.state.difficulty_option!="" &&
     this.state.year_option>0 &&
     this.state.tournament_option!="") {
+    this.setState({loading_info: true});
+
       fetch(
       address+"/tournament/"+this.state.year_option+"_"+this.state.tournament_option
       ).then(res=>res.json())
       .then(res => {
-        this.setState({summary_stats: res});
+        this.setState({summary_stats: res,loading_info: false});
       })
     }
   }
@@ -55,7 +230,7 @@ export default class PacketSearch extends React.Component<Props, State> {
       address+"/user/"+getCookie("token")
       ).then(res=>res.json())
       .then(res => {
-        this.setState({username: res['username'],});
+        this.setState({username: res['username']});
       })
   }
   componentDidMount = ()=> {
@@ -65,6 +240,10 @@ export default class PacketSearch extends React.Component<Props, State> {
   }
   
   render_top_entities = () => {
+    if(this.state.loading_info) {
+      return <CircularProgress />
+    }
+    
     let top_entities = [];
     for(var i = 0;i<this.state.summary_stats.length;i++) {
       top_entities.push(<li> {this.state.summary_stats[i][0].replaceAll("_"," ")} ({this.state.summary_stats[i][1]} mentions) </li>);
@@ -75,7 +254,10 @@ export default class PacketSearch extends React.Component<Props, State> {
   }
   
   render_results = () => {
-    if(this.state.results.length == 0) {
+    if(this.state.loading_search) {
+      return <div> <CircularProgress /> </div>
+    }
+    else if(this.state.results.length == 0) {
       return <div> No results found </div> 
     }
     else {
@@ -147,7 +329,16 @@ export default class PacketSearch extends React.Component<Props, State> {
         <br />
         <b> Top Entities </b> 
         <ol> {this.render_top_entities()} </ol> <br />
-         <TextField id="standard-basic" style={{marginRight: 30}} onChange={(event)=>{this.setState({search_entity: event.target.value})}} />
+        <Autocomplete
+          style={{ fontSize: 24 }}
+          value={this.state.value}
+          onInputChange={this.updateAutocorrect}  
+          getOptionLabel={(option) => option}
+          options={this.state.autocorrect}
+          renderInput={(params) => <TextField {...params} label="Entity" 
+          />}
+          openOnFocus={true}
+        />        
         <Button style={{'border': '1px solid black'}} onClick={this.get_results}>
           Search 
         </Button> 

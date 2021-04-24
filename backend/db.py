@@ -67,7 +67,8 @@ class Database:
     def __init__(self, find_questions=True):
         self._engine = create_engine(
             # Separate name to avoid confusing it with the unmodified qanta db
-            "sqlite:///quel_db.sqlite3"
+            "sqlite:///quel_db.sqlite3",
+            connect_args={'check_same_thread': False}
         )  # pylint: disable=invalid-name
         Base.metadata.bind = self._engine
 
