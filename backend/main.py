@@ -282,7 +282,7 @@ def get_noun_phrase(question_num):
 @app.get("/quel/category/{username}")
 def get_category(username):
     if username not in user_category:
-        user_category[username] = "Literature"
+        user_category[security.decode_token(username)] = "Literature"
         return "Literature"
     return user_category[security.decode_token(username)]
 
