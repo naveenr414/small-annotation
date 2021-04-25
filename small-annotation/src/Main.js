@@ -81,36 +81,38 @@ export default class Main extends React.Component<Props, State> {
     }
     
     
-    setTimeout(()=>{
-      introJs().setOptions({
-      steps: [{
-        title: 'Welcome',
-        intro: 'We\'ll quickly walk you through the app!'
-      },
-      {
-        element: document.querySelector('.highlight'),
-        intro: 'First, highlight a span which refers to an entity'
-      },
-      {
-        element: document.querySelector('.create'),
-        intro: 'Then select "create span"'
-      },
-      {
-        element: document.querySelector('.unassigned'),
-        intro: 'Your new span will now be in the unassigned spans box'
-      },
-      {
-        element: document.querySelector('.entity'),
-        intro: 'Drag your new span over to the correct matching entity'
-      },
-      {
-        element: document.querySelector('.new'),
-        intro: 'If none of the entities match, you can create a new entity for this span'
-      },
-      {
-        intro: 'Click "change entity" to change the name of the entity box'
-      },]
-    }).start();},1000)
+    if(name!="") {
+      setTimeout(()=>{
+        introJs().setOptions({
+        steps: [{
+          title: 'Welcome',
+          intro: 'We\'ll quickly walk you through the app!'
+        },
+        {
+          element: document.querySelector('.highlight'),
+          intro: 'First, highlight a span which refers to an entity'
+        },
+        {
+          element: document.querySelector('.create'),
+          intro: 'Then select "create span"'
+        },
+        {
+          element: document.querySelector('.unassigned'),
+          intro: 'Your new span will now be in the unassigned spans box'
+        },
+        {
+          element: document.querySelector('.entity'),
+          intro: 'Drag your new span over to the correct matching entity'
+        },
+        {
+          element: document.querySelector('.new'),
+          intro: 'If none of the entities match, you can create a new entity for this span'
+        },
+        {
+          intro: 'Click "change entity" to change the name of the entity box'
+        },]
+      }).start();},1000)
+    }
   }
 
   get_noun_phrases_suggested = (question_num) => {
