@@ -1,4 +1,5 @@
 import * as React from "react";
+import {useContext} from "react";
 import Dragbox from "./Dragbox";
 import Search from "./Search";
 import Span from "./Span";
@@ -16,12 +17,16 @@ import Divider from '@material-ui/core/Divider';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import {getCookie,setCookie} from "./Util";
 import {Redirect} from 'react-router-dom';
+import introJs from 'intro.js';
+import 'intro.js/introjs.css';
 
 let address = "/quel";
+
 
 interface Props {
   suggested: boolean;
 }
+
 
 interface State {
   question: any;
@@ -61,17 +66,51 @@ export default class Main extends React.Component<Props, State> {
     clicked: "",
     qanta_id: "",
     metadata: {'difficulty': '', 'category': '', 'tournament': '', 'year': ''},
+    submitted: false,
   }
   
   /* Loading in questions */ 
   componentDidMount = () => {
     let name = getCookie("token");
+  
     if(this.props.suggested) {
       this.setState({name},()=>{this.get_noun_phrases_suggested(0);});
     }
     else {
       this.setState({name},()=>{this.get_noun_phrases(0);});
     }
+    
+    
+    setTimeout(()=>{
+      introJs().setOptions({
+      steps: [{
+        title: 'Welcome',
+        intro: 'We\'ll quickly walk you through the app!'
+      },
+      {
+        element: document.querySelector('.highlight'),
+        intro: 'First, highlight a span which refers to an entity'
+      },
+      {
+        element: document.querySelector('.create'),
+        intro: 'Then select "create span"'
+      },
+      {
+        element: document.querySelector('.unassigned'),
+        intro: 'Your new span will now be in the unassigned spans box'
+      },
+      {
+        element: document.querySelector('.entity'),
+        intro: 'Drag your new span over to the correct matching entity'
+      },
+      {
+        element: document.querySelector('.new'),
+        intro: 'If none of the entities match, you can create a new entity for this span'
+      },
+      {
+        intro: 'Click "change entity" to change the name of the entity box'
+      },]
+    }).start();},1000)
   }
 
   get_noun_phrases_suggested = (question_num) => {
@@ -87,6 +126,7 @@ export default class Main extends React.Component<Props, State> {
         question: res['question'],
         answer: res['answer'],
         qanta_id: res['question_num'],
+        submitted: false,
         suggested_category: res['category'],
         entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []}
         ,()=>{this.setState({clicked: []})}));
@@ -101,6 +141,7 @@ export default class Main extends React.Component<Props, State> {
         {current_question: question_num, 
         words: res['words'], 
         indices: res['indices'],
+        submitted: false,
         metadata: res['metadata'],
         question: res['question'],
         answer: res['answer'],
@@ -480,7 +521,6 @@ export default class Main extends React.Component<Props, State> {
         current_span+=1;
       }
     }
-    
     var highlights = [];
     for(var i = 0;i<parts.length; i++) {
       let fields = parts[i];
@@ -538,6 +578,19 @@ export default class Main extends React.Component<Props, State> {
     this.setState({clicked: this.state.clicked});
   }
   
+  get_next_question_buttons = () => {
+    return <div style={{textAlign: 'center', width: '50%', margin: 'auto', marginTop: 200}}> 
+          <button style={{marginLeft: 30, width: 400, height: 200, fontSize: 36}} onClick={this.increment_question}> Random Question </button>
+          <button style={{marginLeft: 30, width: 400, height: 200, fontSize: 36}} onClick={this.new_suggested}> Suggested Question </button>
+
+    </div>
+  }
+  
+  submit_button = () => {
+    this.submit();
+    this.setState({submitted: true});
+  }
+  
   render() {
     if (getCookie("token") === "") {
       return <Redirect to="/login" />;
@@ -545,18 +598,20 @@ export default class Main extends React.Component<Props, State> {
     else if(this.state.words.length == 0) {
       return <h1> Loading </h1> 
     }
+    else if(this.state.submitted) {
+      return this.get_next_question_buttons();
+    }
     else {
       return  <DndProvider backend={HTML5Backend}> 
                 <div> 
                   <Grid container style={{marginTop: 50}} spacing={3}>
 
                     <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
-                      <div style={{marginBottom: 20}}> 
-                        <button style={{marginLeft: 30}} onClick={this.increment_question}> Random Question </button>
-                        <button style={{marginLeft: 30}} onClick={this.new_suggested}> Suggested Question {this.state.suggested_category!=""?"("+this.state.suggested_category+")":""} </button>
-                        <button  style={{marginLeft: 30}}  onClick={this.show_instructions}>Instructions</button> <br /> <br />
-                        <button  style={{marginLeft: 30}}><a href="/user"> User Info </a> </button> <br /> <br />
-                        <button  style={{marginLeft: 30}}  onClick={this.logout}>Logout</button> <br /> <br />
+                      <div  style={{marginBottom: 20}}> 
+                        <button  style={{marginLeft: 50}}  onClick={this.show_instructions}>Instructions</button> 
+                        <button style={{marginLeft: 50}}><a href="/user"> User Info </a> </button>
+                        <button  style={{marginLeft: 50}}  onClick={this.submit_button}>Submit </button> 
+                        <button  style={{marginLeft: 50}}  onClick={this.logout}>Logout</button> <br /> <br />
                         <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
                           {this.state.saved?'Saved':'Not Saved'} 
                         </div>
@@ -574,7 +629,7 @@ export default class Main extends React.Component<Props, State> {
                         </Modal.Footer>
                       </Modal>
 
-                      <div style={{fontSize: 16}}>  
+                      <div class="highlight" style={{fontSize: 16}}>  
                         (1. Highlight spans and select create span)  <br />
                         <b> Category</b>:  {" "} {this.state.metadata.category}, from {this.state.metadata.tournament} {this.state.metadata.year} 
                        
@@ -582,19 +637,19 @@ export default class Main extends React.Component<Props, State> {
                         <div> <b> Answer: </b> {this.state.answer} </div>
                       </div>
                       <br />
-                      <button style={{fontSize: 24}}  onClick={()=>{this.create_tag(0)}} > 
+                      <button class="create" style={{fontSize: 24}}  onClick={()=>{this.create_tag(0)}} > 
                       Create Span </button>
                       <br />
-                      {this.render_draggables()[0]}
+                      <div class="unassigned"> {this.render_draggables()[0]} </div>
                       <br />
                       
                     </Grid>
                     
                     <Divider orientation="vertical" flexItem />
                     <Grid item xs={6} style={{marginLeft: "55%", paddingLeft: 25, paddingRight: 25, borderLeft:'1px solid black',height: "100%", width: "40%"}}>
-                      <div style={{height: "100%"}}>
+                      <div style={{height: "100%"}} class="entity">
                         {all_but_first(this.render_draggables())}  
-                        <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} > 
+                        <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} class="new"> 
                           Create New Entity Cluster
                         </button>
                       </div>

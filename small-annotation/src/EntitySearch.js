@@ -38,6 +38,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       value: value,
     });
 
+
         
     
     let current_target = toNormalString(value);
@@ -144,6 +145,8 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
     }
   }
   
+    
+
   increment = () => {
     if(this.state.start+questions_per_page<=this.state.results.length ){ 
       this.setState({start: this.state.start+questions_per_page});
@@ -179,7 +182,6 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
 
 
     return <div style={{marginLeft: 30}}> 
-
     <h1> Search Entity  </h1>
 <br />
           <div style={{marginBottom: 50}}> <Button style={{marginLeft: 30}} variant="contained" ><a href="/user"> Back </a> </Button>
@@ -200,7 +202,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
           />}
           openOnFocus={true}
         />
-        <Select
+        <Select id="hello"
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"
           value={this.state.category_option}

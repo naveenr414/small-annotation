@@ -16,6 +16,8 @@
     "downloadbutton": "^1.0.0",
     "draft-js": "^0.11.7",
     "es-dirname": "^0.1.0",
+    "intro.js": "^3.4.0",
+    "intro.js-react": "^0.3.0",
     "jest-environment-node": "^26.6.1",
     "react": "^17.0.2",
     "react-bootstrap": "^1.5.0",
@@ -29,6 +31,7 @@
     "react-modal": "^3.12.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.4",
+    "react-shepherd": "^3.3.3",
     "react-vega": "^7.4.2",
     "vega": "^5.20.2",
     "vega-lite": "^5.1.0"

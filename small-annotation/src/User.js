@@ -76,7 +76,7 @@ export default class User extends React.Component<Props, State> {
     }
 
         
-    return <div> <h1> {this.state.username} </h1> <br />
+    return <div> <h2 style={{marginLeft: 50, marginTop: 30}}> User: {this.state.username} </h2> <br />
     
     <div style={{marginLeft: 50}}> 
       <Button style={{marginBottom: 50}} variant="contained"><a href="/"> Random Question </a> </Button> <br />
@@ -114,7 +114,7 @@ export default class User extends React.Component<Props, State> {
 
       </div> 
       <Button style={{marginBottom: 50}} variant="contained" ><a href="/entitysearch"> Search for Entity </a> </Button> <br />
-      <Button style={{marginBottom: 50}} variant="contained" ><a href="/packetsearch"> Search by Packet </a> </Button> <br />
+      <Button style={{marginBottom: 50}} variant="contained" ><a href="/packetsearch"> Search by Tournament </a> </Button> <br />
       <Button style={{marginBottom: 50}} variant="contained"><a href="/info"> User stats </a> </Button> <br />
       <Button style={{marginBottom: 50}} variant="contained" onClick={this.logout}><a href="#"> Logout </a> </Button> 
 
