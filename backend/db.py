@@ -44,6 +44,16 @@ class User(Base):
     id = Column(Text(), primary_key=True)
     password = Column(Text(), nullable=False)
 
+class UserTopic(Base):
+    __tablename__ = "topic"
+    id = Column(Integer,primary_key=True)
+    user_id = Column(Text(),index=True)
+    question_id = Column(Integer,ForeignKey("question.id"),index=True)
+    topic = Column(Text())
+    subtopic = Column(Text())
+    num_mentions = Column(Integer,index=True)
+    time_spent = Column(Integer)
+
 class UserEdits(Base):
     __tablename__ = "user_edits"
     id = Column(Integer, primary_key=True,autoincrement=True)
@@ -192,7 +202,28 @@ class Database:
 
             return True
 
-    def user_updates(self,user_id,question_id):
+    def update_user_topic(self,user_id,question_id,topic,subtopic,num_mentions,edit_time):
+        with self._session_scope as session:
+            current_values = session.query(UserTopic).filter(and_(UserTopic.user_id==user_id,UserTopic.question_id==question_id))
+            if current_values.count()>0:
+                current_values = current_values.first()
+                current_values.num_mentions = num_mentions
+                current_values.time_spent+=edit_time
+            else:
+                session.bulk_insert_mappings(UserTopic,[{'user_id':user_id,'question_id':question_id,'topic':topic,'subtopic':subtopic,'num_mentions':num_mentions,'time_spent':edit_time}])
+
+    def get_all_user_topics_user(self,user_id):
+        with self._session_scope as session:
+            return [{'user_id':i.user_id,'question_id':i.question_id,'topic':i.topic,'num_mentions':i.num_mentions,'time':i.time_spent} for i in
+                session.query(UserTopic).filter(UserTopic.user_id==user_id)]
+
+    def get_all_user_topics(self):
+        with self._session_scope as session:
+            return [{'user_id':i.user_id,'question_id':i.question_id,'topic':i.topic,'num_mentions':i.num_mentions} for i in
+                session.query(UserTopic)]
+
+
+    def user_updates(self,user_id,question_id,mentions):
         with self._session_scope as session:
             t = datetime.datetime.now()
             edit = session.query(UserEdits).filter(and_(UserEdits.user_id == user_id,UserEdits.question_id == question_id)).limit(1)
@@ -242,6 +273,11 @@ class Database:
         with self._session_scope as session:
             results = session.query(Question).filter(Question.id == question_id).limit(1)
             return [i.category for i in results][0]
+
+    def get_subtopic(self,question_id):
+        with self._session_scope as session:
+            results = session.query(Question).filter(Question.id == question_id).limit(1)
+            return [i.sub_category for i in results][0]
 
     def get_mentions_by_user(self,user,question_num):
         with self._session_scope as session:

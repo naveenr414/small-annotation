@@ -67,6 +67,7 @@ export default class Main extends React.Component<Props, State> {
     qanta_id: "",
     metadata: {'difficulty': '', 'category': '', 'tournament': '', 'year': ''},
     submitted: false,
+    start: 0,
   }
   
   /* Loading in questions */ 
@@ -133,6 +134,7 @@ export default class Main extends React.Component<Props, State> {
         answer: res['answer'],
         qanta_id: res['question_num'],
         submitted: false,
+        start: new Date() / 1000,
         suggested_category: res['category'],
         entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []}
         ,()=>{this.setState({clicked: []})}));
@@ -148,6 +150,7 @@ export default class Main extends React.Component<Props, State> {
         words: res['words'], 
         indices: res['indices'],
         submitted: false,
+        start: new Date() / 1000,
         metadata: res['metadata'],
         question: res['question'],
         answer: res['answer'],
@@ -162,9 +165,13 @@ export default class Main extends React.Component<Props, State> {
     let str_entity_spans = JSON.stringify(this.state.entity_list);
     let username = this.state.name;
     let question_id = this.state.qanta_id.toString();
+    let end_time = this.state.start;
+    if(this.state.submitted) {
+      end_time = new Date() / 1000;
+    }
     var xhr = new XMLHttpRequest();
     xhr.open("POST", address+"/submit");
-    xhr.send(JSON.stringify({str_entity_names,str_entity_spans,username,question_id}));
+    xhr.send(JSON.stringify({str_entity_names,str_entity_spans,username,question_id,time: end_time-this.state.start}));
     this.setState({saved: true,underline_span: []});
   } 
 
@@ -589,15 +596,14 @@ export default class Main extends React.Component<Props, State> {
   get_next_question_buttons = () => {
     return <div style={{textAlign: 'center', width: '50%', margin: 'auto', marginTop: 200}}> 
           <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36}} onClick={this.increment_question}> Random Question </button>
-          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36, marginBottom: 50}} onClick={this.new_suggested}> Suggested Question </button>
+          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36, marginBottom: 50}} onClick={this.new_suggested}> Suggested Question </button> <br />
           <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36, textDecoration: "none", color: "black"}} ><a href="/user"> Main Menu </a> </button>
 
     </div>
   }
   
   submit_button = () => {
-    this.submit();
-    this.setState({submitted: true});
+    this.setState({submitted: true},()=>{this.submit()});
   }
   
   skip = () => {

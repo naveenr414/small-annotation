@@ -46,6 +46,7 @@ class NounPhrase(BaseModel):
     str_entity_spans: str
     username: str
     question_id: int
+    time: int
 
 class Preference(BaseModel):
     username: str
@@ -264,7 +265,9 @@ def get_noun_phrase_suggested_num(question_num):
         user_category[name] = random.sample(suggest_questions.category_list,1)[0]
         user_num[name] = random.randint(0,3)
     print("Category {} {}".format(user_category[name],user_num[name]))
-    question_num = suggest_questions.get_random_question(user_category[name],user_num[name])
+    all_user_topics = db.get_all_user_topics_user(name)
+
+    question_num = suggest_questions.get_random_question(user_category[name],user_num[name],all_user_topics)
     print("Question num {}".format(question_num))
     return load_question(name,question_num)
 
@@ -349,6 +352,7 @@ async def update_preferences(preference: Preference):
 @app.post("/quel/submit")
 async def write_phrases(noun_phrases: NounPhrase):
     question_id = noun_phrases.question_id
+    edit_time = noun_phrases.time
     username = security.decode_token(noun_phrases.username)
     db.remove_mentions(username,int(question_id))
     entity_names = json.loads(noun_phrases.str_entity_names)
@@ -362,7 +366,32 @@ async def write_phrases(noun_phrases: NounPhrase):
                              'end':j['end'],'wiki_page':entity_names[i],
                              'content':j['content'],'number': i})
     db.insert_mentions(mentions)
-    db.user_updates(username,int(question_id))
+    db.user_updates(username,int(question_id),mentions)
+
+    # Write the number of new mentions
+    topic = db.get_topic(noun_phrases.question_id)
+    subtopic = db.get_subtopic(noun_phrases.question_id)
+    system_mentions = db.get_mentions_by_user("system",noun_phrases.question_id)
+    for j in system_mentions:
+        del j['content']
+        del j['number']
+        j['question'] = noun_phrases.question_id
+
+    system_mentions = ["{}_{}_{}_{}".format(j['question'],j['start'],j['end'],j['wiki_page']) for j in system_mentions]
+    
+    user_mentions = [j for j in mentions if ("{}_{}_{}_{}".format(j['question_id'],j['start'],j['end'],j['wiki_page'])) not in system_mentions]
+    num_mentions = len(user_mentions)
+
+    print("Updating user topic with {} time".format(edit_time))
+
+    if num_mentions>0:
+        db.update_user_topic(username,noun_phrases.question_id,topic,subtopic,num_mentions,edit_time)
+
+    print("Topic {} unique mentions {}".format(topic,num_mentions))
+
+@app.get("/quel/usertopics/all")
+def get_all_usertopics():
+    return db.get_all_user_topics()
 
 @app.get("/quel/mentions/all")
 def get_all_mentions():
@@ -399,37 +428,25 @@ def status_check():
 
 @app.get("/quel/leaderboard")
 def get_leaderboard():
-    all_mentions = db.get_all_mentions()
-    questions = set([i['question'] for i in all_mentions])
-    system_mentions = set()
-    for i in questions:
-        mentions = db.get_mentions_by_user("system",i)
-        for j in mentions:
-            del j['content']
-            del j['number']
-            j['question'] = i
-            system_mentions = system_mentions.union(["{}_{}_{}_{}".format(j['question'],j['start'],j['end'],j['wiki_page'])])
+    all_user_topics = db.get_all_user_topics()
+    num_mentions = {}
+    num_questions = {}
 
-    print(len(system_mentions))
+    for i in all_user_topics:
+        if i['user_id'] not in num_mentions:
+            num_mentions[i['user_id']] = 0
+            num_questions[i['user_id']]= 0
 
-    print("Mentions length before {}".format(len(all_mentions)))
-    all_mentions = [j for j in all_mentions if ("{}_{}_{}_{}".format(j['question'],j['start'],j['end'],j['wiki_page'])) not in system_mentions]
-
-    user_num_questions = {}
-    user_num_mentions = {}
-
-    for i in all_mentions:
-        if i['user'] not in user_num_questions:
-            user_num_questions[i['user']] = set()
-            user_num_mentions[i['user']] = 0
-        user_num_mentions[i['user']]+=1
-        user_num_questions[i['user']] = user_num_questions[i['user']].union([i['question']])
-
+        num_mentions[i['user_id']]+=i['num_mentions']
+        num_questions[i['user_id']]+=1
+    
     l = []
-    for i in user_num_questions:
-        l.append((i,len(user_num_questions[i]),user_num_mentions[i]))
+    for i in num_mentions:
+        l.append((i,num_questions[i],num_mentions[i]))
 
     l = sorted(l,key=lambda k: k[1],reverse=True)
+
+    print(l,all_user_topics)
 
     return l
 
@@ -438,23 +455,8 @@ def get_topic_distro(username):
     username = security.decode_token(username)
     print("Getting topics for {}".format(username))
 
-    all_mentions = db.get_user_mentions(username)
-    questions = set([i['question'] for i in all_mentions])
-    system_mentions = set()
-    for i in questions:
-        mentions = db.get_mentions_by_user("system",i)
-        for j in mentions:
-            del j['content']
-            del j['number']
-            j['question'] = i
-            system_mentions = system_mentions.union(["{}_{}_{}_{}".format(j['question'],j['start'],j['end'],j['wiki_page'])])
-
-    print("Mentions length before {}".format(len(all_mentions)))
-    user_mentions = [j['question'] for j in all_mentions if ("{}_{}_{}_{}".format(j['question'],j['start'],j['end'],j['wiki_page'])) not in system_mentions]
-
-    topics = []
-    for i in user_mentions:
-        topics.append(db.get_topic(i))
+    all_user_topics = db.get_all_user_topics_user(username)
+    topics = [i['topic'] for i in all_user_topics]
 
     return Counter(topics)
             
