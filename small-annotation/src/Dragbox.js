@@ -21,6 +21,7 @@ interface Props {
   toggle_drag: any;
   update_clicked: any;
   clicked: any;
+  class_name: string;
 }
 
 interface State {
@@ -111,7 +112,6 @@ class Dragbox extends React.Component<Props, State> {
       spans.push(<Span remove_bolded={this.props.remove_bolded} add_bolded={this.props.add_bolded} content={this.props.current_spans[i].content} start={this.props.current_spans[i].start} end={this.props.current_spans[i].end} delete_span={this.props.delete_span} update_clicked={()=>{this.props.update_clicked(json_string)}} toggle_drag={this.props.toggle_drag} number={i} clicked={this.props.clicked === json_string} />);
     }
     
-
     return this.props.dropTarget(
       <div style={{marginBottom: 20}}>  
         <br /> 

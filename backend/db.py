@@ -227,6 +227,12 @@ class Database:
             results = session.query(Mention).filter(Mention.user_id!="system")
             return [{'question':i.question_id,'user':i.user_id,'start':i.start,'end':i.end,'wiki_page': i.wiki_page} for i in results]
 
+    def get_user_mentions(self,username):
+        with self._session_scope as session:
+            results = session.query(Mention).filter(Mention.user_id==username)
+            return [{'question':i.question_id,'user':i.user_id,'start':i.start,'end':i.end,'wiki_page': i.wiki_page} for i in results]
+
+
     def get_questions_user(self,user):
         with self._session_scope as session:
             results = session.query(UserEdits).filter(UserEdits.user_id==user)

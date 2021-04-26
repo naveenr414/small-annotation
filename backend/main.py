@@ -436,8 +436,9 @@ def get_leaderboard():
 @app.get("/quel/topics/{username}")
 def get_topic_distro(username):
     username = security.decode_token(username)
+    print("Getting topics for {}".format(username))
 
-    all_mentions = db.get_all_mentions()
+    all_mentions = db.get_user_mentions(username)
     questions = set([i['question'] for i in all_mentions])
     system_mentions = set()
     for i in questions:

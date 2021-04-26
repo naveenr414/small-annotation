@@ -87,6 +87,16 @@ export default class Info extends React.Component<Props, State> {
   }
   
   render_chart = () => {
+    let value_sum = 0;
+    for(var el in this.state.categories) {
+      value_sum+=this.state.categories[el];
+    }
+    
+    if(value_sum == 0){
+      return <div> No questions annotated! </div>
+    }
+
+    
     let data = {labels: Object.keys(this.state.categories).concat(['']),
   datasets: [
     {
@@ -104,7 +114,7 @@ export default class Info extends React.Component<Props, State> {
           options={{
             title:{
               display:true,
-              text:'Questions viewed by Category',
+              text:'Questions annotated by Category',
               fontSize:20
             },
             legend:{
@@ -157,7 +167,7 @@ export default class Info extends React.Component<Props, State> {
 
  
     return <div style={{marginLeft: 30}}> <h1> {this.state.username} </h1> <br />
-          <div style={{marginBottom: 50}}> <Button style={{marginLeft: 30}} variant="contained" ><a href="/user"> Back </a> </Button>
+          <div style={{marginBottom: 50}}> <Button style={{marginLeft: 30}} variant="contained" ><a href="/user"> Main Menu </a> </Button>
         <Button style={{marginLeft: 30}} variant="contained"><a href="/"> Random Question</a></Button> 
         <Button style={{marginLeft: 30}} variant="contained"><a href="/suggested"> Suggested Question</a></Button> </div>
    

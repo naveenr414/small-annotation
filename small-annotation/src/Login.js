@@ -59,6 +59,7 @@ export default class Login extends React.Component<Props, State> {
         if ("access_token" in result) {
           setCookie("token",result["access_token"],1);
           let token = result["access_token"];
+          alert(getCookie("token"));
           this.setState({ username: this.state.username });
         } else {
           this.setState({ username: "", password: "", username_helper:"Invalid email or password", password_helper:"" });

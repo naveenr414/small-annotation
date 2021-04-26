@@ -115,7 +115,7 @@ export default class User extends React.Component<Props, State> {
       </div> 
       <Button style={{marginBottom: 50}} variant="contained" ><a href="/entitysearch"> Search for Entity </a> </Button> <br />
       <Button style={{marginBottom: 50}} variant="contained" ><a href="/packetsearch"> Search by Tournament </a> </Button> <br />
-      <Button style={{marginBottom: 50}} variant="contained"><a href="/info"> User stats </a> </Button> <br />
+      <Button style={{marginBottom: 50}} variant="contained"><a href="/info"> User stats + Leaderboard </a> </Button> <br />
       <Button style={{marginBottom: 50}} variant="contained" onClick={this.logout}><a href="#"> Logout </a> </Button> 
 
       </div> 

@@ -110,8 +110,12 @@ export default class Main extends React.Component<Props, State> {
         },
         {
           intro: 'Click "change entity" to change the name of the entity box'
+        },
+        {
+          intro: "To explore the prevelance of entities in different tournaments, or to view person annotation stats, click on \"Main Menu\"",
+          element: document.querySelector('#user'),
         },]
-      }).start();},1000)
+      }).start();},250)
     }
   }
 
@@ -227,12 +231,14 @@ export default class Main extends React.Component<Props, State> {
   }
   
   delete_span = (span) => {
-    alert("Deleting span");
     let entity_list = this.state.entity_list.slice();
     for(var i = 0;i<entity_list.length;i++) {
       entity_list[i] = entity_list[i].slice().filter(item => item['start']!==span['start'] || item['end'] !== span['end']);
     }  
     this.setState({entity_list,clicked:"",saved: true, underline_span: []},()=>{this.submit();});
+    
+    setTimeout(()=>{this.setState({clicked: ""})},200);
+
   }
   
   adjust_span = (direction,click_data) => {
@@ -321,7 +327,7 @@ export default class Main extends React.Component<Props, State> {
     }
     
     if(start-end == 0) {
-      alert("No selection selected");
+      return;
     }
     else {   
       let real_start = -1;
@@ -582,14 +588,19 @@ export default class Main extends React.Component<Props, State> {
   
   get_next_question_buttons = () => {
     return <div style={{textAlign: 'center', width: '50%', margin: 'auto', marginTop: 200}}> 
-          <button style={{marginLeft: 30, width: 400, height: 200, fontSize: 36}} onClick={this.increment_question}> Random Question </button>
-          <button style={{marginLeft: 30, width: 400, height: 200, fontSize: 36}} onClick={this.new_suggested}> Suggested Question </button>
+          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36}} onClick={this.increment_question}> Random Question </button>
+          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36, marginBottom: 50}} onClick={this.new_suggested}> Suggested Question </button>
+          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36, textDecoration: "none", color: "black"}} ><a href="/user"> Main Menu </a> </button>
 
     </div>
   }
   
   submit_button = () => {
     this.submit();
+    this.setState({submitted: true});
+  }
+  
+  skip = () => {
     this.setState({submitted: true});
   }
   
@@ -610,9 +621,10 @@ export default class Main extends React.Component<Props, State> {
 
                     <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
                       <div  style={{marginBottom: 20}}> 
-                        <button  style={{marginLeft: 50}}  onClick={this.show_instructions}>Instructions</button> 
-                        <button style={{marginLeft: 50}}><a href="/user"> User Info </a> </button>
                         <button  style={{marginLeft: 50}}  onClick={this.submit_button}>Submit </button> 
+                        <button  style={{marginLeft: 50}}  onClick={this.skip}>Skip </button> 
+                        <button  style={{marginLeft: 50}}  onClick={this.show_instructions}>Instructions</button> 
+                        <button id="user" style={{marginLeft: 50}}><a href="/user"> Main Menu </a> </button>
                         <button  style={{marginLeft: 50}}  onClick={this.logout}>Logout</button> <br /> <br />
                         <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
                           {this.state.saved?'Saved':'Not Saved'} 
@@ -649,7 +661,8 @@ export default class Main extends React.Component<Props, State> {
                     
                     <Divider orientation="vertical" flexItem />
                     <Grid item xs={6} style={{marginLeft: "55%", paddingLeft: 25, paddingRight: 25, borderLeft:'1px solid black',height: "100%", width: "40%"}}>
-                      <div style={{height: "100%"}} class="entity">
+                      <h3 class="entity"> Entities </h3>
+                      <div style={{height: "100%"}}>
                         {all_but_first(this.render_draggables())}  
                         <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} class="new"> 
                           Create New Entity Cluster

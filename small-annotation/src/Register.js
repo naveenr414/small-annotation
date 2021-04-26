@@ -10,6 +10,7 @@ import Typography from "@material-ui/core/Typography";
 import Container from "@material-ui/core/Container";
 import * as p from "./Login.css";
 import Box from '@material-ui/core/Box';
+import {getCookie,setCookie} from "./Util";
 
 
 interface Props {}
@@ -78,7 +79,7 @@ export default class Register extends React.Component<Props, State> {
         .then((result) => {
           if ("access_token" in result) {
             let token = result["access_token"];
-            window.sessionStorage.setItem("token", token);
+            setCookie("token",token);
             this.setState({ username: this.state.username });
           } else {
             this.setState({ username: "", password: "",verify_password:"",username_helper:"Username already used", password_helper: "" });
@@ -92,7 +93,7 @@ export default class Register extends React.Component<Props, State> {
   }
 
   render() {
-    if (window.sessionStorage.getItem("token")) {
+    if (getCookie("token")!=="") {
       return <Redirect to="/" />;
     }
 
