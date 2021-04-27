@@ -236,6 +236,7 @@ class Database:
         with self._session_scope as session:
             word = word.replace(" ", "_")
             upper_bound = word.lower()+"z"
+            exact = []
             if(len(word)<=3):
                 end_count = 0
                 count_time = 0
@@ -243,13 +244,14 @@ class Database:
                 results = session.query(WikiSummary).filter(and_(WikiSummary.title>=word,WikiSummary.title<=upper_bound)).limit(5)
             else:
                 count = session.query(WikiSummary).filter(and_(WikiSummary.title>=word,WikiSummary.title<=upper_bound)).count()
+                exact = session.query(WikiSummary).filter(WikiSummary.title==word).limit(1)
                 if count>1000:
                     results = session.query(WikiSummary).filter(and_(WikiSummary.title>=word,WikiSummary.title<=upper_bound)).limit(5)
                 else:
                     results = session.query(WikiSummary).filter(and_(WikiSummary.title>=word,WikiSummary.title<=upper_bound)).order_by(desc(WikiSummary.popularity)).limit(5)
 
-        names = [i.title for i in results]
-        summaries = [i.text for i in results]
+        names = [i.title for i in exact]+[i.title for i in results]
+        summaries = [i.text for i in exact]+[i.text for i in results]
         print("Took {} time with {} count {}".format(time.time()-start,count,word))
         return [(names[i].replace("&amp;","&"),summaries[i]) for i in range(len(names))]
 

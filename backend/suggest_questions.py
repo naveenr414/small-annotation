@@ -22,7 +22,7 @@ def get_random_question(category,num,user_topics):
 
     exploit = random.random()
 
-    if exploit>0.5:
+    if exploit>0.5 and len(num_mentions)>5:
         best_category = min([(num_mentions[i]/total_time[i],i) for i in total_time])[1]
         print("Exploiting {}".format(best_category))
         return random.sample(categories[best_category+"_"][random.randint(0,3)],1)[0]

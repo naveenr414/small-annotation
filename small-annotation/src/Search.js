@@ -139,6 +139,8 @@ export default class Search extends React.Component<Props, State> {
   set_search = (s) => {
     this.setState({value: s, current_entity: s});
     this.props.update_entity_name(s);
+    this.props.save();
+    this.props.close();
   }
   
   get_input = () => {   

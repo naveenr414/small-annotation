@@ -113,9 +113,14 @@ export default class Main extends React.Component<Props, State> {
           intro: 'Click "change entity" to change the name of the entity box'
         },
         {
-          intro: "To explore the prevelance of entities in different tournaments, or to view person annotation stats, click on \"Main Menu\"",
-          element: document.querySelector('#user'),
-        },]
+          element: document.querySelector('.submit'),
+          intro: "Once you're done annotating, click the submit button"
+        },
+        {
+          intro: "To explore the prevalence of entities in different tournaments, or to view person annotation stats, click on \"Main Menu\"",
+          element: document.querySelector('.user'),
+        },
+        ]
       }).start();},250)
     }
   }
@@ -627,14 +632,11 @@ export default class Main extends React.Component<Props, State> {
 
                     <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
                       <div  style={{marginBottom: 20}}> 
-                        <button  style={{marginLeft: 50}}  onClick={this.submit_button}>Submit </button> 
+                        <button  class="submit" style={{marginLeft: 50}}  onClick={this.submit_button}>Submit </button> 
                         <button  style={{marginLeft: 50}}  onClick={this.skip}>Skip </button> 
                         <button  style={{marginLeft: 50}}  onClick={this.show_instructions}>Instructions</button> 
-                        <button id="user" style={{marginLeft: 50}}><a href="/user"> Main Menu </a> </button>
+                        <button class="user" style={{marginLeft: 50}}><a href="/user"> Main Menu </a> </button>
                         <button  style={{marginLeft: 50}}  onClick={this.logout}>Logout</button> <br /> <br />
-                        <div style={{color: this.state.saved?'green':'red', fontSize: 24}}> 
-                          {this.state.saved?'Saved':'Not Saved'} 
-                        </div>
                       </div> 
                       
                       <Modal show={this.state.show_instructions} onHide={this.hide_instructions} animation={false}>

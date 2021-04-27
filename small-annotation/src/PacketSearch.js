@@ -320,7 +320,7 @@ export default class PacketSearch extends React.Component<Props, State> {
         <b> Top Entities </b> 
         <ol> {this.render_top_entities()} </ol> <br />
         <Autocomplete
-          style={{ fontSize: 24 }}
+          style={{ fontSize: 24, width: 400, marginBottom: 30 }}
           value={this.state.value}
           onInputChange={this.updateAutocorrect}  
           getOptionLabel={(option) => option}

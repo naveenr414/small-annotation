@@ -172,7 +172,8 @@ export default class Info extends React.Component<Props, State> {
         <Button style={{marginLeft: 30}} variant="contained"><a href="/suggested"> Suggested Question</a></Button> </div>
    
    <br />
-      <button onClick={this.download_questions}> Download PDF </button> 
+      <button style={{marginRight: 20}} onClick={this.download_questions}> Download PDF </button> 
+      Category: 
                    <Select
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"

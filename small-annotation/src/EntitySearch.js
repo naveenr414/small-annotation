@@ -54,9 +54,9 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
         .then((res) => {
           
           let suggestions = res;
-            for(var i = 0;i<suggestions.length;i++) {
-              suggestions[i] = toNiceString(suggestions[i][0]+" ");
-            }
+          for(var i = 0;i<suggestions.length;i++) {
+            suggestions[i] = toNiceString(suggestions[i][0]+" ");
+          }
             
           if(suggestions.length<5 && current_target.length>0) {
             let target_string = "";
@@ -90,7 +90,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
             });
           }
           else {
-
+            alert(JSON.stringify(suggestions));
             
             if(suggestions.length == 0) {
               suggestions = ["No Entity Found"]
@@ -193,7 +193,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
 
 
         <Autocomplete
-          style={{ fontSize: 24 }}
+          style={{ fontSize: 24, width: 400, marginBottom: 30 }}
           value={this.state.value}
           onInputChange={this.updateAutocorrect}  
           getOptionLabel={(option) => option}
@@ -202,6 +202,9 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
           />}
           openOnFocus={true}
         />
+        
+        Category: 
+        
         <Select id="hello"
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"
@@ -216,6 +219,9 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
             </MenuItem>
           ))}
         </Select>
+        
+        Subcategory: 
+        
         <Select
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"

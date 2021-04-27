@@ -442,7 +442,7 @@ def get_leaderboard():
     
     l = []
     for i in num_mentions:
-        l.append((i,num_questions[i],num_mentions[i]))
+        l.append((i,num_mentions[i],num_questions[i]))
 
     l = sorted(l,key=lambda k: k[1],reverse=True)
 
@@ -463,13 +463,20 @@ def get_topic_distro(username):
 
 @app.get("/quel/pdf/{username}")
 def write_pdf(username):
-    username,category = username.split("_")[0],username.split("_")[1]
+    username,category = "_".join(username.split("_")[:-1]),username.split("_")[-1]
+    print("Username {}".format(username))
     username = security.decode_token(username)
-    all_questions = db.get_questions_user(username)
+    all_questions = db.get_all_user_topics_user(username)
+    all_questions = [i['question_id'] for i in all_questions]
     pdf = FPDF()
     pdf.add_page()
 
     count = 1
+
+    if len(all_questions) == 0:
+        pdf.set_font('Arial','',14)
+        pdf.write(5,"No questions annotated")
+    
     for question_num in all_questions:
         if count>50:
             break

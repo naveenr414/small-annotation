@@ -115,7 +115,7 @@ class Dragbox extends React.Component<Props, State> {
     return this.props.dropTarget(
       <div style={{marginBottom: 20}}>  
         <br /> 
-        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.props.entity_name:"Unassigned tags (2. Drag spans to associated entity cluster on right)"} 
+        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag spans to associated entity cluster on right)"} 
         </span> 
         {this.props.entity_number>0?<button style={{marginLeft: "10%"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
         </button> :''}
