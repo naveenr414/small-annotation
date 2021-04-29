@@ -17,6 +17,7 @@ import json
 import unidecode
 import datetime
 import re
+import random
 
 
 Base = declarative_base()
@@ -153,9 +154,15 @@ class Database:
             all_qanta = train+dev+test
 
             objects = []
+
+            difficulty_map = {'regular_high_school': 'High School', 'middle_school': 'Middle School', 'college': 'College',
+                              'hs': 'High School', 'easy_high_school': 'High School', 'national_high_school': 'High School',
+                              'hard_high_school': 'High School', 'easy_college': 'College', 'open': 'Open', 'hard_college': 'College',
+                              'ms': 'Middle School', 'regular_college': 'College'}
+            
             for i in range(len(all_qanta)):
                 objects.append({'id':all_qanta[i]['qanta_id'], 'question': all_qanta[i]['text'], 'category': all_qanta[i]['category'],'wiki_answer':all_qanta[i]['page'].replace("_", " "),
-                                'sub_category': all_qanta[i]['subcategory'],'difficulty': all_qanta[i]['difficulty'],'tournament': all_qanta[i]['tournament'],
+                                'sub_category': all_qanta[i]['subcategory'],'difficulty': difficulty_map[all_qanta[i]['difficulty'].lower()],'tournament': all_qanta[i]['tournament'],
                                 'year': all_qanta[i]['year'],'answer':all_qanta[i]['answer']})
                 if i%100000 == 0:
                     print(i,time.time()-start)   
@@ -193,6 +200,26 @@ class Database:
 
             session.commit()
             print("Commit time {}".format(time.time()-start))
+
+    def get_random_question(self,category,difficulty):
+        with self._session_scope as session:
+            print("{} {}".format(category,difficulty))
+            start = time.time()
+            if category == "Any" and difficulty == "Any":
+                return random.randint(0,190624)
+            elif category == "Any":
+                rows = session.query(Question).filter(Question.difficulty == difficulty).order_by(func.random()).first()
+            elif difficulty == "Any":
+                rows = session.query(Question).filter(Question.category == category).order_by(func.random()).first()
+            else:
+                rows = session.query(Question).filter(and_(Question.category == category,Question.difficulty == difficulty)).order_by(func.random()).first()
+
+            print("Took {} time".format(time.time()-start))
+
+            if not rows:
+                return random.randint(0,190624)
+            
+            return rows.id
 
     def user_starts(self,user_id,question_id):
         with self._session_scope as session:
@@ -308,7 +335,7 @@ class Database:
             for i in question_ids:
                 results = session.query(Question).filter(Question.id==i).limit(1)
                 data += [{'question':i.question,'answer':i.answer.replace("{","").replace("}",""),'difficulty': i.difficulty, 'tournament': i.tournament}
-                         for i in results if (category == 'Any' or category == i.category) and (difficulty == 'Any' or i.difficulty.lower() in difficulty_converter[difficulty])]
+                         for i in results if (category == 'Any' or category == i.category) and (difficulty == 'Any' or i.difficulty.lower() == difficulty)]
 
             return data
         

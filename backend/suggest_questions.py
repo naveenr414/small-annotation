@@ -6,7 +6,7 @@ import random
 categories = pickle.load(open("kmeans_subcategories.p","rb"))
 category_list = list(categories.keys())
 
-def get_random_question(category,num,user_topics):
+def get_random_question(user_topics):
     num_mentions = {}
     total_time = {}
 
@@ -16,9 +16,6 @@ def get_random_question(category,num,user_topics):
             total_time[i['topic']] = 0.01
         num_mentions[i['topic']]+=1
         total_time[i['topic']]+=i['time']
-
-    print(num_mentions)
-    print(total_time)
 
     exploit = random.random()
 

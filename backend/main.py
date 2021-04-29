@@ -51,13 +51,14 @@ class NounPhrase(BaseModel):
 class Preference(BaseModel):
     username: str
     category: str
-    subcategory: str
+    difficulty: str
 
 nlp = spacy.load("en_core_web_sm")
 tokenizer = Tokenizer(nlp.vocab)
 
 user_category = {}
-user_num = {}
+user_difficulty = {}
+last_question = {}
 
 start = time.time()
 print("Starting loading of pickle file")
@@ -205,6 +206,8 @@ def get_question_num(question_num):
 def load_question(name,question_num):
     question_data = db.get_question(int(question_num))
 
+    last_question[name] = int(question_num)
+
     w = ["Empty"]
     word_indices = [0]
     entity_names = "[]"
@@ -227,14 +230,6 @@ def load_question(name,question_num):
 
     print("Metadata {}".format(metadata))
 
-    category = ""
-    if name in user_category:
-        category = user_category[name]
-        if category.split("_")[-1]!=category.split("_")[0]:
-            category = category.split("_")[-1]+" "+category.split("_")[0]
-        else:
-            category = category.split("_")[0]
-
     return {'words':w,'indices':word_indices,
             'entity_names':entity_names,
             'entity_list':entity_list,
@@ -242,8 +237,7 @@ def load_question(name,question_num):
             'question': question,
             'answer': answer,
             'question_num': question_num,
-            'metadata': metadata,
-            'category': category}
+            'metadata': metadata}
 
 @app.get("/quel/user/{token}")
 def get_user_info(token):
@@ -261,33 +255,56 @@ def get_noun_phrase_suggested_num(question_num):
     print("Name {}".format(name))
 
     name = security.decode_token(name)
-    if name not in user_category:
-        user_category[name] = random.sample(suggest_questions.category_list,1)[0]
-        user_num[name] = random.randint(0,3)
-    print("Category {} {}".format(user_category[name],user_num[name]))
     all_user_topics = db.get_all_user_topics_user(name)
 
-    question_num = suggest_questions.get_random_question(user_category[name],user_num[name],all_user_topics)
+    question_num = suggest_questions.get_random_question(all_user_topics)
     print("Question num {}".format(question_num))
     return load_question(name,question_num)
+
+@app.get("/quel/noun_phrases_last/{username}")
+def get_last_question(username):
+    print("Getting last with {}\n\n\n".format(username))
+    real_name = security.decode_token(username)
+    if real_name not in last_question:
+        return get_noun_phrase("{}_{}".format(1,username))
+    return load_question(real_name,last_question[real_name])
+
+@app.get("/quel/noun_phrases_selected/{question_num}")
+def get_selected_question(question_num):
+    username = "_".join(question_num.split("_")[1:])
+    question_num = int(question_num.split("_")[0])
+    print("Getting selected with {}\n\n\n".format(username))
+    real_name = security.decode_token(username)
+    return load_question(real_name,question_num)
+
 
 @app.get("/quel/noun_phrases/{question_num}")
 def get_noun_phrase(question_num):
     start = time.time()
     print("QUESTION NUM {}".format(question_num))
     name = security.decode_token("_".join(question_num.split("_")[1:]))
-    question_num = question_num.split("_")[0]
-    question_num = random.randint(0,120000)
+
+    print(user_category,user_difficulty)
+
+    if name not in user_category:
+        user_category[name] = 'Any'
+        user_difficulty[name] = 'Any'
+
+    print(user_category,user_difficulty)
+
+
+    question_num = db.get_random_question(user_category[name],user_difficulty[name])
     while db.get_question(question_num) == {}:
-        question_num = random.randint(0,120000)
+        question_num = db.get_random_question(user_category[name],user_difficulty[name])
     return load_question(name,question_num)
 
 @app.get("/quel/category/{username}")
 def get_category(username):
+    username = security.decode_token(username)
     if username not in user_category:
-        user_category[security.decode_token(username)] = "Literature"
-        return "Literature"
-    return user_category[security.decode_token(username)]
+        user_category[username] = "Any"
+        user_difficulty[username] = "Any"
+    return "{}_{}".format(user_category[username],user_difficulty[username])
 
 @app.get("/quel/entity/{entity_name}")
 def get_questions_entity(entity_name):
@@ -337,19 +354,13 @@ def get_tournament(tournament):
 
 @app.post("/quel/user_preferences")
 async def update_preferences(preference: Preference):
-    if preference.subcategory == "Any":
-        new_category = preference.category
-    else:
-        new_category = "{}_{}".format(preference.category,preference.subcategory)
 
 
     name = security.decode_token(preference.username)
-    print("Preference name {}".format(name))
-    if name not in user_category or user_category[name]!=new_category:
-        user_category[name] = new_category
-        user_num[name] = random.randint(0,3)
+    user_category[name] = preference.category
+    user_difficulty[name] = preference.difficulty
 
-    print("Setting user preference to {}".format(new_category))
+    print("Setting user preference to {} {}".format(preference.category,preference.difficulty))
 
 @app.post("/quel/submit")
 async def write_phrases(noun_phrases: NounPhrase):
@@ -361,6 +372,7 @@ async def write_phrases(noun_phrases: NounPhrase):
     entity_spans = json.loads(noun_phrases.str_entity_spans)
 
     mentions = []
+    last_question[username] = question_id
 
     for i in range(1,len(entity_names)):
         for j in entity_spans[i]:

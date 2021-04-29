@@ -14,16 +14,16 @@ interface State {
 
 let address = "/quel";
 
-const categories = ['Literature', 'Social Science', 'History', 'Science', 'Fine Arts', 'Trash', 'Religion', 'Philosophy', 'Geography', 'Mythology', 'Current Events'];
-const subcategories = {'Fine Arts': ['Any', 'Music', 'Art', 'Other', 'Audiovisual', 'Visual', 'Auditory'], 'Literature': ['Any', 'American', 'European', 'World', 'Other', 'British', 'Europe', 'Classic', 'Classical'], 'Mythology': ['Any'], 'Social Science': ['Any', 'Anthropology', 'Philosophy', 'Religion/Mythology', 'Geography', 'Economics', 'Psychology'], 'Current Events': ['Any'], 'Trash': ['Any', 'Other', 'Pop Culture'], 'Philosophy': ['Any'], 'Religion': ['Any'], 'Geography': ['Any'], 'History': ['Any', 'American', 'European', 'World', 'Ancient', 'Other', 'Europe', 'Classic', 'British', 'Classical'], 'Science': ['Any', 'Biology', 'Chemistry', 'Math', 'Physics', 'Astronomy', 'Earth Science', 'Other', 'Computer Science']};
+const categories = ['Any','Literature', 'Social Science', 'History', 'Science', 'Fine Arts', 'Trash', 'Religion', 'Philosophy', 'Geography', 'Mythology', 'Current Events'];
+const difficulties = ['Any','Middle School','High School','College','Open'];
 
 
 export default class User extends React.Component<Props, State> {
   state: State = {
     username: "",
     edits: [],
-    category_option: 'Literature',
-    subcategory_option: 'Any',
+    category_option: 'Any',
+    difficulty_option: 'Any',
     option_open: false,
     button_clicked: "",
   }
@@ -42,13 +42,8 @@ export default class User extends React.Component<Props, State> {
         edits: res['edits']});
         
         fetch(address+"/category/"+getCookie("token")).then(res=>res.json()).then(res => {
-          if(res.includes("_")) {
-            let temp = res.split("_");
-            this.setState({category_option: temp[0],subcategory_option: temp[1]});
-          }
-          else {
-            this.setState({category_option: res, subcategory_option: "Any"});
-          }
+          let temp = res.split("_");
+          this.setState({category_option: temp[0],difficulty_option: temp[1]});
         });
         
       })
@@ -67,7 +62,7 @@ export default class User extends React.Component<Props, State> {
     xhr.send(JSON.stringify(
       {username: getCookie("token"),
       category: this.state.category_option,
-      subcategory: this.state.subcategory_option,}));
+      difficulty: this.state.difficulty_option,}));
   }
   
   render() {
@@ -79,9 +74,13 @@ export default class User extends React.Component<Props, State> {
     return <div> <h2 style={{marginLeft: 50, marginTop: 30}}> User: {this.state.username} </h2> <br />
     
     <div style={{marginLeft: 50}}> 
-      <Button style={{marginBottom: 50}} variant="contained"><a href="/"> Random Question </a> </Button> <br />
+          
+          
       <div style={{marginBottom: 50}}> 
-        <Button variant="contained"><a href="/suggested"> Suggested Question</a></Button> 
+
+        <Button style={{marginRight: 20}} variant="contained"><a href="/"> Random Question </a> </Button> 
+        
+        Category: 
         <Select
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"
@@ -96,14 +95,16 @@ export default class User extends React.Component<Props, State> {
             </MenuItem>
           ))}
         </Select>
+        
+        Difficulty: 
         <Select
           style={{marginLeft: 20, marginRight: 20}}
           labelId="demo-simple-select-label"
-          value={this.state.subcategory_option}
-          onChange={(event)=>{this.setState({subcategory_option:event.target.value},()=>{this.update_options()}) }}
+          value={this.state.difficulty_option}
+          onChange={(event)=>{this.setState({difficulty_option:event.target.value},()=>{this.update_options()}) }}
 
         >
-          {subcategories[this.state.category_option].map((option, index) => (
+          {difficulties.map((option, index) => (
             <MenuItem
               value={option}
             >
@@ -111,8 +112,12 @@ export default class User extends React.Component<Props, State> {
             </MenuItem>
           ))}
         </Select>
-
       </div> 
+
+      <Button style={{marginBottom: 50}} variant="contained"><a href="/suggested"> Suggested Question</a></Button> 
+      <br />
+      <Button style={{marginBottom: 50}} variant="contained"><a href="/last"> Most Recent Question</a></Button> 
+      <br />
       <Button style={{marginBottom: 50}} variant="contained" ><a href="/entitysearch"> Search for Entity </a> </Button> <br />
       <Button style={{marginBottom: 50}} variant="contained" ><a href="/packetsearch"> Search by Tournament </a> </Button> <br />
       <Button style={{marginBottom: 50}} variant="contained"><a href="/info"> User stats + Leaderboard </a> </Button> <br />

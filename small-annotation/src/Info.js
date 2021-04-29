@@ -169,7 +169,10 @@ export default class Info extends React.Component<Props, State> {
     return <div style={{marginLeft: 30}}> <h1> {this.state.username} </h1> <br />
           <div style={{marginBottom: 50}}> <Button style={{marginLeft: 30}} variant="contained" ><a href="/user"> Main Menu </a> </Button>
         <Button style={{marginLeft: 30}} variant="contained"><a href="/"> Random Question</a></Button> 
-        <Button style={{marginLeft: 30}} variant="contained"><a href="/suggested"> Suggested Question</a></Button> </div>
+        <Button style={{marginLeft: 30}} variant="contained"><a href="/suggested"> Suggested Question</a></Button>
+        <Button style={{marginLeft: 30}} variant="contained"><a href="/last"> Most Recent Question</a></Button>
+
+        </div>
    
    <br />
       <button style={{marginRight: 20}} onClick={this.download_questions}> Download PDF </button> 

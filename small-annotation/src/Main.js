@@ -25,6 +25,7 @@ let address = "/quel";
 
 interface Props {
   suggested: boolean;
+  last: boolean;
 }
 
 
@@ -44,7 +45,6 @@ interface State {
   clicked: any;
   qanta_id: any;
   metadata: any;
-  suggested_category: any;
 }
 
 let colors = ["#4E79A7","#A0CB38","#F28E2B","#FFBE7D","#59A14F","#8CD17D","#B6992D","#F1CE63","#499894","#86BCB6"];
@@ -70,12 +70,17 @@ export default class Main extends React.Component<Props, State> {
     start: 0,
   }
   
+
+  
   /* Loading in questions */ 
   componentDidMount = () => {
     let name = getCookie("token");
   
     if(this.props.suggested) {
       this.setState({name},()=>{this.get_noun_phrases_suggested(0);});
+    }
+    else if(this.props.last) {
+      this.setState({name},()=>{this.get_last_question();});
     }
     else {
       this.setState({name},()=>{this.get_noun_phrases(0);});
@@ -125,9 +130,9 @@ export default class Main extends React.Component<Props, State> {
     }
   }
 
-  get_noun_phrases_suggested = (question_num) => {
+  get_question = (url,question_num) => {
     fetch(
-      address+"/noun_phrases_suggested/"+question_num+"_"+this.state.name
+      url
       )
       .then((res) => res.json())
       .then((res) => this.setState(
@@ -140,29 +145,20 @@ export default class Main extends React.Component<Props, State> {
         qanta_id: res['question_num'],
         submitted: false,
         start: new Date() / 1000,
-        suggested_category: res['category'],
         entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []}
         ,()=>{this.setState({clicked: []})}));
   }
+
+  get_noun_phrases_suggested = (question_num) => {
+    this.get_question(address+"/noun_phrases_suggested/"+question_num+"_"+this.state.name,question_num);
+  }
   
   get_noun_phrases = (question_num) => {
-    fetch(
-      address+"/noun_phrases/"+question_num+"_"+this.state.name
-      )
-      .then((res) => res.json())
-      .then((res) => this.setState(
-        {current_question: question_num, 
-        words: res['words'], 
-        indices: res['indices'],
-        submitted: false,
-        start: new Date() / 1000,
-        metadata: res['metadata'],
-        question: res['question'],
-        answer: res['answer'],
-        suggested_category: res['category'],
-        qanta_id: res['question_num'],
-        entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []}
-        ,()=>{this.setState({clicked: []})}));
+    this.get_question(address+"/noun_phrases/"+question_num+"_"+this.state.name,question_num);
+  }
+  
+  get_last_question = () => {
+    this.get_question(address+"/noun_phrases_last/"+this.state.name,0);
   }
   
   submit = () => {

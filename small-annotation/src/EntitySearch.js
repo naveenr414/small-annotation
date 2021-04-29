@@ -184,7 +184,8 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
 <br />
           <div style={{marginBottom: 50}}> <Button style={{marginLeft: 30}} variant="contained" ><a href="/user"> Main Menu </a> </Button>
         <Button style={{marginLeft: 30}} variant="contained"><a href="/"> Random Question</a></Button> 
-        <Button style={{marginLeft: 30}} variant="contained"><a href="/suggested"> Suggested Question</a></Button> </div>
+        <Button style={{marginLeft: 30}} variant="contained"><a href="/suggested"> Suggested Question</a></Button>
+        <Button style={{marginLeft: 30}} variant="contained"><a href="/last"> Most Recent Question</a></Button> </div>
     <br />
     <b> Entity: </b> 
 
@@ -218,7 +219,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
           ))}
         </Select>
         
-        Subcategory: 
+        Difficulty: 
         
         <Select
           style={{marginLeft: 20, marginRight: 20}}

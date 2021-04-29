@@ -34,10 +34,13 @@ function App() {
           <Register />
         </Route>
         <Route path="/suggested">
-          <Main suggested={true}/>
+          <Main suggested={true} last={false}/>
+        </Route>
+        <Route path="/last">
+          <Main suggested={false} last={true} />
         </Route>
         <Route path="/">
-          <Main suggested={false} />
+          <Main suggested={false} last={false} />
         </Route>
       </Switch>
     </Router>

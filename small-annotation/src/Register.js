@@ -165,9 +165,8 @@ There are no known risks associated to participants of this study.
 We will not ask you for any personal information beyond your email address. Any potential loss of confidentiality will be minimized by storing data securely in a password-protected account. Only principal investigators and co-investigators have access to any identifying sensitive information. After the end of the experiment, data will be anonymized prior to public release.	<br />
 If we write a report or article about this research project, your identity will be protected to the maximum extent possible. Your information may be shared with representatives of the University of Maryland, College Park or governmental authorities if you or someone else is in danger or if we are required to do so by law. 
 <h3> V. Compensation	 </h3>	
-The user with the most annotations, subject to verification, will receive $75, the user with the second most annotations will earn $50, and the user with the third most annotations will earn $25. 
-Additionally, ten users will be selected randomly to receive a $10 gift card. 
-Ten users will be randomly selected to receive a $10 gift card.	
+The user with the most annotations, subject to verification, will receive $75, the user with the second most annotations will earn $50, the third most annotations will earn $30, fourth most will earn $20, and fifth most will earn $10. 
+Additionally, ten users who annotate at least 5 questions will be selected randomly to receive a $10 gift card. 
 If you receive compensation, only your name and address will be collected.
 <h3> VI. Right to Withdraw and Questions </h3>			
 Your participation in this research is completely voluntary. You may choose not to take part at all. If you decide to participate in this research, you may stop participating at any time. If you decide not to participate in this study or if you stop participating at any time, you will not be penalized or lose any benefits to which you otherwise qualify.				
