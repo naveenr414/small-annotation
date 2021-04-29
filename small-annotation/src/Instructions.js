@@ -35,7 +35,7 @@ class Span extends React.Component<Props, State> {
       We have three exploration tools which you can access from the Main Menu page. 
       <br />
       <b> Entity Search </b> - Find which questions a particular entity is mentioned in <br />
-      <b> Tournament Search </b> - Find which entities appear in a tournament, and which questioins in a tournament contain some entity. <br /> 
+      <b> Tournament Search </b> - Find which entities appear in a tournament, and which questions in a tournament contain some entity. <br /> 
       <b> User stats </b> - View user statistics, including #questions annotated, and which topics these questions came from 
       
     </div>

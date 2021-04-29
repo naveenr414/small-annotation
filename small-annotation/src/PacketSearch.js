@@ -283,7 +283,7 @@ export default class PacketSearch extends React.Component<Props, State> {
                   
       let end = Math.min(this.state.start+questions_per_page,this.state.results.length);
       for(let i = this.state.start; i<end;i++) {
-        ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {this.state.results[i]['question']} <br /> <b> Answer: </b> {this.state.results[i]['answer']} 
+        ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {this.state.results[i]['question']} <br /> <b> Answer: </b> {this.state.results[i]['answer']} <br /> 
         <Button style={{marginLeft: 30, marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",entity+"_"+year+"_"+tournament+"_"+category+"_"+subcategory); setCookie("entity","");}} variant="contained"><a href="/selected"> Annotate Question</a></Button> 
 
         
@@ -341,7 +341,7 @@ export default class PacketSearch extends React.Component<Props, State> {
     }
 
     return <div style={{marginLeft: 30}}> <h1> Tournament Search </h1> 
-          <div style={{marginBottom: 50}}> <Button style={{marginLeft: 30}} variant="contained" ><a href="/user"> Main Menu </a> </Button>
+          <div style={{marginBottom: 50}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>
         </div>
      
     <br />

@@ -320,6 +320,7 @@ class Database:
     def get_questions_by_entity(self,entity):
         with self._session_scope as session:
             print("Entity {}".format(entity))
+            entity = entity.strip()
             entity = entity.strip("_").replace("_"," ")
             results = session.query(Mention).filter(and_(Mention.user_id == "system",func.lower(Mention.wiki_page)==entity.lower().replace(" ","_")))
             questions = session.query(Question).filter(func.lower(Question.wiki_answer) == entity.lower().replace("_"," "))
@@ -334,20 +335,19 @@ class Database:
             
             for i in question_ids:
                 results = session.query(Question).filter(Question.id==i).limit(1)
-                data += [{'question':i.question,'answer':i.answer.replace("{","").replace("}",""),'difficulty': i.difficulty, 'tournament': i.tournament,'id':i.id}
+                data += [{'question':i.question,'answer':i.answer.replace("{","").replace("}",""),'difficulty': i.difficulty, 'tournament': i.tournament,'id':i.id,'year':i.year}
                          for i in results if (category == 'Any' or category == i.category) and (difficulty == 'Any' or i.difficulty.lower() == difficulty)]
 
             return data
         
     def get_tournament_entities(self,entity_name,tournament,year,category,subcategory):
         with self._session_scope as session:
-            entity_name = entity_name.replace("_", " ")
+            entity_name = entity_name.replace("_", " ").strip()
             data = []
             year = int(year)
             tournament_questions = [{'id':i.id,'answer':i.answer.replace("{","").replace("}",""),'question':i.question,'category':i.category,'subcategory':i.sub_category,'id':i.id}
                                     for i in session.query(Question).filter(and_(Question.tournament==tournament,Question.year==year))]
 
-            print(len(tournament_questions))
             for i in tournament_questions:
                 
                 has_entity = False
@@ -360,6 +360,7 @@ class Database:
                             has_entity = True
                 if not has_entity:
                     mentions = [i.wiki_page for i in session.query(Mention).filter(Mention.question_id == i['id'])]
+                    print(mentions,entity_name.replace(" ","_"))
                     mentions = [i.lower() for i in mentions]
                     has_entity = entity_name.replace(" ","_").lower() in mentions
 

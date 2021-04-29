@@ -143,7 +143,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       if(i>=this.state.results.length) {
         return ret; 
       }
-      ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {this.state.results[i]['question']} <br /> <b> Answer: </b> {this.state.results[i]['answer']} <br /> <b> Tournament: </b> {this.state.results[i]['tournament']} {this.state.results[i]['year']}
+      ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {this.state.results[i]['question']} <br /> <b> Answer: </b> {this.state.results[i]['answer']} <br /> <b> Tournament: </b> {this.state.results[i]['tournament']} {this.state.results[i]['year']} <br />
         <Button style={{marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",""); setCookie("entity",this.state.value.replaceAll("_"," ")+"_"+this.state.category_option+"_"+this.state.difficulty_option); }} variant="contained"><a href="/selected"> Annotate Question</a></Button> 
 
       </div>);
@@ -209,7 +209,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
     return <div style={{marginLeft: 30}}> 
     <h1> Search Entity  </h1>
 <br />
-          <div style={{marginBottom: 50}}> <Button style={{marginLeft: 30}} variant="contained" ><a href="/user"> Main Menu </a> </Button>
+          <div style={{marginBottom: 50}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>
           </div>
     <br />
     <b> Entity: </b> 

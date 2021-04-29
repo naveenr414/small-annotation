@@ -92,7 +92,8 @@ export default class Main extends React.Component<Props, State> {
     }
     
     
-    if(name!="") {
+    if(name!="" && getCookie("help")=="") {
+      setCookie("help","done");
       setTimeout(()=>{
         introJs().setOptions({
         steps: [{
@@ -693,10 +694,10 @@ export default class Main extends React.Component<Props, State> {
                     <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
                       <div  style={{marginBottom: 20}}> 
                         {this.back_button()}
+                        <button class="user"><a href="/user"> Main Menu </a> </button>
                         <button  class="submit" style={{marginLeft: 50}}  onClick={this.submit_button}>Submit </button> 
                         <button  style={{marginLeft: 50}}  onClick={this.skip}>Skip </button> 
                         <button  style={{marginLeft: 50}}  onClick={this.show_instructions}>Instructions</button> 
-                        <button class="user" style={{marginLeft: 50}}><a href="/user"> Main Menu </a> </button>
                         <button  style={{marginLeft: 50}}  onClick={this.logout}>Logout</button> <br /> <br />
                       </div> 
                       

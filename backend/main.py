@@ -309,7 +309,7 @@ def get_category(username):
 @app.get("/quel/entity/{entity_name}")
 def get_questions_entity(entity_name):
     print("Getting entity name! {}".format(entity_name))
-    entity_name = entity_name.strip("_")
+    entity_name = entity_name.strip("_").strip()
     e = entity_name.split("_")
     category = e[-2]
     difficulty = e[-1]
@@ -395,9 +395,10 @@ async def write_phrases(noun_phrases: NounPhrase):
         del j['number']
         j['question'] = noun_phrases.question_id
 
-    system_mentions = ["{}_{}_{}_{}".format(j['question'],j['start'],j['end'],j['wiki_page']) for j in system_mentions]
-    
-    user_mentions = [j for j in mentions if ("{}_{}_{}_{}".format(j['question_id'],j['start'],j['end'],j['wiki_page'])) not in system_mentions]
+    system_mentions = ["{}_{}_{}_{}".format(j['question'],j['start'],j['end'],j['wiki_page'].lower()) for j in system_mentions]
+
+    print(system_mentions,mentions)
+    user_mentions = [j for j in mentions if ("{}_{}_{}_{}".format(j['question_id'],j['start'],j['end'],j['wiki_page'].lower())) not in system_mentions]
     num_mentions = len(user_mentions)
 
     print("Updating user topic with {} time".format(edit_time))

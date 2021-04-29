@@ -23,7 +23,7 @@ let address = "/quel";
 
 export default class Search extends React.Component<Props, State> {
   state: State = {
-    value: this.props.default_search,
+    value: this.props.default_search.replaceAll("_"," "),
     suggestions: [],
     definitions: {},
     current_entity: "",
@@ -31,7 +31,7 @@ export default class Search extends React.Component<Props, State> {
   
   componentDidMount = () => {
     if(this.props.default_search !== "") {
-      this.search_for_text(this.props.default_search.toLowerCase());
+      this.search_for_text(this.props.default_search.toLowerCase().replaceAll("_"," "));
     }
   }
   
