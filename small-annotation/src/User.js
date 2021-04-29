@@ -111,13 +111,11 @@ export default class User extends React.Component<Props, State> {
               {option}
             </MenuItem>
           ))}
-        </Select>
-      </div> 
+        </Select> 
 
-      <Button style={{marginBottom: 50}} variant="contained"><a href="/suggested"> Suggested Question</a></Button> 
-      <br />
-      <Button style={{marginBottom: 50}} variant="contained"><a href="/last"> Most Recent Question</a></Button> 
-      <br />
+      <Button style={{marginLeft: 30, marginRight: 30}} variant="contained"><a href="/suggested"> Suggested Question</a></Button> 
+      <Button style={{marginLeft: 30, marginRight: 30}} variant="contained"><a href="/last"> Most Recent Question</a></Button> 
+      </div> 
       <Button style={{marginBottom: 50}} variant="contained" ><a href="/entitysearch"> Search for Entity </a> </Button> <br />
       <Button style={{marginBottom: 50}} variant="contained" ><a href="/packetsearch"> Search by Tournament </a> </Button> <br />
       <Button style={{marginBottom: 50}} variant="contained"><a href="/info"> User stats + Leaderboard </a> </Button> <br />

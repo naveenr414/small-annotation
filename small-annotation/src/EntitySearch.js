@@ -183,9 +183,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
     <h1> Search Entity  </h1>
 <br />
           <div style={{marginBottom: 50}}> <Button style={{marginLeft: 30}} variant="contained" ><a href="/user"> Main Menu </a> </Button>
-        <Button style={{marginLeft: 30}} variant="contained"><a href="/"> Random Question</a></Button> 
-        <Button style={{marginLeft: 30}} variant="contained"><a href="/suggested"> Suggested Question</a></Button>
-        <Button style={{marginLeft: 30}} variant="contained"><a href="/last"> Most Recent Question</a></Button> </div>
+          </div>
     <br />
     <b> Entity: </b> 
 

@@ -325,11 +325,15 @@ def get_questions_entity(entity_name):
 @app.get("/quel/tournament_entity/{entity_name}")
 def get_questions_entity(entity_name):
     e = entity_name.split("_")
-    tourney = e[-1]
-    year = e[-2]
-    entity_name = "_".join(e[:-2])
+    tourney = e[-3]
+    year = e[-4]
+    category = e[-2]
+    subcategory = e[-1]
+    entity_name = "_".join(e[:-4])
 
-    results = db.get_tournament_entities(entity_name,tourney,year)
+    print("Category {}, subcategory {}".format(category,subcategory))
+
+    results = db.get_tournament_entities(entity_name,tourney,year,category,subcategory)
     print(entity_name,results)
     return results
 

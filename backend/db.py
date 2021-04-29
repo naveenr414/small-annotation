@@ -334,17 +334,18 @@ class Database:
             
             for i in question_ids:
                 results = session.query(Question).filter(Question.id==i).limit(1)
-                data += [{'question':i.question,'answer':i.answer.replace("{","").replace("}",""),'difficulty': i.difficulty, 'tournament': i.tournament}
+                data += [{'question':i.question,'answer':i.answer.replace("{","").replace("}",""),'difficulty': i.difficulty, 'tournament': i.tournament,'id':i.id}
                          for i in results if (category == 'Any' or category == i.category) and (difficulty == 'Any' or i.difficulty.lower() == difficulty)]
 
             return data
         
-    def get_tournament_entities(self,entity_name,tournament,year):
+    def get_tournament_entities(self,entity_name,tournament,year,category,subcategory):
         with self._session_scope as session:
             entity_name = entity_name.replace("_", " ")
             data = []
             year = int(year)
-            tournament_questions = [{'id':i.id,'answer':i.answer.replace("{","").replace("}",""),'question':i.question} for i in session.query(Question).filter(and_(Question.tournament==tournament,Question.year==year))]
+            tournament_questions = [{'id':i.id,'answer':i.answer.replace("{","").replace("}",""),'question':i.question,'category':i.category,'subcategory':i.sub_category,'id':i.id}
+                                    for i in session.query(Question).filter(and_(Question.tournament==tournament,Question.year==year))]
 
             print(len(tournament_questions))
             for i in tournament_questions:
@@ -361,9 +362,20 @@ class Database:
                     mentions = [i.wiki_page for i in session.query(Mention).filter(Mention.question_id == i['id'])]
                     mentions = [i.lower() for i in mentions]
                     has_entity = entity_name.replace(" ","_").lower() in mentions
-                    
-                if has_entity:
-                    data.append({'question':i['question'],'answer':i['answer']})
+
+                if entity_name == "":
+                    has_entity = True
+
+                if i['category'] == None:
+                    i['category'] = ""
+                if i['subcategory'] == None:
+                    i['subcategory'] = ""
+
+
+                category_works = (i['category'].lower() == category.lower() or category == 'Any')
+                subcategory_works = (i['subcategory'].lower() == subcategory.lower() or subcategory == 'Any')
+                if has_entity and category_works and subcategory_works:
+                    data.append({'question':i['question'],'answer':i['answer'],'question_id': i['id'],'category':i['category'],'subcategory':i['subcategory']})
 
 
             return data
