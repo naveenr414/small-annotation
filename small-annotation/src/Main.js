@@ -26,6 +26,7 @@ let address = "/quel";
 interface Props {
   suggested: boolean;
   last: boolean;
+  selected: boolean; 
 }
 
 
@@ -58,6 +59,7 @@ export default class Main extends React.Component<Props, State> {
     words: [],
     indices: [],
     saved: true,
+    next_numbers: [],
     entity_list: [[],[]],
     entity_names: ["",""],
     show_instructions: false,
@@ -76,7 +78,10 @@ export default class Main extends React.Component<Props, State> {
   componentDidMount = () => {
     let name = getCookie("token");
   
-    if(this.props.suggested) {
+    if(this.props.selected) {
+      this.setState({name},()=>{this.get_question_num();});
+    }
+    else if(this.props.suggested) {
       this.setState({name},()=>{this.get_noun_phrases_suggested(0);});
     }
     else if(this.props.last) {
@@ -159,6 +164,61 @@ export default class Main extends React.Component<Props, State> {
   
   get_last_question = () => {
     this.get_question(address+"/noun_phrases_last/"+this.state.name,0);
+  }
+  
+  get_question_num = () => {
+    let numbers = getCookie("questions"); 
+    if(numbers!="" && JSON.parse(numbers).length>0) {
+      numbers = JSON.parse(numbers);
+      this.setState({next_numbers: numbers});
+      this.get_question(address+"/noun_phrases_selected/"+numbers[0]+"_"+this.state.name,numbers[0]);
+    }
+    else {
+      this.get_noun_phrases(5);
+    }
+  }
+  
+  arrayRotate = (arr, n,reverse) => {
+    let dup = arr.slice();
+    for(var i = 0;i<n;i++) {
+      if(reverse) {
+        dup.unshift(dup.pop());
+      } else {
+        dup.push(dup.shift());
+      }
+    }
+    return dup;
+  }
+
+  previous = () => {
+    let nums = this.state.next_numbers;
+    setCookie("questions",JSON.stringify(this.arrayRotate(nums,1,true)));
+    this.get_question_num();
+  }
+
+  next = () => {
+    let nums = this.state.next_numbers;
+    let rotated = this.arrayRotate(nums,1,false);
+    setCookie("questions",JSON.stringify(rotated));
+    this.get_question_num();
+  }
+  
+  back_button = () => {
+    if(getCookie("packet")!="") {
+      return <button class="packet" style={{marginLeft: 50}}><a href="/packetsearch"> Back </a> </button>
+    }
+    if(getCookie("entity")!="") {
+      return <button class="entity" style={{marginLeft: 50}}><a href="/entitysearch"> Back </a> </button>
+    }
+  }
+  
+  render_next_previous = () => {
+    return <div style={{textAlign: 'center', width: '50%', margin: 'auto', marginTop: 200}}> 
+          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36}} onClick={this.previous}> Previous </button>
+          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36, marginBottom: 50}} onClick={this.next}> Next </button> <br />
+          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36, textDecoration: "none", color: "black"}} ><a href="/user"> Main Menu </a> </button>
+
+    </div>
   }
   
   submit = () => {
@@ -595,6 +655,10 @@ export default class Main extends React.Component<Props, State> {
   }
   
   get_next_question_buttons = () => {
+    if(this.state.next_numbers.length>0) {
+      return this.render_next_previous();
+    }
+    
     return <div style={{textAlign: 'center', width: '50%', margin: 'auto', marginTop: 200}}> 
           <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36}} onClick={this.increment_question}> Random Question </button>
           <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36, marginBottom: 50}} onClick={this.new_suggested}> Suggested Question </button> <br />
@@ -628,6 +692,7 @@ export default class Main extends React.Component<Props, State> {
 
                     <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
                       <div  style={{marginBottom: 20}}> 
+                        {this.back_button()}
                         <button  class="submit" style={{marginLeft: 50}}  onClick={this.submit_button}>Submit </button> 
                         <button  style={{marginLeft: 50}}  onClick={this.skip}>Skip </button> 
                         <button  style={{marginLeft: 50}}  onClick={this.show_instructions}>Instructions</button> 

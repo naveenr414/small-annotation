@@ -273,7 +273,7 @@ def get_last_question(username):
 def get_selected_question(question_num):
     username = "_".join(question_num.split("_")[1:])
     question_num = int(question_num.split("_")[0])
-    print("Getting selected with {}\n\n\n".format(username))
+    print("Getting selected with {} {}".format(question_num,username))
     real_name = security.decode_token(username)
     return load_question(real_name,question_num)
 

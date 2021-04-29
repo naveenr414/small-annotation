@@ -29,18 +29,21 @@ function App() {
         </Route> 
         <Route path="/entitysearch"> 
           <EntitySearch />
-        </Route>         
+        </Route>            
         <Route path="/register">
           <Register />
         </Route>
         <Route path="/suggested">
-          <Main suggested={true} last={false}/>
+          <Main suggested={true} last={false} selected={false}  />
         </Route>
         <Route path="/last">
-          <Main suggested={false} last={true} />
+          <Main suggested={false} last={true} selected={false}  />
+        </Route>
+        <Route path="/selected">
+          <Main suggested={false} last={false} selected={true} /> 
         </Route>
         <Route path="/">
-          <Main suggested={false} last={false} />
+          <Main suggested={false} last={false} selected={false}  />
         </Route>
       </Switch>
     </Router>

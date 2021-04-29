@@ -121,20 +121,47 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       ).then(res=>res.json())
       .then(res => {
         this.setState({results: res, loading: false});
+        setCookie("entity","");
       })
   }
   
   render_questions = (start,end) => {
     let ret = [];
+    let ids = [];
+    for(var i = 0;i<this.state.results.length;i++) {
+      ids.push(this.state.results[i].id);
+    }
+      function arrayRotate(arr, n) {
+        let dup = arr.slice();
+        for(var i = 0;i<n;i++) {
+          dup.push(dup.shift());
+        }
+        return dup;
+      }
+
     for(var i = start;i<end;i++) {
       if(i>=this.state.results.length) {
         return ret; 
       }
-      ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {this.state.results[i]['question']} <br /> <b> Answer: </b> {this.state.results[i]['answer']} <br /> <b> Tournament: </b> {this.state.results[i]['tournament']} </div>);
+      ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {this.state.results[i]['question']} <br /> <b> Answer: </b> {this.state.results[i]['answer']} <br /> <b> Tournament: </b> {this.state.results[i]['tournament']} {this.state.results[i]['year']}
+        <Button style={{marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",""); setCookie("entity",this.state.value.replaceAll("_"," ")+"_"+this.state.category_option+"_"+this.state.difficulty_option); }} variant="contained"><a href="/selected"> Annotate Question</a></Button> 
+
+      </div>);
                 
     }
     
     return ret;
+  }
+  
+  componentDidMount = () => {
+    if(getCookie("entity")!="") {
+      let e = getCookie("entity").split("_");
+      this.setState({
+        value: e[0],
+        category_option: e[1],
+        difficulty_option: e[2],
+      },()=>{this.get_results()});
+    }
   }
   
   decrement = () => {

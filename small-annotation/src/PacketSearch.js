@@ -54,6 +54,7 @@ export default class PacketSearch extends React.Component<Props, State> {
       ).then(res=>res.json())
       .then(res => {
         this.setState({results: res, loading_search: false});
+        setCookie("packet","");
       })
   }
   
@@ -261,9 +262,32 @@ export default class PacketSearch extends React.Component<Props, State> {
     }
     else {
       let ret = [];
+      let ids = [];
+      for(var i = 0;i<this.state.results.length;i++) {
+        ids.push(this.state.results[i].question_id);
+      }
+      
+      function arrayRotate(arr, n) {
+        let dup = arr.slice();
+        for(var i = 0;i<n;i++) {
+          dup.push(dup.shift());
+        }
+        return dup;
+      }
+    let entity = this.state.value.replaceAll("_"," ");
+    let year = this.state.year_option;
+    let tournament = this.state.tournament_option;
+    let category = this.state.category_option;
+    let subcategory = this.state.subcategory_option;
+
+                  
       let end = Math.min(this.state.start+questions_per_page,this.state.results.length);
-      for(var i = this.state.start; i<end;i++) {
-        ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {this.state.results[i]['question']} <br /> <b> Answer: </b> {this.state.results[i]['answer']} <br /> </div>);
+      for(let i = this.state.start; i<end;i++) {
+        ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {this.state.results[i]['question']} <br /> <b> Answer: </b> {this.state.results[i]['answer']} 
+        <Button style={{marginLeft: 30, marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",entity+"_"+year+"_"+tournament+"_"+category+"_"+subcategory); setCookie("entity","");}} variant="contained"><a href="/selected"> Annotate Question</a></Button> 
+
+        
+        <br /> </div>);
                   
       }
       
@@ -298,6 +322,16 @@ export default class PacketSearch extends React.Component<Props, State> {
     }
     else {
       return <div> </div>
+    }
+  }
+
+  componentDidMount = () => {
+    if(getCookie("packet")!="") {
+      //entity+"_"+year+"_"+tournament+"_"+category+"_"+subcategory
+      let packet_vals = getCookie("packet").split("_");
+      this.setState({value: packet_vals[0],year_option: parseInt(packet_vals[1]),
+                      tournament_option: packet_vals[2], 
+      category_option: packet_vals[3], subcategory_option: packet_vals[4]},()=>{this.get_results();});
     }
   }
   
