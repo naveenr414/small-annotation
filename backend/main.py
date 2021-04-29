@@ -303,6 +303,8 @@ def get_questions_entity(entity_name):
     print(len(results))
     print("Got results!")
 
+    return results
+
 @app.get("/quel/tournament_entity/{entity_name}")
 def get_questions_entity(entity_name):
     e = entity_name.split("_")
@@ -311,7 +313,7 @@ def get_questions_entity(entity_name):
     entity_name = "_".join(e[:-2])
 
     results = db.get_tournament_entities(entity_name,tourney,year)
-    print(results)
+    print(entity_name,results)
     return results
 
 @app.get("/quel/tournament/{tournament}")

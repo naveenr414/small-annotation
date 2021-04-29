@@ -40,7 +40,7 @@ export default class Search extends React.Component<Props, State> {
     clearTimeout(tantivy_timeout);
     fetch(
       address+"/autocorrect/" +
-        current_target.replace(" ","_")
+        encodeURIComponent(current_target.replace(" ","_"))
     )
     .then((res) => res.json())
     .then((res) => {

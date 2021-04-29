@@ -158,16 +158,17 @@ export default class Register extends React.Component<Props, State> {
 <h3> I. Purpose of the Study </h3>
 This research is being conducted by Jordan Boyd-Graber at the University of Maryland, College Park. We are inviting you to participate in this research project because you can help label data about ambiguous people, places, and events in text passages. The purpose of this research project is to use this labeled information to help computers understand language. 		
 <h3> II. Procedures  </h3>
-The procedures involve first signing up on the website with an email and password. You will be instructed to label information about people, places, and events from datasets that have been publicly published. <i> Each annotation session will take no longer than 1 hour. You may choose to participate in a maximum of ten sessions, depending on your interest. Thus, your overall participation will not exceed 10 hours. </i>
+The procedures involve first signing up on the website with an email and password. You will be instructed to label information about people, places, and events from datasets that have been publicly published. You may annotate for as long or as short as you wish, depending on your interest. 
 <h3> III. Potential Risks and Discomforts </h3>
 There are no known risks associated to participants of this study. 
 <h3> IV. Confidentiality 	</h3> 	 						
 We will not ask you for any personal information beyond your email address. Any potential loss of confidentiality will be minimized by storing data securely in a password-protected account. Only principal investigators and co-investigators have access to any identifying sensitive information. After the end of the experiment, data will be anonymized prior to public release.	<br />
 If we write a report or article about this research project, your identity will be protected to the maximum extent possible. Your information may be shared with representatives of the University of Maryland, College Park or governmental authorities if you or someone else is in danger or if we are required to do so by law. 
-<h3> V. Compensation	 </h3>			
-<i> Ten users will be randomly selected to receive a $10 gift card.		<br />		
-If you will earn more than $100 as a research participant in this study, you must provide your name, address and SSN to receive compensation. <br />
-If you do not earn more than $100 only your name and address will be collected to receive compensation. </i>
+<h3> V. Compensation	 </h3>	
+The user with the most annotations, subject to verification, will receive $75, the user with the second most annotations will earn $50, and the user with the third most annotations will earn $25. 
+Additionally, ten users will be selected randomly to receive a $10 gift card. 
+Ten users will be randomly selected to receive a $10 gift card.	
+If you receive compensation, only your name and address will be collected.
 <h3> VI. Right to Withdraw and Questions </h3>			
 Your participation in this research is completely voluntary. You may choose not to take part at all. If you decide to participate in this research, you may stop participating at any time. If you decide not to participate in this study or if you stop participating at any time, you will not be penalized or lose any benefits to which you otherwise qualify.				
 If you decide to stop taking part in the study, if you have questions, concerns, or complaints, or if you need to report an injury related to the research, please contact the investigator: <br />

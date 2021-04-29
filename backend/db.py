@@ -321,15 +321,19 @@ class Database:
 
             print(len(tournament_questions))
             for i in tournament_questions:
+                
                 has_entity = False
-                if entity_name in i['answer'].lower():
-                    next_char = i['answer'].lower().index(entity_name)
+
+                if entity_name.replace("_", " ").lower() in i['answer'].lower():
+                    e = entity_name.replace("_", " ").lower()
+                    next_char = i['answer'].lower().index(e)
                     s = i['answer'].lower()[next_char:]
-                    if len(s) == len(entity_name) or not s[len(entity_name)].isalpha():
+                    if len(s) == len(entity_name) or not s[len(e)].isalpha():
                             has_entity = True
-                else:
-                    mentions = session.query(Mention).filter(and_(Mention.question_id == i['id'],func.lower(Mention.wiki_page)==entity_name.lower())).count()
-                    has_entity = mentions>0
+                if not has_entity:
+                    mentions = [i.wiki_page for i in session.query(Mention).filter(Mention.question_id == i['id'])]
+                    mentions = [i.lower() for i in mentions]
+                    has_entity = entity_name.replace(" ","_").lower() in mentions
                     
                 if has_entity:
                     data.append({'question':i['question'],'answer':i['answer']})

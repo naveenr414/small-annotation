@@ -48,7 +48,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       
       fetch(
         address+"/autocorrect/" +
-          current_target
+          encodeURIComponent(current_target.replace(" ","_"))
       )
         .then((res) => res.json())
         .then((res) => {
@@ -89,9 +89,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
               });
             });
           }
-          else {
-            alert(JSON.stringify(suggestions));
-            
+          else {           
             if(suggestions.length == 0) {
               suggestions = ["No Entity Found"]
             }

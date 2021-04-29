@@ -56,10 +56,9 @@ export default class PacketSearch extends React.Component<Props, State> {
     let tagged_word = current_target; 
    
     if (current_target !== "") {
-      
       fetch(
         address+"/autocorrect/" +
-          current_target
+          encodeURIComponent(current_target.replace(" ","_"))
       )
         .then((res) => res.json())
         .then((res) => {
@@ -141,7 +140,7 @@ export default class PacketSearch extends React.Component<Props, State> {
       
       fetch(
         address+"/autocorrect/" +
-          current_target
+            encodeURIComponent(current_target.replace(" ","_"))
       )
         .then((res) => res.json())
         .then((res) => {

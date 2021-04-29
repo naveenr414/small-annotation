@@ -89,7 +89,7 @@ def process(question,f,g):
     return clusters
 
 print("Loading blink")
-blink_file = open("all_blink.json").read().strip().split("\n")
+blink_file = open("all_blink.jsonl").read().strip().split("\n")
 
 print("Loading coref")
 coref_file = open("coref_preds.json").read().strip().split("\n")
