@@ -206,22 +206,13 @@ export default class Main extends React.Component<Props, State> {
   
   back_button = () => {
     if(getCookie("packet")!="") {
-      return <button class="packet" style={{marginLeft: 50}}><a href="/packetsearch"> Back </a> </button>
+      return <button class="packet"><a href="/packetsearch"> Back </a> </button>
     }
     if(getCookie("entity")!="") {
-      return <button class="entity" style={{marginLeft: 50}}><a href="/entitysearch"> Back </a> </button>
+      return <button class="entity"><a href="/entitysearch"> Back </a> </button>
     }
   }
-  
-  render_next_previous = () => {
-    return <div style={{textAlign: 'center', width: '50%', margin: 'auto', marginTop: 200}}> 
-          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36}} onClick={this.previous}> Previous </button>
-          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36, marginBottom: 50}} onClick={this.next}> Next </button> <br />
-          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36, textDecoration: "none", color: "black"}} ><a href="/user"> Main Menu </a> </button>
 
-    </div>
-  }
-  
   submit = () => {
     let str_entity_names = JSON.stringify(this.state.entity_names);
     let str_entity_spans = JSON.stringify(this.state.entity_list);
@@ -655,25 +646,33 @@ export default class Main extends React.Component<Props, State> {
     this.setState({clicked: this.state.clicked});
   }
   
-  get_next_question_buttons = () => {
+  render_navigation_buttons = () => {
     if(this.state.next_numbers.length>0) {
-      return this.render_next_previous();
+      return   <div style={{display: 'inline-block'}}> 
+          <button style={{marginLeft: 50}} onClick={()=>{this.final_submit(); this.previous();}}> Previous </button>
+          <button style={{marginLeft: 50}} onClick={()=>{this.final_submit();this.next()}}> Next </button> 
+    </div>
     }
     
-    return <div style={{textAlign: 'center', width: '50%', margin: 'auto', marginTop: 200}}> 
-          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36}} onClick={this.increment_question}> Random Question </button>
-          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36, marginBottom: 50}} onClick={this.new_suggested}> Suggested Question </button> <br />
-          <button style={{marginLeft: 30, width: 300, height: 150, fontSize: 36, textDecoration: "none", color: "black"}} ><a href="/user"> Main Menu </a> </button>
-
+    return <div style={{display: 'inline-block'}}> 
+          <button style={{marginLeft: 50}} onClick={()=>{this.final_submit(); this.increment_question();}}> Random Question </button>
+          <button style={{marginLeft: 50}} onClick={()=>{this.final_submit();this.new_suggested()}}> Suggested Question </button> 
     </div>
   }
-  
-  submit_button = () => {
+    
+  final_submit = () => {
     this.setState({submitted: true},()=>{this.submit()});
   }
   
   skip = () => {
-    this.setState({submitted: true});
+    this.setState({submitted: true},()=>{
+      if(this.state.next_numbers.length>0) {
+        this.next();
+      }
+      else {
+        this.increment_question();
+      }
+    });
   }
   
   render() {
@@ -683,9 +682,6 @@ export default class Main extends React.Component<Props, State> {
     else if(this.state.words.length == 0) {
       return <h1> Loading </h1> 
     }
-    else if(this.state.submitted) {
-      return this.get_next_question_buttons();
-    }
     else {
       return  <DndProvider backend={HTML5Backend}> 
                 <div> 
@@ -694,8 +690,8 @@ export default class Main extends React.Component<Props, State> {
                     <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
                       <div  style={{marginBottom: 20}}> 
                         {this.back_button()}
-                        <button class="user"><a href="/user"> Main Menu </a> </button>
-                        <button  class="submit" style={{marginLeft: 50}}  onClick={this.submit_button}>Submit </button> 
+                        <button class="user" style={{marginLeft: 50}}><a href="/user"> Main Menu </a> </button>
+                        {this.render_navigation_buttons()}
                         <button  style={{marginLeft: 50}}  onClick={this.skip}>Skip </button> 
                         <button  style={{marginLeft: 50}}  onClick={this.show_instructions}>Instructions</button> 
                         <button  style={{marginLeft: 50}}  onClick={this.logout}>Logout</button> <br /> <br />

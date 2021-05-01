@@ -27,6 +27,7 @@ export default class Search extends React.Component<Props, State> {
     suggestions: [],
     definitions: {},
     current_entity: "",
+    wiki_ids: [],
   }
   
   componentDidMount = () => {
@@ -45,11 +46,13 @@ export default class Search extends React.Component<Props, State> {
     .then((res) => res.json())
     .then((res) => {
       let suggestions = [];
-      let definitions = {}
+      let definitions = {};
+      let ids = {};
       
       for(var i = 0;i<res.length;i++) {
         if (res[i][1]!="") {
           definitions[toNiceString(res[i][0])] = res[i][1];
+          ids[toNiceString(res[i][0])] = res[i][2];
         }
         suggestions.push(toNiceString(res[i][0]));
       }
@@ -61,7 +64,7 @@ export default class Search extends React.Component<Props, State> {
         timeout_number = setTimeout(()=>{this.props.update_entity_name( toNiceString(current_entity),this.props.entity_number)},250);
       }
 
-      this.setState({ suggestions, definitions, current_entity },function() {
+      this.setState({ suggestions, definitions, wiki_ids: ids, current_entity },function() {
         return 0;
       });     
     });
@@ -115,7 +118,7 @@ export default class Search extends React.Component<Props, State> {
       
     }
     else {
-       this.setState({ suggestions: [],definitions: [] });
+       this.setState({ suggestions: [],definitions: [], ids: [] });
     }
   };
   
@@ -125,6 +128,13 @@ export default class Search extends React.Component<Props, State> {
       return this.state.definitions[this.state.current_entity];
     }
     return "";
+  }
+
+  get_id = () => {
+    if(this.state.current_entity in this.state.wiki_ids){ 
+      let link = "https://en.wikipedia.org/?curid="+this.state.wiki_ids[this.state.current_entity];
+      return <a href={link} target="_blank"> More info </a> ;
+    }
   }
   
   on_highlight_change = (event: any, current_entity: any, reason: an) => {
@@ -153,6 +163,7 @@ export default class Search extends React.Component<Props, State> {
         <div style={{height: 100, marginBottom: 200}}>
         <Typography style={{ fontSize: 24, marginTop: 9}}> 
           <b> {this.state.current_entity} </b>{this.state.suggestions.length>0?':':''} {this.get_definition()}
+            {this.get_id()}
         </Typography> </div>
           
         <br />

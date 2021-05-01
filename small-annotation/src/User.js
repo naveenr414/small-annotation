@@ -54,6 +54,8 @@ export default class User extends React.Component<Props, State> {
     if(getCookie("token") !== "") {
       this.get_user_info();
     }
+    setCookie("packet","");
+    setCookie("entity","");
   }
   
   update_options = () => {

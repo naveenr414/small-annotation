@@ -18,6 +18,7 @@ import unidecode
 import datetime
 import re
 import random
+from collections import Counter
 
 
 Base = declarative_base()
@@ -279,8 +280,14 @@ class Database:
 
         names = [i.title for i in exact]+[i.title for i in results]
         summaries = [i.text for i in exact]+[i.text for i in results]
+        ids = [i.id for i in exact]+[i.id for i in results]
+
+        names = names[:5]
+        summaries = summaries[:5]
+        ids = ids[:5]
+
         print("Took {} time with {} count {}".format(time.time()-start,count,word))
-        return [(names[i].replace("&amp;","&"),summaries[i]) for i in range(len(names))]
+        return [(names[i].replace("&amp;","&"),summaries[i],ids[i]) for i in range(len(names))]
 
     def get_all_mentions(self):
         with self._session_scope as session:
@@ -317,6 +324,23 @@ class Database:
             results = [{'start':i.start,'end':i.end,'wiki_page':i.wiki_page,'content':i.content,'number':i.number} for i in results]
             return results
 
+    def get_entities(self,question_ids,category,difficulty):
+        with self._session_scope as session:
+            all_entities = []
+            for i in question_ids:
+                question = session.query(Question).filter(Question.id==i).limit(1)
+                question = [1 for i in question if (category == 'Any' or category == i.category) and (difficulty == 'Any' or i.difficulty.lower() == difficulty)]
+                if len(question)>0:
+                    results = session.query(Mention).filter(Mention.question_id==i)
+                    all_entities+=list(set([i.wiki_page for i in results]))
+
+            other_entities = list(Counter(all_entities).items())
+            other_entities = sorted(other_entities,key=lambda k: k[1],reverse=True)
+            other_entities = [i[0].replace("_"," ") for i in other_entities if i[0]!=''][:20]
+            other_entities = [i for i in other_entities if "File Transfer Protocol" not in i and "FTPS" not in i]
+            return other_entities
+
+
     def get_questions_by_entity(self,entity):
         with self._session_scope as session:
             print("Entity {}".format(entity))
@@ -348,9 +372,12 @@ class Database:
             tournament_questions = [{'id':i.id,'answer':i.answer.replace("{","").replace("}",""),'question':i.question,'category':i.category,'subcategory':i.sub_category,'id':i.id}
                                     for i in session.query(Question).filter(and_(Question.tournament==tournament,Question.year==year))]
 
+            other_entities = []
+
             for i in tournament_questions:
                 
                 has_entity = False
+                mentions = [i.wiki_page for i in session.query(Mention).filter(Mention.question_id == i['id'])]
 
                 if entity_name.replace("_", " ").lower() in i['answer'].lower():
                     e = entity_name.replace("_", " ").lower()
@@ -359,10 +386,7 @@ class Database:
                     if len(s) == len(entity_name) or not s[len(e)].isalpha():
                             has_entity = True
                 if not has_entity:
-                    mentions = [i.wiki_page for i in session.query(Mention).filter(Mention.question_id == i['id'])]
-                    print(mentions,entity_name.replace(" ","_"))
-                    mentions = [i.lower() for i in mentions]
-                    has_entity = entity_name.replace(" ","_").lower() in mentions
+                    has_entity = entity_name.replace(" ","_").lower() in [i.lower() for i in mentions]
 
                 if entity_name == "":
                     has_entity = True
@@ -376,10 +400,14 @@ class Database:
                 category_works = (i['category'].lower() == category.lower() or category == 'Any')
                 subcategory_works = (i['subcategory'].lower() == subcategory.lower() or subcategory == 'Any')
                 if has_entity and category_works and subcategory_works:
+                    other_entities+=list(set(mentions))
                     data.append({'question':i['question'],'answer':i['answer'],'question_id': i['id'],'category':i['category'],'subcategory':i['subcategory']})
 
+            other_entities = list(Counter(other_entities).items())
+            other_entities = sorted(other_entities,key=lambda k: k[1],reverse=True)
+            other_entities = [i[0].replace("_"," ") for i in other_entities if i[0]!='' and i[0] not in ['FTPS',"File Transfer Protocol"]][:20]
 
-            return data
+            return {'data':data,'entities':other_entities}
 
     def remove_mentions(self,user,question_num):
         with self._session_scope as session:

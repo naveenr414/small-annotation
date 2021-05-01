@@ -31,6 +31,7 @@ export default class EntitySearch extends React.Component<Props, State> {
     loading: false,
     value: "",
     autocorrect: [],
+    entities: [],
   }
   
 updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
@@ -114,13 +115,22 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
 
   };
   
+  render_entities = () => {
+    if(this.state.entities.length>0 && !this.state.loading) {
+      
+      return <div> Most common co-occurring entities <ul> 
+      {this.state.entities.map((entity) => (<li> <a target="_blank" href={"https://wikipedia.org/wiki/"+entity.replaceAll(" ","_")}> {entity} </a> </li>))}
+      </ul> </div> 
+    }
+  }
+  
   get_results = () => {
     this.setState({loading: true});
         fetch(
       address+"/entity/"+this.state.value.replaceAll(" ","_")+"_"+this.state.category_option+"_"+this.state.difficulty_option
       ).then(res=>res.json())
       .then(res => {
-        this.setState({results: res, loading: false});
+        this.setState({results: res['results'], entities: res['entities'],loading: false});
         setCookie("entity","");
       })
   }
@@ -267,7 +277,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
         
         <br /> 
         
-
+        {this.render_entities()}
     {this.render_results()}
   
         

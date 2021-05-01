@@ -315,12 +315,13 @@ def get_questions_entity(entity_name):
     difficulty = e[-1]
     entity_name = "_".join(e[:-2])
     questions = db.get_questions_by_entity(entity_name)
+    common_entities = db.get_entities(questions,category,difficulty)
     print("Got questions")
     results = db.get_question_answers(questions,category,difficulty)
     print(len(results))
     print("Got results!")
-
-    return results
+    print(common_entities)
+    return {'results':results,'entities':common_entities}
 
 @app.get("/quel/tournament_entity/{entity_name}")
 def get_questions_entity(entity_name):
@@ -334,7 +335,6 @@ def get_questions_entity(entity_name):
     print("Category {}, subcategory {}".format(category,subcategory))
 
     results = db.get_tournament_entities(entity_name,tourney,year,category,subcategory)
-    print(entity_name,results)
     return results
 
 @app.get("/quel/tournament/{tournament}")

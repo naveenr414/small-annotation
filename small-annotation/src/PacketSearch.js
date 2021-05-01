@@ -40,6 +40,7 @@ export default class PacketSearch extends React.Component<Props, State> {
     category_option: "Any",
     subcategory_option: "Any",
     start:0,
+    entities: [],
   }
   
   get_results = () => {
@@ -53,9 +54,18 @@ export default class PacketSearch extends React.Component<Props, State> {
       address+"/tournament_entity/"+entity+"_"+year+"_"+tournament+"_"+category+"_"+subcategory
       ).then(res=>res.json())
       .then(res => {
-        this.setState({results: res, loading_search: false});
+        this.setState({results: res['data'], entities: res['entities'], loading_search: false});
         setCookie("packet","");
       })
+  }
+  
+  render_entities = () => {
+    if(this.state.entities.length>0 && !this.state.loading_search) {
+      
+      return <div> Most common co-occurring entities <ul> 
+      {this.state.entities.map((entity) => (<li> <a target="_blank" href={"https://wikipedia.org/wiki/"+entity.replaceAll(" ","_")}> {entity} </a> </li>))}
+      </ul> </div> 
+    }
   }
   
   updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
@@ -439,6 +449,7 @@ export default class PacketSearch extends React.Component<Props, State> {
           Search 
         </Button> 
         {this.render_directions()}
+        {this.render_entities()}
         {this.render_results()}
     </div>
     
