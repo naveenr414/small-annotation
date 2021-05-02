@@ -329,7 +329,7 @@ class Database:
             all_entities = []
             for i in question_ids:
                 question = session.query(Question).filter(Question.id==i).limit(1)
-                question = [1 for i in question if (category == 'Any' or category == i.category) and (difficulty == 'Any' or i.difficulty.lower() == difficulty)]
+                question = [1 for i in question if (category == 'Any' or category.lower() == i.category.lower()) and (difficulty == 'Any' or i.difficulty.lower() == difficulty.lower())]
                 if len(question)>0:
                     results = session.query(Mention).filter(Mention.question_id==i)
                     all_entities+=list(set([i.wiki_page for i in results]))
@@ -347,20 +347,24 @@ class Database:
             entity = entity.strip()
             entity = entity.strip("_").replace("_"," ")
             results = session.query(Mention).filter(and_(Mention.user_id == "system",func.lower(Mention.wiki_page)==entity.lower().replace(" ","_")))
+            locations = {}
+            for i in results:
+                locations[i.question_id] = (i.start,i.end)
             questions = session.query(Question).filter(func.lower(Question.wiki_answer) == entity.lower().replace("_"," "))
-            return list(set([i.question_id for i in results]).union(set([i.id for i in questions])))
+            for i in questions:
+                locations[i.id] = (-1,-1)
+
+            return {'questions':list(set([i.question_id for i in results]).union(set([i.id for i in questions]))),
+                    'locations':locations}
 
     def get_question_answers(self,question_ids,category,difficulty):
         with self._session_scope as session:
             data = []
-
-            difficulty_converter = {'College': ['regular_college','easy_college','hard_college','college'],'High School': ['hs','regular_high_school','hard_high_school','easy_high_school','national_high_school'],
-                                    'Open':['open'],'Middle School':['middle_school','ms']}
             
             for i in question_ids:
                 results = session.query(Question).filter(Question.id==i).limit(1)
                 data += [{'question':i.question,'answer':i.answer.replace("{","").replace("}",""),'difficulty': i.difficulty, 'tournament': i.tournament,'id':i.id,'year':i.year}
-                         for i in results if (category == 'Any' or category == i.category) and (difficulty == 'Any' or i.difficulty.lower() == difficulty)]
+                         for i in results if (category == 'Any' or category.lower() == i.category.lower()) and (difficulty == 'Any' or i.difficulty.lower() == difficulty.lower())]
 
             return data
         
@@ -377,7 +381,11 @@ class Database:
             for i in tournament_questions:
                 
                 has_entity = False
-                mentions = [i.wiki_page for i in session.query(Mention).filter(Mention.question_id == i['id'])]
+                mention_full_info = [{'wiki_page':i.wiki_page,'start':i.start,'end':i.end} for i in session.query(Mention).filter(Mention.question_id == i['id'])]
+                mentions = [i['wiki_page'] for i in mention_full_info]
+
+                in_answer = False
+                coords = (-1,-1)
 
                 if entity_name.replace("_", " ").lower() in i['answer'].lower():
                     e = entity_name.replace("_", " ").lower()
@@ -385,11 +393,20 @@ class Database:
                     s = i['answer'].lower()[next_char:]
                     if len(s) == len(entity_name) or not s[len(e)].isalpha():
                             has_entity = True
+                            in_answer = True
                 if not has_entity:
-                    has_entity = entity_name.replace(" ","_").lower() in [i.lower() for i in mentions]
+                    l = [i.lower() for i in mentions]
+                    if entity_name.replace(" ","_").lower() in l:
+                        index = l.index(entity_name.replace(" ","_").lower())
+                        has_entity = True
+                        start = mention_full_info[index]['start']
+                        end = mention_full_info[index]['end']
+                        coords = (start,end)
+                        
 
                 if entity_name == "":
                     has_entity = True
+                    coords = (0,0)
 
                 if i['category'] == None:
                     i['category'] = ""
@@ -401,7 +418,7 @@ class Database:
                 subcategory_works = (i['subcategory'].lower() == subcategory.lower() or subcategory == 'Any')
                 if has_entity and category_works and subcategory_works:
                     other_entities+=list(set(mentions))
-                    data.append({'question':i['question'],'answer':i['answer'],'question_id': i['id'],'category':i['category'],'subcategory':i['subcategory']})
+                    data.append({'question':i['question'],'answer':i['answer'],'question_id': i['id'],'category':i['category'],'subcategory':i['subcategory'],'location':coords})
 
             other_entities = list(Counter(other_entities).items())
             other_entities = sorted(other_entities,key=lambda k: k[1],reverse=True)

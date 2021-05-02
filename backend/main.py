@@ -315,13 +315,26 @@ def get_questions_entity(entity_name):
     difficulty = e[-1]
     entity_name = "_".join(e[:-2])
     questions = db.get_questions_by_entity(entity_name)
+    locations = questions['locations']
+    questions = questions['questions']
     common_entities = db.get_entities(questions,category,difficulty)
-    print("Got questions")
     results = db.get_question_answers(questions,category,difficulty)
-    print(len(results))
-    print("Got results!")
-    print(common_entities)
-    return {'results':results,'entities':common_entities}
+
+    chunked = {}
+    for i in range(len(results)):
+        chunked[results[i]['id']] = chunk_words(results[i]['question'])[1]
+
+    for i in locations:
+        if locations[i][0]!=-1:
+            if i in chunked:
+                start = chunked[i][locations[i][0]]
+                if locations[i][1]+1 != len(chunked[i]):
+                    end = chunked[i][locations[i][1]+1]
+                else:
+                    end = chunked[i][locations[i][1]]
+                locations[i] = (start,end)
+    return {'results':results,'entities':common_entities,
+            'locations':locations}
 
 @app.get("/quel/tournament_entity/{entity_name}")
 def get_questions_entity(entity_name):
@@ -330,11 +343,24 @@ def get_questions_entity(entity_name):
     year = e[-4]
     category = e[-2]
     subcategory = e[-1]
-    entity_name = "_".join(e[:-4])
+    entity_name = "_".join(e[:-4]).strip().strip("_")
 
     print("Category {}, subcategory {}".format(category,subcategory))
 
     results = db.get_tournament_entities(entity_name,tourney,year,category,subcategory)
+
+    if entity_name!='':
+        chunked = [chunk_words(results['data'][i]['question'])[1] for i in range(len(results['data']))]
+
+        for i in range(len(results['data'])):
+            if results['data'][i]['location'][0]!=-1:
+                start = chunked[i][results['data'][i]['location'][0]]
+                if results['data'][i]['location'][1]+1 != len(chunked[i]):
+                    end = chunked[i][results['data'][i]['location'][1]+1]
+                else:
+                    end = chunked[i][results['data'][i]['location'][1]]
+                results['data'][i]['location'] = (start,end)
+
     return results
 
 @app.get("/quel/tournament/{tournament}")

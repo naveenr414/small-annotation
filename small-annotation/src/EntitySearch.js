@@ -32,6 +32,7 @@ export default class EntitySearch extends React.Component<Props, State> {
     value: "",
     autocorrect: [],
     entities: [],
+    locations: {},
   }
   
 updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
@@ -130,7 +131,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       address+"/entity/"+this.state.value.replaceAll(" ","_")+"_"+this.state.category_option+"_"+this.state.difficulty_option
       ).then(res=>res.json())
       .then(res => {
-        this.setState({results: res['results'], entities: res['entities'],loading: false});
+        this.setState({results: res['results'], entities: res['entities'],loading: false, locations:res['locations'] });
         setCookie("entity","");
       })
   }
@@ -153,11 +154,26 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       if(i>=this.state.results.length) {
         return ret; 
       }
-      ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {this.state.results[i]['question']} <br /> <b> Answer: </b> {this.state.results[i]['answer']} <br /> <b> Tournament: </b> {this.state.results[i]['tournament']} {this.state.results[i]['year']} <br />
-        <Button style={{marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",""); setCookie("entity",this.state.value.replaceAll("_"," ")+"_"+this.state.category_option+"_"+this.state.difficulty_option); }} variant="contained"><a href="/selected"> Annotate Question</a></Button> 
-
-      </div>);
-                
+      let annotateButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",""); setCookie("entity",this.state.value.replaceAll("_"," ")+"_"+this.state.category_option+"_"+this.state.difficulty_option); }} variant="contained"><a href="/selected"> Annotate Question</a></Button>);
+      let answer = this.state.results[i]['answer'];
+      let question_id = this.state.results[i]['id'];
+      let loc = this.state.locations[question_id];
+      let question_text = this.state.results[i]['question'];
+      
+      if(loc[0] == -1) {
+        answer = (<span style={{backgroundColor: 'yellow'}}> {this.state.results[i]['answer']} </span>);
+      } else {
+        let begin = question_text.substring(0,loc[0]);
+        let middle = question_text.substring(loc[0],loc[1]);
+        let end = question_text.substring(loc[1]);
+        question_text = (<span> <span> {begin} </span> <span style={{backgroundColor: 'yellow'}}> {middle} </span>  <span> {end} </span> </span>);
+      }
+      
+      
+      let question = (<div style={{width: 500, marginBottom: 50}}> 
+        <b> Question: </b> {question_text} <br /> <b> Answer: </b> {answer} <br /> <b> Tournament: </b> {this.state.results[i]['tournament']} {this.state.results[i]['year']} <br />
+          {annotateButton} </div>);
+      ret.push(question);        
     }
     
     return ret;

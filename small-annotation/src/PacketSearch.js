@@ -293,7 +293,22 @@ export default class PacketSearch extends React.Component<Props, State> {
                   
       let end = Math.min(this.state.start+questions_per_page,this.state.results.length);
       for(let i = this.state.start; i<end;i++) {
-        ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {this.state.results[i]['question']} <br /> <b> Answer: </b> {this.state.results[i]['answer']} <br /> 
+        let question_text = this.state.results[i]['question'];
+        let answer_text = this.state.results[i]['answer'];
+        
+        if(this.state.results[i]['location'][0]<0) {
+          answer_text = <span style={{backgroundColor: 'yellow'}}> {answer_text} </span>
+        } 
+        else {
+          let loc = this.state.results[i]['location'];
+          let begin = question_text.substring(0,loc[0]);
+          let middle = question_text.substring(loc[0],loc[1]);
+          let end = question_text.substring(loc[1]);
+          question_text = (<span> <span> {begin} </span> <span style={{backgroundColor: 'yellow'}}> {middle} </span>  <span> {end} </span> </span>);
+
+        }
+        
+        ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {question_text} <br /> <b> Answer: </b> {answer_text} <br /> 
         <Button style={{marginLeft: 30, marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",entity+"_"+year+"_"+tournament+"_"+category+"_"+subcategory); setCookie("entity","");}} variant="contained"><a href="/selected"> Annotate Question</a></Button> 
 
         
