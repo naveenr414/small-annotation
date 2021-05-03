@@ -239,6 +239,10 @@ def load_question(name,question_num):
             'question_num': question_num,
             'metadata': metadata}
 
+@app.get("/quel/user_mentions/{username}")
+def get_all_user_mentions(username):
+    return db.get_user_mentions(username)[::-1]
+
 @app.get("/quel/user/{token}")
 def get_user_info(token):
     username = security.decode_token(token)

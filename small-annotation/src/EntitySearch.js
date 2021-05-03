@@ -126,7 +126,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
   }
   
   get_results = () => {
-    this.setState({loading: true});
+    this.setState({loading: true, start: 0});
         fetch(
       address+"/entity/"+this.state.value.replaceAll(" ","_")+"_"+this.state.category_option+"_"+this.state.difficulty_option
       ).then(res=>res.json())

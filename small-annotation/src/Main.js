@@ -648,15 +648,17 @@ export default class Main extends React.Component<Props, State> {
   
   render_navigation_buttons = () => {
     if(this.state.next_numbers.length>0) {
-      return   <div style={{display: 'inline-block'}}> 
-          <button style={{marginLeft: 50}} onClick={()=>{this.final_submit(); this.previous();}}> Previous </button>
-          <button style={{marginLeft: 50}} onClick={()=>{this.final_submit();this.next()}}> Next </button> 
+      return   <div style={{ textAlign: 'center'}}> 
+          <button style={{marginLeft: 50, fontSize: 24}} onClick={()=>{this.final_submit(); this.previous();}}> Previous </button>
+          <button style={{marginLeft: 50, fontSize: 24}} onClick={()=>{this.final_submit();this.next()}}> Next </button> 
+
     </div>
     }
     
-    return <div style={{display: 'inline-block'}}> 
-          <button style={{marginLeft: 50}} onClick={()=>{this.final_submit(); this.increment_question();}}> Random Question </button>
-          <button style={{marginLeft: 50}} onClick={()=>{this.final_submit();this.new_suggested()}}> Suggested Question </button> 
+    return <div style={{textAlign: 'center'}}> 
+          <button style={{marginLeft: 50, fontSize: 24}} onClick={()=>{this.final_submit(); this.increment_question();}}> Random Question </button>
+          <button style={{marginLeft: 50, fontSize: 24}} onClick={()=>{this.final_submit();this.new_suggested()}}> Suggested Question </button> 
+
     </div>
   }
     
@@ -688,13 +690,11 @@ export default class Main extends React.Component<Props, State> {
                   <Grid container style={{marginTop: 50}} spacing={3}>
 
                     <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
-                      <div  style={{marginBottom: 20}}> 
+                      <div  style={{marginBottom: 20, marginTop: 30}}> 
                         {this.back_button()}
-                        <button class="user" style={{marginLeft: 50}}><a href="/user"> Main Menu </a> </button>
-                        {this.render_navigation_buttons()}
-                        <button  style={{marginLeft: 50}}  onClick={this.skip}>Skip </button> 
-                        <button  style={{marginLeft: 50}}  onClick={this.show_instructions}>Instructions</button> 
-                        <button  style={{marginLeft: 50}}  onClick={this.logout}>Logout</button> <br /> <br />
+                        <button class="user" style={{fontSize: 24}}><a href="/user"> Main Menu </a> </button>
+                        <button  style={{marginLeft: 50, fontSize: 24}}  onClick={this.show_instructions}>Instructions</button> 
+                        <button  style={{marginLeft: 50, fontSize: 24}}  onClick={this.logout}>Logout</button> <br /> <br />
                       </div> 
                       
                       <Modal show={this.state.show_instructions} onHide={this.hide_instructions} animation={false}>
@@ -709,7 +709,7 @@ export default class Main extends React.Component<Props, State> {
                         </Modal.Footer>
                       </Modal>
 
-                      <div class="highlight" style={{fontSize: 16}}>  
+                      <div class="highlight" style={{fontSize: 24}}>  
                         (1. Highlight spans and select create span)  <br />
                         <b> Category</b>:  {" "} {this.state.metadata.category}, from {this.state.metadata.tournament} {this.state.metadata.year} 
                        
@@ -722,7 +722,8 @@ export default class Main extends React.Component<Props, State> {
                       <br />
                       <div class="unassigned"> {this.render_draggables()[0]} </div>
                       <br />
-                      
+                      {this.render_navigation_buttons()}
+
                     </Grid>
                     
                     <Divider orientation="vertical" flexItem />
