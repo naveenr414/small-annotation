@@ -5,6 +5,7 @@ import './Dragbox.css';
 import { DropTarget } from "react-dnd";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import Grid from "@material-ui/core/Grid";
 
 interface Props {
   entity_number: number;
@@ -115,12 +116,17 @@ class Dragbox extends React.Component<Props, State> {
     return this.props.dropTarget(
       <div style={{marginBottom: 20}}>  
         <br /> 
+        <Grid container spacing={3}>
+
+                    <Grid item xs={3} > 
         <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?16:24}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag spans to associated entity cluster on right)"} 
-        </span> 
-        {this.props.entity_number>0?<button style={{marginLeft: "10%"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
-        </button> :''}
-        {this.props.entity_number>0?<button style={{marginLeft: "10%"}} onClick={this.delete_entity} > Delete Entity Cluster
+        </span> {this.props.entity_number>0?<br />:<div />}
+        {this.props.entity_number>0?<button style={{marginTop: 10}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
+        </button> :''} {this.props.entity_number>0?<br />:<div />}
+        {this.props.entity_number>0?<button style={{marginTop: 10}} onClick={this.delete_entity} > Delete Entity Cluster
         </button>:''}
+        </Grid> 
+        <Grid item xs={9}>
         <Modal size="lg" show={this.state.show_search} onHide={this.close_search} animation={false}>
           <Modal.Header closeButton>
             <Modal.Title>Search</Modal.Title>
@@ -135,10 +141,15 @@ class Dragbox extends React.Component<Props, State> {
             </Button>
           </Modal.Footer>
         </Modal>
-        <div style={{width: "80%", marginLeft: "10%", minHeight: 40, padding: 5, borderRadius: 4,border: this.props.dragged?"2px dashed #000000":"1px solid #444444"}}> 
-        
+          <div style={{width: "80%", marginLeft: "10%", minHeight: 40, padding: 5, borderRadius: 4,border: this.props.dragged?"2px dashed #000000":"1px solid #444444"}}> 
+          
 
-        <div> {spans} </div> <br /> </div> </div>);
+          <div> {spans} </div> 
+          <br /> 
+          </div> 
+          </Grid>
+          </Grid>
+        </div>);
   }
 }
 
