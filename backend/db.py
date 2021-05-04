@@ -398,7 +398,7 @@ class Database:
             for i in tournament_questions:
                 
                 has_entity = False
-                mention_full_info = [{'wiki_page':i.wiki_page,'start':i.start,'end':i.end,'gender':i.gender} for i in session.query(Mention).filter(Mention.question_id == i['id'])]
+                mention_full_info = [{'wiki_page':i.wiki_page,'start':i.start,'end':i.end} for i in session.query(Mention).filter(Mention.question_id == i['id'])]
                 mentions = [i['wiki_page'] for i in mention_full_info]
 
                 in_answer = False
