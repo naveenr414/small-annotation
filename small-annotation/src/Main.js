@@ -206,10 +206,10 @@ export default class Main extends React.Component<Props, State> {
   
   back_button = () => {
     if(getCookie("packet")!="") {
-      return <button style={{fontSize: "2.5vh"}}  class="packet"><a href="/packetsearch"> Back </a> </button>
+      return <button style={{fontSize: "2.5vh", marginRight: 50}}  class="packet"><a href="/packetsearch"> Back </a> </button>
     }
     if(getCookie("entity")!="") {
-      return <button style={{fontSize: "2.5vh"}}  class="entity"><a href="/entitysearch"> Back </a> </button>
+      return <button style={{fontSize: "2.5vh", marginRight: 50}}  class="entity"><a href="/entitysearch"> Back </a> </button>
     }
   }
 
