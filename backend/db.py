@@ -39,6 +39,7 @@ class WikiSummary(Base):
     id = Column(Integer, primary_key=True)
     title = Column(Text(), nullable=False, index=True)
     text = Column(Text(), nullable=False)
+    gender = Column(Text(),nullable=False)
     popularity= Column(Integer, index=True)
 
 class User(Base):
@@ -119,11 +120,47 @@ class Database:
 
     def populate(self):
         with self._session_scope as session:
+            # Wiki
+            print("Populating Wikipedia")
+            start = time.time()
+            g = open("all_gender.jsonl")
+            l = g.readline()
+            gender_list = {}
+            while l!='':
+                temp = json.loads(l)
+                if temp['gender']!='None':
+                    gender_list[temp['entity'].lower()] = temp['gender']
+                l = g.readline()
+            
+            w = open("all_wiki.json")
+            
+            objects = []
+            i = 0
+            while True:
+                line = w.readline()
+                if line.strip() == '':
+                    break
+                wiki_obj = json.loads(line.strip())
+                gender = 'none'
+                if wiki_obj['name'].replace("_"," ") in gender_list:
+                    gender = gender_list[wiki_obj['name'].replace("_"," ")]
+                
+                objects.append({'id':int(wiki_obj['id']),'title':wiki_obj['name'],'text':wiki_obj['summary'],'popularity':wiki_obj['popularity'],'gender':gender})
+                i+=1
+
+                if i%100000 == 0:
+                    print(i,time.time()-start)                
+                    session.bulk_insert_mappings(WikiSummary,objects)
+                    objects = []
+            session.bulk_insert_mappings(WikiSummary,objects)
+            print("Wiki time {}".format(time.time()-start))
+
+
             # Mentions
+            start = time.time()
             print("Populating mentions")
             w = open("baseline_entities.json")
             i = 0
-            start = time.time()
             objects = []
             while True:
                 line = w.readline()
@@ -177,26 +214,6 @@ class Database:
             train = []
             print("Qanta time {}".format(time.time()-start))
             
-            # Wiki
-            w = open("all_wiki.json")
-            start = time.time()
-            
-            objects = []
-            i = 0
-            while True:
-                line = w.readline()
-                if line.strip() == '':
-                    break
-                wiki_obj = json.loads(line.strip())
-                objects.append({'id':int(wiki_obj['id']),'title':wiki_obj['name'],'text':wiki_obj['summary'],'popularity':wiki_obj['popularity']})
-                i+=1
-
-                if i%100000 == 0:
-                    print(i,time.time()-start)                
-                    session.bulk_insert_mappings(WikiSummary,objects)
-                    objects = []
-            session.bulk_insert_mappings(WikiSummary,objects)
-            print("Wiki time {}".format(time.time()-start))
 
 
             session.commit()
@@ -381,7 +398,7 @@ class Database:
             for i in tournament_questions:
                 
                 has_entity = False
-                mention_full_info = [{'wiki_page':i.wiki_page,'start':i.start,'end':i.end} for i in session.query(Mention).filter(Mention.question_id == i['id'])]
+                mention_full_info = [{'wiki_page':i.wiki_page,'start':i.start,'end':i.end,'gender':i.gender} for i in session.query(Mention).filter(Mention.question_id == i['id'])]
                 mentions = [i['wiki_page'] for i in mention_full_info]
 
                 in_answer = False
@@ -424,7 +441,10 @@ class Database:
             other_entities = sorted(other_entities,key=lambda k: k[1],reverse=True)
             other_entities = [i[0].replace("_"," ") for i in other_entities if i[0]!='' and i[0] not in ['FTPS',"File Transfer Protocol"]][:20]
 
+            
             return {'data':data,'entities':other_entities}
+
+
 
     def remove_mentions(self,user,question_num):
         with self._session_scope as session:
@@ -471,6 +491,12 @@ class Database:
                         'difficulty': i.difficulty, 'year':i.year,'tournament':i.tournament} for i in results]
             results.append({})
 
+            return results[0]
+
+    def get_gender(self,wiki_page):
+        with self._session_scope as session:
+            results = session.query(WikiSummary).filter(WikiSummary.title==wiki_page.lower().replace(" ","_")).limit(1)
+            results = [i.gender for i in results]+['none']
             return results[0]
 
     def get_id(self,word):

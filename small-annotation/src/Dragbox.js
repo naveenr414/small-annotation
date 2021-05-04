@@ -119,7 +119,7 @@ class Dragbox extends React.Component<Props, State> {
         <Grid container spacing={3}>
 
                     <Grid item xs={3} > 
-        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?16:24}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag spans to associated entity cluster on right)"} 
+        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?16:"2vh"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"} 
         </span> {this.props.entity_number>0?<br />:<div />}
         {this.props.entity_number>0?<button style={{marginTop: 10}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
         </button> :''} {this.props.entity_number>0?<br />:<div />}

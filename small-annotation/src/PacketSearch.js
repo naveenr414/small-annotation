@@ -35,6 +35,7 @@ export default class PacketSearch extends React.Component<Props, State> {
     search_entity: "",
     loading_info: false,
       loading_search: false,
+    gender_counts: {'male':0,'female':0},
     value: "",
     autocorrect: [],
     category_option: "Any",
@@ -242,7 +243,7 @@ export default class PacketSearch extends React.Component<Props, State> {
       address+"/tournament/"+this.state.year_option+"_"+this.state.tournament_option
       ).then(res=>res.json())
       .then(res => {
-        this.setState({summary_stats: res,loading_info: false});
+        this.setState({summary_stats: res['data'],gender_counts: res['genders'], loading_info: false});
       })
     }
   }
@@ -261,6 +262,13 @@ export default class PacketSearch extends React.Component<Props, State> {
     
     
     return top_entities;
+  }
+  
+  render_genders = () => {
+    if(this.state.loading_info || this.state.summary_stats.length == 0) {
+      return <div />;
+    }
+    return <div> <b> Gender Distribution </b> <br /> <b> Male: </b> {this.state.gender_counts['male']}, <b> Female: </b> {this.state.gender_counts['female']} </div>
   }
   
   render_results = () => {
@@ -420,6 +428,7 @@ export default class PacketSearch extends React.Component<Props, State> {
         <br />
         <b> Top Entities </b> 
         <ol> {this.render_top_entities()} </ol> <br />
+          {this.render_genders()}
         <Autocomplete
           style={{ fontSize: 24, width: 400, marginBottom: 30 }}
           value={this.state.value}

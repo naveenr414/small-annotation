@@ -381,10 +381,21 @@ def get_tournament(tournament):
 
         entity_popularity[i['page']].add(i['question'])
 
+
     data = [(i,len(entity_popularity[i])) for i in entity_popularity]
     data = sorted(data,key=lambda k: k[1],reverse=True)[:10]
-    print(data)
-    return data
+
+    
+    gender_counts = [db.get_gender(i) for i in set([j['page'] for j in tourney_data])]
+    counter = Counter(gender_counts)
+    del counter['none']
+
+    if 'male' not in counter:
+        counter['male'] = 0
+    if 'female' not in counter:
+        counter['female'] = 0
+        
+    return {'data':data,'genders':counter}
 
 @app.post("/quel/user_preferences")
 async def update_preferences(preference: Preference):
