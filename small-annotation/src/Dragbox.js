@@ -114,16 +114,16 @@ class Dragbox extends React.Component<Props, State> {
     }
     
     return this.props.dropTarget(
-      <div style={{marginBottom: 20}}>  
+      <div>  
         <br /> 
         <Grid container spacing={3}>
 
                     <Grid item xs={3} > 
-        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?16:"2vh"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"} 
+        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?"2vh":"2vh"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"} 
         </span> {this.props.entity_number>0?<br />:<div />}
-        {this.props.entity_number>0?<button style={{marginTop: 10}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
-        </button> :''} {this.props.entity_number>0?<br />:<div />}
-        {this.props.entity_number>0?<button style={{marginTop: 10}} onClick={this.delete_entity} > Delete Entity Cluster
+        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "1.5vh"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
+        </button> :''} {this.props.entity_number>0?<span />:<div />}
+        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "1.5vh"}} onClick={this.delete_entity} > Delete
         </button>:''}
         </Grid> 
         <Grid item xs={9}>

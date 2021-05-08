@@ -256,8 +256,8 @@ export default class PacketSearch extends React.Component<Props, State> {
     }
     
     let top_entities = [];
-    for(var i = 0;i<this.state.summary_stats.length;i++) {
-      top_entities.push(<li> {this.state.summary_stats[i][0].replaceAll("_"," ")} ({this.state.summary_stats[i][1]} mentions) </li>);
+    for(let i = 0;i<this.state.summary_stats.length;i++) {
+      top_entities.push(<li style={{marginBottom: 10}}> <a target="_blank" href={"https://wikipedia.org/wiki/"+this.state.summary_stats[i][0].replaceAll(" ","_")}> {this.state.summary_stats[i][0].replaceAll("_"," ")} ({this.state.summary_stats[i][1]} mentions) </a> <button onClick={()=>{this.setState({value: this.state.summary_stats[i][0].replaceAll("_"," ")},()=>{this.get_results()})}}> Search </button> </li>);
     }
     
     

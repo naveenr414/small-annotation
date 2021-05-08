@@ -324,6 +324,13 @@ def get_questions_entity(entity_name):
     common_entities = db.get_entities(questions,category,difficulty)
     results = db.get_question_answers(questions,category,difficulty)
 
+    year_freq = Counter([i['year'] for i in results])
+    for year in range(2005,2018):
+        if year not in year_freq:
+            year_freq[year] = 0
+
+    years = [year_freq[i] for i in range(2005,2018)]
+    
     chunked = {}
     for i in range(len(results)):
         chunked[results[i]['id']] = chunk_words(results[i]['question'])[1]
@@ -338,7 +345,7 @@ def get_questions_entity(entity_name):
                     end = chunked[i][locations[i][1]]
                 locations[i] = (start,end)
     return {'results':results,'entities':common_entities,
-            'locations':locations}
+            'locations':locations,'year_freq': years}
 
 @app.get("/quel/tournament_entity/{entity_name}")
 def get_questions_entity(entity_name):
@@ -383,7 +390,7 @@ def get_tournament(tournament):
 
 
     data = [(i,len(entity_popularity[i])) for i in entity_popularity]
-    data = sorted(data,key=lambda k: k[1],reverse=True)[:10]
+    data = sorted(data,key=lambda k: k[1],reverse=True)[:20]
 
     
     gender_counts = [db.get_gender(i) for i in set([j['page'] for j in tourney_data])]

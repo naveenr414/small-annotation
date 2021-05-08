@@ -8,6 +8,7 @@ import TextField from '@material-ui/core/TextField';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import {toNormalString,toNiceString} from "./Util";
 import Autocomplete from '@material-ui/lab/Autocomplete';
+import { Line } from "react-chartjs-2";
 
 
 interface State {
@@ -33,6 +34,29 @@ export default class EntitySearch extends React.Component<Props, State> {
     autocorrect: [],
     entities: [],
     locations: {},
+    year_freq: [],
+  }
+  
+  render_year_freq = () => {
+    if(this.state.year_freq.length>0 && !this.state.loading) {
+      let years = [];
+      for(var i = 2005;i<=2017;i++) {
+        years.push(i.toString());
+      }
+       let data = {
+         labels: years,
+         datasets: [
+           {
+            label: "Entity Frequency by Year",
+            data: this.state.year_freq,
+            fill: true,
+            backgroundColor: "rgba(75,192,192,0.2)",
+            borderColor: "rgba(75,192,192,1)",
+           }
+         ]
+         };
+       return <Line width={1000} data={data} />;
+    }
   }
   
 updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
@@ -42,7 +66,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
 
 
         
-    
+  
     let current_target = toNormalString(value);
     let tagged_word = current_target; 
    
@@ -120,7 +144,9 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
     if(this.state.entities.length>0 && !this.state.loading) {
       
       return <div> Most common co-occurring entities <ul> 
-      {this.state.entities.map((entity) => (<li> <a target="_blank" href={"https://wikipedia.org/wiki/"+entity.replaceAll(" ","_")}> {entity} </a> </li>))}
+      {this.state.entities.map((entity) => (<li style={{marginBottom: 10}}> <a target="_blank" href={"https://wikipedia.org/wiki/"+entity.replaceAll(" ","_")}> {entity} </a> 
+      <button onClick={()=>{this.setState({value: entity},()=>{this.get_results()})}}> Search </button>
+      </li>))}
       </ul> </div> 
     }
   }
@@ -131,7 +157,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       address+"/entity/"+this.state.value.replaceAll(" ","_")+"_"+this.state.category_option+"_"+this.state.difficulty_option
       ).then(res=>res.json())
       .then(res => {
-        this.setState({results: res['results'], entities: res['entities'],loading: false, locations:res['locations'] });
+        this.setState({results: res['results'], entities: res['entities'],year_freq: res['year_freq'],loading: false, locations:res['locations'] });
         setCookie("entity","");
       })
   }
@@ -293,6 +319,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
         
         <br /> 
         
+        {this.render_year_freq()}
         {this.render_entities()}
     {this.render_results()}
   
