@@ -61,6 +61,14 @@ class Dragbox extends React.Component<Props, State> {
     setTimeout(() => {this.props.update_tags(tags,this.props.entity_number)},250);
   }
   
+  entity_number_to_string = () => {
+    if(this.props.entity_number>=10) {
+      return String.fromCharCode(this.props.entity_number-10+97);
+    }
+    
+    return this.props.entity_number;
+  }
+  
   get_height = () => {
     let total_tag_length = 0;
     /*for(var i = 0;i<this.props.current_spans.length;i++) {
@@ -119,7 +127,7 @@ class Dragbox extends React.Component<Props, State> {
         <Grid container spacing={3}>
 
                     <Grid item xs={3} > 
-        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?"2vh":"2vh"}}> {this.props.entity_number > 0?this.props.entity_number+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"} 
+        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?"2vh":"2vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"} 
         </span> {this.props.entity_number>0?<br />:<div />}
         {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "1.5vh"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
         </button> :''} {this.props.entity_number>0?<span />:<div />}

@@ -358,13 +358,21 @@ export default class Main extends React.Component<Props, State> {
   }
   
   create_tag = (num=0) => {
-
+    if(this.state.clicked!="") {
+      let clicked_info = JSON.parse(this.state.clicked);
+      let data = this.state.entity_list[clicked_info['entity_number']][clicked_info['number']];
+      this.state.entity_list[num].push(data);
+      this.state.entity_list[clicked_info['entity_number']].splice(clicked_info['number'],1);
+      
+      this.setState({clicked: ""});
+    }
     
     let range = 0;
     try{
       range = getSelectionCharacterOffsetsWithin(document.getElementById("main_text"));
     }
     catch {
+      
       return;
     }
     let start = range.start-1;
@@ -469,24 +477,28 @@ export default class Main extends React.Component<Props, State> {
     if(key>='0' && key<='9') {
       this.create_tag(parseInt(key));
     }
-    else {
+    else if (key == 'right' || key == 'up' || key == 'down' || key == 'left'){
       let direction = [0,0];
-      if(key == 'a') {
+      if(key == 'left') {
         direction = [0,-1];
       }
-      else if (key == 'd') {
+      else if (key == 'right') {
         direction = [0,1];
       }
-      else if (key == 'w') {
+      else if (key == 'up') {
         direction = [1,0];
       }
-      else if (key == 's') {
+      else if (key == 'down') {
         direction = [-1,0];
       }
       if(direction != [0,0] && this.state.clicked!=="") {
         let click_data = JSON.parse(this.state.clicked);
         this.adjust_span(direction,click_data);
       }
+    } else {      
+      let num = parseInt(key.toLowerCase().charCodeAt(0)-97+10);
+      alert(num);
+      this.create_tag(num)
     }
   }
   
@@ -740,7 +752,7 @@ export default class Main extends React.Component<Props, State> {
                 </div> 
                 
                 <KeyboardEventHandler
-                handleKeys={['1','2','3','4','5','6','7','8','9','a','d','w','s']}
+                handleKeys={['alphanumeric','up','down','left','right']}
                 onKeyEvent={(key, e) => this.handle_key(key,e)} />
               </DndProvider>
    }
