@@ -201,7 +201,7 @@ class Database:
             for i in range(len(all_qanta)):
                 objects.append({'id':all_qanta[i]['qanta_id'], 'question': all_qanta[i]['text'], 'category': all_qanta[i]['category'],'wiki_answer':all_qanta[i]['page'].replace("_", " "),
                                 'sub_category': all_qanta[i]['subcategory'],'difficulty': difficulty_map[all_qanta[i]['difficulty'].lower()],'tournament': all_qanta[i]['tournament'],
-                                'year': all_qanta[i]['year'],'answer':all_qanta[i]['answer']})
+                                'year': all_qanta[i]['year'],'answer':all_qanta[i]['answer'].replace("&lt;","<").replace("&gt;",">")})
                 if i%100000 == 0:
                     print(i,time.time()-start)   
                 if i%100000 == 0:

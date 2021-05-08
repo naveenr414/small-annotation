@@ -72,6 +72,52 @@ export default class Main extends React.Component<Props, State> {
     start: 0,
   }
   
+  show_walkthrough = () => {
+    setCookie("help","done");
+    setTimeout(()=>{
+      introJs().setOptions({
+      steps: [{
+        title: 'Welcome',
+        intro: 'We\'ll quickly walk you through the app!'
+      },
+      {
+        intro: "We'll walk you through how to annotate questions",
+      },
+      {
+        element: document.querySelector('.highlight'),
+        intro: 'First, highlight a span which refers to an entity'
+      },
+      {
+        element: document.querySelector('.create'),
+        intro: 'Then select "create span"'
+      },
+      {
+        element: document.querySelector('.unassigned'),
+        intro: 'Your new span will now be in the unassigned spans box'
+      },
+      {
+        element: document.querySelector('.entity'),
+        intro: 'Drag your new span over to the correct matching entity'
+      },
+      {
+        element: document.querySelector('.new'),
+        intro: 'If none of the entities match, you can create a new entity for this span'
+      },
+      {
+        intro: 'Click "change entity" to change the name of the entity box',
+        element: document.querySelector(".entity"),
+      },
+      {
+        intro: "To explore the prevalence of entities in different tournaments, or to view person annotation stats, click on \"Main Menu\"",
+        element: document.querySelector('.user'),
+      },
+      {
+        intro: "To view this walkthough again, click on the walkthrough button",
+        element: document.querySelector('.walk'),
+      },
+      ]
+    }).start();},250)
+  }
 
   
   /* Loading in questions */ 
@@ -92,47 +138,8 @@ export default class Main extends React.Component<Props, State> {
     }
     
     
-    if(name!="" && getCookie("help")=="") {
-      setCookie("help","done");
-      setTimeout(()=>{
-        introJs().setOptions({
-        steps: [{
-          title: 'Welcome',
-          intro: 'We\'ll quickly walk you through the app!'
-        },
-        {
-          element: document.querySelector('.highlight'),
-          intro: 'First, highlight a span which refers to an entity'
-        },
-        {
-          element: document.querySelector('.create'),
-          intro: 'Then select "create span"'
-        },
-        {
-          element: document.querySelector('.unassigned'),
-          intro: 'Your new span will now be in the unassigned spans box'
-        },
-        {
-          element: document.querySelector('.entity'),
-          intro: 'Drag your new span over to the correct matching entity'
-        },
-        {
-          element: document.querySelector('.new'),
-          intro: 'If none of the entities match, you can create a new entity for this span'
-        },
-        {
-          intro: 'Click "change entity" to change the name of the entity box'
-        },
-        {
-          element: document.querySelector('.submit'),
-          intro: "Once you're done annotating, click the submit button"
-        },
-        {
-          intro: "To explore the prevalence of entities in different tournaments, or to view person annotation stats, click on \"Main Menu\"",
-          element: document.querySelector('.user'),
-        },
-        ]
-      }).start();},250)
+    if(name!="" && getCookie("help")!=="done") {
+      this.show_walkthrough();
     }
   }
 
@@ -706,6 +713,7 @@ export default class Main extends React.Component<Props, State> {
                         {this.back_button()}
                         <button class="user" style={{fontSize: "2.5vh"}}><a href="/user"> Main Menu </a> </button>
                         <button  style={{marginLeft: 50, fontSize: "2.5vh"}}  onClick={this.show_instructions}>Instructions</button> 
+                        <button  class="walk" style={{marginLeft: 50, fontSize: "2.5vh"}}  onClick={()=>{setCookie("help",""); this.show_walkthrough(); }}>Walkthrough</button> 
                         <button  style={{marginLeft: 50, fontSize: "2.5vh"}}  onClick={this.logout}>Logout</button> 
                         <br />
                         {this.render_navigation_buttons()}
@@ -713,7 +721,7 @@ export default class Main extends React.Component<Props, State> {
                         <br /> <br />
                       </div> 
                       
-                      <Modal show={this.state.show_instructions} onHide={this.hide_instructions} animation={false}>
+                      <Modal size="lg" show={this.state.show_instructions} onHide={this.hide_instructions} animation={false}>
                         <Modal.Header closeButton>
                           <Modal.Title>Instructions</Modal.Title>
                         </Modal.Header>
