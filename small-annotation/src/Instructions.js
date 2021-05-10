@@ -31,6 +31,7 @@ class Span extends React.Component<Props, State> {
       
       Annotate everything that refers to a proper noun, selecting the longest applicable span of text when multiple are possible, and annotating possesives. 
       More detailed guidelines are available <a href="https://docs.google.com/document/d/1r9iDFMYvu9qn-Du3ytmfE65kGItk9dfiz-RcUKZH0mE/edit?usp=sharing"> here </a>
+      To go to another question, press the random button to get a random question, and the suggested question to have our algorithms suggest a question for you to annotate. 
       
 
       <h2> Exploring trends in entities </h2> 
