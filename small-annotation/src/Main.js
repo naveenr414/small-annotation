@@ -3,6 +3,7 @@ import {useContext} from "react";
 import Dragbox from "./Dragbox";
 import Search from "./Search";
 import Span from "./Span";
+import Typography from '@material-ui/core/Typography';
 import Grid from "@material-ui/core/Grid";
 import Slider from '@material-ui/core/Slider';
 import 'draft-js/dist/Draft.css';
@@ -11,6 +12,7 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import Popover from '@material-ui/core/Popover';
 import Instructions from './Instructions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Divider from '@material-ui/core/Divider';
@@ -28,6 +30,7 @@ interface Props {
   last: boolean;
   selected: boolean; 
 }
+
 
 
 interface State {
@@ -71,6 +74,7 @@ export default class Main extends React.Component<Props, State> {
     submitted: false,
     start: 0,
     left: 10,
+    popover_open: false,
   }
   
   show_walkthrough = () => {
@@ -790,10 +794,8 @@ export default class Main extends React.Component<Props, State> {
                       <h3 class="entity"> Entities </h3>
                       <div style={{height: "100%"}}>
                         {all_but_first(this.render_draggables())}  
-                        <button style={{fontSize: 24, marginTop: 50}}  onClick={this.create_new_entity} class="new"> 
-                          Create New Entity Cluster
-                        </button>
-                      </div>
+
+                                              </div>
                     </Grid>
                   </Grid>
                 </div> 
