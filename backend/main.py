@@ -229,8 +229,8 @@ def load_question(name,question_num):
         entity_list = json.dumps(json.loads(annotation_data['spans'])+[[]])
 
     print("Metadata {}".format(metadata))
-    answer = bytes(answer,'ascii').decode("unicode-escape")
-    question = bytes(question,'ascii').decode('unicode-escape')
+    answer = bytes(unidecode.unidecode(answer),'ascii').decode("unicode-escape")
+    question = bytes(unidecode.unidecode(question),'ascii').decode('unicode-escape')
 
 
     return {'words':w,'indices':word_indices,

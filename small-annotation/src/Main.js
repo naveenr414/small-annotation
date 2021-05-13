@@ -12,7 +12,6 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import Popover from '@material-ui/core/Popover';
 import Instructions from './Instructions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Divider from '@material-ui/core/Divider';
@@ -21,6 +20,7 @@ import {getCookie,setCookie} from "./Util";
 import {Redirect} from 'react-router-dom';
 import introJs from 'intro.js';
 import 'intro.js/introjs.css';
+import { Popover, PopoverHeader, PopoverBody } from 'reactstrap';
 
 let address = "/quel";
 
@@ -74,7 +74,9 @@ export default class Main extends React.Component<Props, State> {
     submitted: false,
     start: 0,
     left: 10,
-    popover_open: false,
+    popoverOpen: false,
+    current_summary: "",
+    current_title: "",
   }
   
   show_walkthrough = () => {
@@ -550,7 +552,7 @@ export default class Main extends React.Component<Props, State> {
         } 
         let start_character = this.state.indices[current_tag.start];
         let end_character = this.state.indices[Math.min(current_tag.end,this.state.words.length-1)]+this.state.words[Math.min(current_tag.end,this.state.words.length-1)].length;
-        spans.push([start_character,end_character,current_color]);
+        spans.push([start_character,end_character,current_color,i]);
       }
     }
     
@@ -593,7 +595,7 @@ export default class Main extends React.Component<Props, State> {
         }
         
         let next_i = Math.min(stack[smallest][1],spans.length>0?spans[0][0]:stack[smallest][1]);
-        new_spans.push([i,next_i,stack[smallest][2]]);
+        new_spans.push([i,next_i,stack[smallest][2],stack[smallest][3]]);
         i = next_i;
         let new_stack = [];
         for(var j = 0;j<stack.length;j++) {
@@ -666,9 +668,13 @@ export default class Main extends React.Component<Props, State> {
       }
       else {
           // Then it goes [Text]
-          highlights.push(<span key={fields[0]+"else2"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>)
-        }
+          highlights.push();
+          highlights.push(<span id={fields[0]} onClick={()=>{if(fields[3]!=undefined) {this.update_popover(fields[3])} }} key={fields[0]+"else2"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>);
+          if(fields[3]!=undefined){ 
+            highlights.push(this.get_popover(fields[3],"Popover1"));
+          }
 
+        }
     }
     
     return highlights;
@@ -718,6 +724,31 @@ export default class Main extends React.Component<Props, State> {
     });
   }
   
+  update_summary = (entity_num) => {
+    entity_num = parseInt(entity_num);
+    if(this.state.entity_names[entity_num] == this.state.current_title) {
+      this.setState({popoverOpen: false, current_title: "", current_summary: ""});
+    }
+    
+    else if(this.state.entity_names[entity_num]!="") {
+      fetch(address+"/autocorrect/"+this.state.entity_names[entity_num].replaceAll(" ","_").toLowerCase()).then((res) => res.json())
+    .then((res) => {console.log(res);this.setState({popoverOpen: true,current_summary: res[0][1].substring(0,200),current_title: this.state.entity_names[entity_num].replaceAll("_"," ")})});
+
+    }
+  }
+  
+  update_popover = (entity_num) => {
+   this.update_summary(entity_num);
+  }
+  
+  get_popover = (entity_num,id) => { 
+   let popover =  (<Popover placement='bottom' isOpen={this.state.popoverOpen} target={id} toggle={()=>{this.setState({popoverOpen: !this.state.popoverOpen})}}>
+            <PopoverHeader>{this.state.current_title}</PopoverHeader>
+            <PopoverBody>{this.state.current_summary}</PopoverBody>
+          </Popover>);
+    return popover;
+  }
+  
   render() {
     if (getCookie("token") === "") {
       return <Redirect to="/login" />;
@@ -739,6 +770,8 @@ export default class Main extends React.Component<Props, State> {
                         <button  style={{marginLeft: 50, fontSize: "2.5vh"}}  onClick={this.logout}>Logout</button> 
                         <br />
                         {this.render_navigation_buttons()}
+                                                
+
       {this.state.clicked!="" &&
         <div> 
         <br />
@@ -784,7 +817,8 @@ export default class Main extends React.Component<Props, State> {
                         <div> <b> Answer: </b> {this.state.answer.substring(0,250)} </div>
                       </div>
                       <button class="create" style={{fontSize: "2.5vh"}}  onClick={()=>{this.create_tag(0)}} > 
-                      Create Span </button>
+                      Create Span </button>     <br />   <span id="Popover1" > .
+      </span>
                       <br />
                       <div class="unassigned"> {this.render_draggables()[0]} </div>
                     </Grid>
@@ -795,10 +829,12 @@ export default class Main extends React.Component<Props, State> {
                       <div style={{height: "100%"}}>
                         {all_but_first(this.render_draggables())}  
 
+
                                               </div>
                     </Grid>
                   </Grid>
                 </div> 
+                
                 
                 <KeyboardEventHandler
                 handleKeys={['alphanumeric','up','down','left','right','space']}
