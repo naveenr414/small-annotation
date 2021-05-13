@@ -212,6 +212,13 @@ class Database:
             dev = []
             test = []
             train = []
+
+            question = json.load(open("sample_question.json"))
+            mention = json.load(open("sample_mention.json"))
+
+            session.bulk_insert_mappings(Question,question)
+            session.bulk_insert_mappings(Mention,mention)
+
             print("Qanta time {}".format(time.time()-start))
             
 
@@ -464,9 +471,16 @@ class Database:
                 mentions+=[{'question': j.question_id, 'page': j.wiki_page} for j in results if (j.user_id == "system") and (j.wiki_page!="")]
 
             return mentions
+
+    def insert_question(self,question):
+        with self._session_scope as session:
+            session.bulk_insert_mappings(Question,question)
+            session.commit()
+            return True
     
     def insert_mentions(self,mentions):
         with self._session_scope as session:
+            print(mentions)
             session.bulk_insert_mappings(Mention,mentions)
             session.commit()
             return True
@@ -489,6 +503,8 @@ class Database:
             results = [{'question':unidecode.unidecode(i.question),'answer':i.answer,'wiki_answer':i.wiki_answer,
                         'sub_category':i.sub_category, 'category':i.category,
                         'difficulty': i.difficulty, 'year':i.year,'tournament':i.tournament} for i in results]
+
+            
             results.append({})
 
             return results[0]

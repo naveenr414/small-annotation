@@ -281,6 +281,9 @@ def get_selected_question(question_num):
     real_name = security.decode_token(username)
     return load_question(real_name,question_num)
 
+@app.get("/quel/get_sample_question")
+def get_sample_question():    
+    return load_question("nav.j.raman@gmail.com",-1)
 
 @app.get("/quel/noun_phrases/{question_num}")
 def get_noun_phrase(question_num):

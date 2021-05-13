@@ -248,7 +248,14 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
                 Next 
           </Button> 
       
-      {this.render_questions(this.state.start,this.state.start+questions_per_page)} </div>;
+      {this.render_questions(this.state.start,this.state.start+questions_per_page)}
+<Button style={{'border': '1px solid black'}} onClick={this.decrement}>
+                Previous 
+          </Button> 
+          <Button style={{'border': '1px solid black'}} onClick={this.increment}>
+                Next 
+          </Button> 
+      </div>;
     }
   }
   
@@ -258,7 +265,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
     }
 
 
-    return <div style={{marginLeft: 30}}> 
+    return <div style={{marginLeft: 30, marginBottom: 30}}> 
     <h1> Search Entity  </h1>
 <br />
           <div style={{marginBottom: 50}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>

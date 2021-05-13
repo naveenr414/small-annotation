@@ -324,6 +324,15 @@ export default class PacketSearch extends React.Component<Props, State> {
                   
       }
       
+      if(ret.length>0) {
+        ret.push(<div>         <Button style={{'border': '1px solid black'}} onClick={this.decrement}>
+              Previous 
+        </Button> 
+        <Button style={{'border': '1px solid black'}} onClick={this.increment}>
+              Next 
+        </Button>  </div>);
+      }
+      
       return ret;
     }
   }
@@ -373,7 +382,7 @@ export default class PacketSearch extends React.Component<Props, State> {
       return <Redirect to="/login" />;
     }
 
-    return <div style={{marginLeft: 30}}> <h1> Tournament Search </h1> 
+    return <div style={{marginLeft: 30, marginBottom: 30}}> <h1> Tournament Search </h1> 
           <div style={{marginBottom: 50}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>
         </div>
      
@@ -475,7 +484,7 @@ export default class PacketSearch extends React.Component<Props, State> {
         {this.render_directions()}
         {this.render_entities()}
         {this.render_results()}
-    </div>
+    </div>  
     
   }
 }

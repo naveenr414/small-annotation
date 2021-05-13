@@ -42,8 +42,14 @@ function App() {
         <Route path="/selected">
           <Main suggested={false} last={false} selected={true} /> 
         </Route>
+        <Route path="/sample"> 
+          <Main suggested={false} last={false} selected={false} sample={true} /> 
+        </Route>
+        <Route path="/random"> 
+          <Main suggested={false} last={false} selected={false} sample={false} /> 
+        </Route>
         <Route path="/">
-          <Main suggested={false} last={false} selected={false}  />
+          <User  />
         </Route>
       </Switch>
     </Router>

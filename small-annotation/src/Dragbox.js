@@ -108,6 +108,15 @@ class Dragbox extends React.Component<Props, State> {
   delete_entity = () => {
     this.props.delete_entity(this.props.entity_number);
   }
+  
+  render_entity = () => {
+    if(this.props.entity_number>0 && this.props.entity_name.length>0) {
+      return (<a target="_blank" style={{color: 'black'}} href={"https://wikipedia.org/wiki/"+this.props.entity_name.replaceAll(" ", "_")}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?"2vh":"2vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
+          </span>  </a>);
+    }
+    return (<span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?"2vh":"2vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
+          </span> );
+  }
 
   render = () => {
     let spans = [];
@@ -127,8 +136,8 @@ class Dragbox extends React.Component<Props, State> {
         <Grid container spacing={3}>
 
                     <Grid item xs={3} > 
-        <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?"2vh":"2vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"} 
-        </span> {this.props.entity_number>0?<br />:<div />}
+                      {this.render_entity()}
+         {this.props.entity_number>0?<br />:<div />}
         {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "1.5vh"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
         </button> :''} {this.props.entity_number>0?<span />:<div />}
         {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "1.5vh"}} onClick={this.delete_entity} > Delete

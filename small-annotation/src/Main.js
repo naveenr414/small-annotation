@@ -4,7 +4,7 @@ import Dragbox from "./Dragbox";
 import Search from "./Search";
 import Span from "./Span";
 import Grid from "@material-ui/core/Grid";
-import Switch from '@material-ui/core/Switch';
+import Slider from '@material-ui/core/Slider';
 import 'draft-js/dist/Draft.css';
 import {all_but_first,getSelectionCharacterOffsetsWithin,span_length,intersects} from './Util';
 import { DndProvider } from 'react-dnd'
@@ -70,6 +70,7 @@ export default class Main extends React.Component<Props, State> {
     metadata: {'difficulty': '', 'category': '', 'tournament': '', 'year': ''},
     submitted: false,
     start: 0,
+    left: 10,
   }
   
   show_walkthrough = () => {
@@ -124,6 +125,13 @@ export default class Main extends React.Component<Props, State> {
   componentDidMount = () => {
     let name = getCookie("token");
   
+      window.addEventListener("keydown", function(e) {
+        if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+            e.preventDefault();
+        }
+    }, false);
+
+  
     if(this.props.selected) {
       this.setState({name},()=>{this.get_question_num();});
     }
@@ -132,6 +140,9 @@ export default class Main extends React.Component<Props, State> {
     }
     else if(this.props.last) {
       this.setState({name},()=>{this.get_last_question();});
+    }
+    else if(this.props.sample) {
+      this.setState({name},()=>{this.get_sample_question();});
     }
     else {
       this.setState({name},()=>{this.get_noun_phrases(0);});
@@ -172,6 +183,10 @@ export default class Main extends React.Component<Props, State> {
   
   get_last_question = () => {
     this.get_question(address+"/noun_phrases_last/"+this.state.name,0);
+  }
+  
+  get_sample_question = () => {
+    this.get_question(address+"/get_sample_question/",0);
   }
   
   get_question_num = () => {
@@ -486,25 +501,28 @@ export default class Main extends React.Component<Props, State> {
     }
     else if (key == 'right' || key == 'up' || key == 'down' || key == 'left'){
       let direction = [0,0];
-      if(key == 'left') {
+      if(key == 'left' && this.state.left == 20) {
         direction = [0,-1];
       }
-      else if (key == 'right') {
+      else if (key == 'right' && this.state.left == 20) {
         direction = [0,1];
       }
-      else if (key == 'up') {
-        direction = [1,0];
-      }
-      else if (key == 'down') {
+      else if (key == 'left' && this.state.left == 10) {
         direction = [-1,0];
+      }
+      else if (key == 'right' && this.state.left == 10) {
+        direction = [1,0];
       }
       if(direction != [0,0] && this.state.clicked!=="") {
         let click_data = JSON.parse(this.state.clicked);
         this.adjust_span(direction,click_data);
       }
-    } else {      
+    }
+    else if (key == "space" && this.state.clicked!=="") {
+      this.setState({left: this.state.left==10?20:10});
+    }
+    else {      
       let num = parseInt(key.toLowerCase().charCodeAt(0)-97+10);
-      alert(num);
       this.create_tag(num)
     }
   }
@@ -717,8 +735,29 @@ export default class Main extends React.Component<Props, State> {
                         <button  style={{marginLeft: 50, fontSize: "2.5vh"}}  onClick={this.logout}>Logout</button> 
                         <br />
                         {this.render_navigation_buttons()}
-
-                        <br /> <br />
+      {this.state.clicked!="" &&
+        <div> 
+        <br />
+        <Slider
+          defaultValue={10}
+          aria-labelledby="discrete-slider"
+          valueLabelDisplay="auto"
+          step={10}
+          marks
+          min={10}
+          max={20}
+          style={{width: 100, marginLeft: 10}}
+          marks={
+            [{value: 10,label: 'left'},
+              {value: 20, label: 'right'}]
+          }
+          value={this.state.left}
+          getAriaLabel={(value)=>{''}}
+          onChange={(event,value) => {this.setState({left:value});}}
+        />
+        </div>
+      }
+                                      <br /> <br />
                       </div> 
                       
                       <Modal size="lg" show={this.state.show_instructions} onHide={this.hide_instructions} animation={false}>
@@ -760,7 +799,7 @@ export default class Main extends React.Component<Props, State> {
                 </div> 
                 
                 <KeyboardEventHandler
-                handleKeys={['alphanumeric','up','down','left','right']}
+                handleKeys={['alphanumeric','up','down','left','right','space']}
                 onKeyEvent={(key, e) => this.handle_key(key,e)} />
               </DndProvider>
    }

@@ -79,8 +79,9 @@ export default class User extends React.Component<Props, State> {
           
           
       <div style={{marginBottom: 50}}> 
-
-        <Button style={{marginRight: 20}} variant="contained"><a href="/"> Random Question </a> </Button> 
+        <Button style={{marginRight: 20, marginBottom: 50}} variant="contained"><a href="/sample"> Sample Annotation </a> </Button> 
+        <br />
+        <Button style={{marginRight: 20}} variant="contained"><a href="/random"> Random Question </a> </Button> 
         
         Category: 
         <Select
