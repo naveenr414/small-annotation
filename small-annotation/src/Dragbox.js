@@ -62,7 +62,7 @@ class Dragbox extends React.Component<Props, State> {
     show_search: false,
     entity_name: "No Entity",
     entity_search: "No Entity",
-    merge_value: 2,
+    merge_value: this.props.entity_number,
   }
     
   update_tags = (tags) => {

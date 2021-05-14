@@ -770,7 +770,7 @@ export default class Main extends React.Component<Props, State> {
     }
     else {
       return  <DndProvider backend={HTML5Backend}> 
-        {/* <div> 
+        { <div> 
                   <Grid container style={{marginTop: 50}} spacing={3}>
 
                     <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}} onClick={()=>{this.setState({popoverOpen: false})}}> 
@@ -822,7 +822,7 @@ export default class Main extends React.Component<Props, State> {
                                               </div>
                     </Grid>
                   </Grid>
-        </div> */}
+        </div> }
                       <input type="text" />
 
                 
