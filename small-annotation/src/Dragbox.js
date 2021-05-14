@@ -6,9 +6,13 @@ import { DropTarget } from "react-dnd";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Grid from "@material-ui/core/Grid";
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+
 
 interface Props {
   entity_number: number;
+  total_entities: number;
   update_spans: any;
   current_spans: any;
   color: string;
@@ -17,6 +21,7 @@ interface Props {
   add_bolded: any;
   remove_bolded: any;
   delete_entity: any;
+  merge_entity: any;
   entity_name: string; 
   dragged: boolean;
   toggle_drag: any;
@@ -28,6 +33,8 @@ interface Props {
 interface State {
   show_search: boolean;
   entity_search: string;
+  merge_value: number;
+  entity_number: number;
 }
 
 const boxTarget = {
@@ -55,8 +62,9 @@ class Dragbox extends React.Component<Props, State> {
     show_search: false,
     entity_name: "No Entity",
     entity_search: "No Entity",
+    merge_value: 2,
   }
-  
+    
   update_tags = (tags) => {
     setTimeout(() => {this.props.update_tags(tags,this.props.entity_number)},250);
   }
@@ -109,6 +117,12 @@ class Dragbox extends React.Component<Props, State> {
     this.props.delete_entity(this.props.entity_number);
   }
   
+  componentDidUpdate = (prevProps, prevState, snapshot) => {
+    if(JSON.stringify(prevProps)!==JSON.stringify(this.props)) {
+        this.setState({merge_value: this.props.entity_number});
+    }
+  }
+  
   render_entity = () => {
     if(this.props.entity_number>0 && this.props.entity_name.length>0) {
       return (<a target="_blank" style={{color: 'black'}} href={"https://wikipedia.org/wiki/"+this.props.entity_name.replaceAll(" ", "_")}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?"2vh":"2vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
@@ -116,6 +130,22 @@ class Dragbox extends React.Component<Props, State> {
     }
     return (<span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?"2vh":"2vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
           </span> );
+  }
+  
+  create_dropdown = () => {
+    let menu_items = [];
+    for(var i = 1;i<this.props.total_entities;i++) {
+      let text = i;
+      if(i>=10) {
+        text = String.fromCharCode(i-10+97)
+      }
+      menu_items.push(<MenuItem value={i}>{text}</MenuItem>);
+    }
+    return menu_items;
+  }
+
+  merge_entity = () => {
+  this.props.merge_entity(this.props.entity_number,this.state.merge_value);
   }
 
   render = () => {
@@ -141,7 +171,12 @@ class Dragbox extends React.Component<Props, State> {
         {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "1.5vh"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
         </button> :''} {this.props.entity_number>0?<span />:<div />}
         {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "1.5vh"}} onClick={this.delete_entity} > Delete
+        </button>:''} <br />
+        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "1.5vh"}} onClick={this.merge_entity} > Merge
         </button>:''}
+        {this.props.entity_number>0? <Select style={{marginLeft: 20, fontSize: '1.5vh'}} value={this.state.merge_value} onChange={(event)=>{this.setState({merge_value: event.target.value})}}> 
+          {this.create_dropdown()}
+        </Select>:''}
         </Grid> 
         <Grid item xs={9}>
         <Modal size="lg" show={this.state.show_search} onHide={this.close_search} animation={false}>

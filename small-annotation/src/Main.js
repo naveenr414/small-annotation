@@ -125,7 +125,7 @@ export default class Main extends React.Component<Props, State> {
       ]
     }).start();},250)
   }
-
+/*
   
   /* Loading in questions */ 
   componentDidMount = () => {
@@ -176,7 +176,7 @@ export default class Main extends React.Component<Props, State> {
         submitted: false,
         start: new Date() / 1000,
         entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []}
-        ,()=>{this.setState({clicked: []})}));
+        ,()=>{this.setState({clicked: ""})}));
   }
 
   get_noun_phrases_suggested = (question_num) => {
@@ -375,6 +375,18 @@ export default class Main extends React.Component<Props, State> {
     this.setState({entity_list,entity_names, saved: true},()=>{this.submit();});
   }
   
+  merge_entity = (origin,merging) => {
+    if(origin!=merging) {
+      let entity_list = this.state.entity_list;
+      let l = this.state.entity_list[origin].length;
+      for(var i = 0;i<l;i++) {
+        entity_list[merging].push(entity_list[origin].pop());
+      }
+      
+    this.setState({entity_list},()=>{this.delete_entity(origin)})
+    }
+  }
+  
   delete_entity = (entity_number) => {
     let entity_list = this.state.entity_list.slice();
     let entity_names = this.state.entity_names.slice(); 
@@ -475,7 +487,9 @@ export default class Main extends React.Component<Props, State> {
       all_draggables.push(<Dragbox 
         toggle_drag={this.toggle_drag} 
         dragged={this.state.is_dragged} 
+        total_entities={this.state.entity_list.length}
         entity_number={i} 
+        merge_entity={this.merge_entity}
         add_bolded={this.add_bolded} 
         remove_bolded={this.remove_bolded} 
         update_spans={this.update_spans} 
@@ -502,21 +516,21 @@ export default class Main extends React.Component<Props, State> {
   
   /* Key Input */   
   handle_key = (key,e) => {
-    if(key>='0' && key<='9') {
+    if(key>='0' && key<='9' && key!=',' && key!='.') {
       this.create_tag(parseInt(key));
     }
-    else if (key == 'right' || key == 'up' || key == 'down' || key == 'left'){
+    else if (key == ',' || key == '.' || key == 'right' || key == 'left'){
       let direction = [0,0];
-      if(key == 'left' && this.state.left == 20) {
+      if(key == 'left') {
         direction = [0,-1];
       }
-      else if (key == 'right' && this.state.left == 20) {
+      else if (key == 'right') {
         direction = [0,1];
       }
-      else if (key == 'left' && this.state.left == 10) {
+      else if (key == ',') {
         direction = [-1,0];
       }
-      else if (key == 'right' && this.state.left == 10) {
+      else if (key == '.') {
         direction = [1,0];
       }
       if(direction != [0,0] && this.state.clicked!=="") {
@@ -524,9 +538,7 @@ export default class Main extends React.Component<Props, State> {
         this.adjust_span(direction,click_data);
       }
     }
-    else if (key == "space" && this.state.clicked!=="") {
-      this.setState({left: this.state.left==10?20:10});
-    }
+    
     else {      
       let num = parseInt(key.toLowerCase().charCodeAt(0)-97+10);
       this.create_tag(num)
@@ -669,7 +681,7 @@ export default class Main extends React.Component<Props, State> {
       else {
           // Then it goes [Text]
           highlights.push();
-          highlights.push(<span id={fields[0]} onClick={()=>{if(fields[3]!=undefined) {this.update_popover(fields[3])} }} key={fields[0]+"else2"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>);
+          highlights.push(<span id={fields[0]} onMouseEnter={()=>{if(fields[3]!=undefined) {this.update_popover(fields[3])} }} onMouseLeave={()=>{if(fields[3] == undefined) {this.setState({popoverOpen: false});} if(fields[3]!=undefined) {if(this.state.current_title == this.state.entity_names[fields[3]].replaceAll("_"," ")){this.setState({popoverOpen: false,current_title: "", current_summary: ""})}} }} key={fields[0]+"else2"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>);
           if(fields[3]!=undefined){ 
             highlights.push(this.get_popover(fields[3],"Popover1"));
           }
@@ -726,14 +738,14 @@ export default class Main extends React.Component<Props, State> {
   
   update_summary = (entity_num) => {
     entity_num = parseInt(entity_num);
-    if(this.state.entity_names[entity_num] == this.state.current_title) {
-      this.setState({popoverOpen: false, current_title: "", current_summary: ""});
-    }
-    
-    else if(this.state.entity_names[entity_num]!="") {
+    if(this.state.entity_names[entity_num]!="") {
+      this.setState({current_title: this.state.entity_names[entity_num]});
       fetch(address+"/autocorrect/"+this.state.entity_names[entity_num].replaceAll(" ","_").toLowerCase()).then((res) => res.json())
-    .then((res) => {console.log(res);this.setState({popoverOpen: true,current_summary: res[0][1].substring(0,200),current_title: this.state.entity_names[entity_num].replaceAll("_"," ")})});
+    .then((res) => {console.log(res); if(res.length>0){this.setState({popoverOpen: true,current_summary: res[0][1].substring(0,200),current_title: this.state.entity_names[entity_num].replaceAll("_"," ")})}});
 
+    }
+    else {
+      this.setState({current_title: "Unknown Entity", current_summary: "Unknown", popoverOpen: true});
     }
   }
   
@@ -742,7 +754,7 @@ export default class Main extends React.Component<Props, State> {
   }
   
   get_popover = (entity_num,id) => { 
-   let popover =  (<Popover placement='bottom' isOpen={this.state.popoverOpen} target={id} toggle={()=>{this.setState({popoverOpen: !this.state.popoverOpen})}}>
+   let popover =  (<Popover placement='bottom' isOpen={this.state.popoverOpen && this.state.current_title!=""} target={id} toggle={()=>{this.setState({popoverOpen: !this.state.popoverOpen})}}>
             <PopoverHeader>{this.state.current_title}</PopoverHeader>
             <PopoverBody>{this.state.current_summary}</PopoverBody>
           </Popover>);
@@ -758,10 +770,10 @@ export default class Main extends React.Component<Props, State> {
     }
     else {
       return  <DndProvider backend={HTML5Backend}> 
-                <div> 
+        {/* <div> 
                   <Grid container style={{marginTop: 50}} spacing={3}>
 
-                    <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}}> 
+                    <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}} onClick={()=>{this.setState({popoverOpen: false})}}> 
                       <div  style={{}}> 
                         {this.back_button()}
                         <button class="user" style={{fontSize: "2.5vh"}}><a href="/user"> Main Menu </a> </button>
@@ -772,29 +784,7 @@ export default class Main extends React.Component<Props, State> {
                         {this.render_navigation_buttons()}
                                                 
 
-      {this.state.clicked!="" &&
-        <div> 
-        <br />
-        <Slider
-          defaultValue={10}
-          aria-labelledby="discrete-slider"
-          valueLabelDisplay="auto"
-          step={10}
-          marks
-          min={10}
-          max={20}
-          style={{width: 100, marginLeft: 10}}
-          marks={
-            [{value: 10,label: 'left'},
-              {value: 20, label: 'right'}]
-          }
-          value={this.state.left}
-          getAriaLabel={(value)=>{''}}
-          onChange={(event,value) => {this.setState({left:value});}}
-        />
-        </div>
-      }
-                                      <br /> <br />
+                          <br /> <br />
                       </div> 
                       
                       <Modal size="lg" show={this.state.show_instructions} onHide={this.hide_instructions} animation={false}>
@@ -813,11 +803,11 @@ export default class Main extends React.Component<Props, State> {
                         (1. Highlight spans and select create span)  <br />
                         <b> Category</b>:  {" "} {this.state.metadata.category}, from {this.state.metadata.tournament} {this.state.metadata.year} 
                        
-                        <div id="main_text"> {this.get_styles()} </div>
+                        <div id="main_text" style={{popoverOpen: false}}> {this.get_styles()} </div>
                         <div> <b> Answer: </b> {this.state.answer.substring(0,250)} </div>
                       </div>
                       <button class="create" style={{fontSize: "2.5vh"}}  onClick={()=>{this.create_tag(0)}} > 
-                      Create Span </button>     <br />   <span id="Popover1" > .
+                      Create Span </button>     <br />   <span id="Popover1" > 
       </span>
                       <br />
                       <div class="unassigned"> {this.render_draggables()[0]} </div>
@@ -829,15 +819,15 @@ export default class Main extends React.Component<Props, State> {
                       <div style={{height: "100%"}}>
                         {all_but_first(this.render_draggables())}  
 
-
                                               </div>
                     </Grid>
                   </Grid>
-                </div> 
-                
+        </div> */}
+                      <input type="text" />
+
                 
                 <KeyboardEventHandler
-                handleKeys={['alphanumeric','up','down','left','right','space']}
+                handleKeys={['alphanumeric','up','down','left','right',',','.']}
                 onKeyEvent={(key, e) => this.handle_key(key,e)} />
               </DndProvider>
    }
