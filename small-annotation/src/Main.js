@@ -130,12 +130,7 @@ export default class Main extends React.Component<Props, State> {
   /* Loading in questions */ 
   componentDidMount = () => {
     let name = getCookie("token");
-  
-      window.addEventListener("keydown", function(e) {
-        if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
-            e.preventDefault();
-        }
-    }, false);
+ 
 
   
     if(this.props.selected) {
@@ -823,7 +818,6 @@ export default class Main extends React.Component<Props, State> {
                     </Grid>
                   </Grid>
         </div> }
-                      <input type="text" />
 
                 
                 <KeyboardEventHandler
