@@ -168,6 +168,8 @@ class Database:
                     break
                 wiki_obj = json.loads(line.strip())
 
+                wiki_obj['clusters'] = sorted(wiki_obj['clusters'],key=lambda k: k['score'])
+
                 j = 2
                 for mention in wiki_obj['clusters']:
                     for span in mention['clusters']:

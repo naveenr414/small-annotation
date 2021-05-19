@@ -69,16 +69,21 @@ def process(question,f,g):
         for j in clusters:
             if k['span'] in j['clusters']:
                 j['name'] = k['entity']
+                j['score'] = k['score']
                 break
         for j in clusters:
             if j['name'] == k['entity']:
                 if k['span'] not in j['clusters']:
                     j['clusters'].append(k['span'])
+                    j['score'] = min(j['score'],k['score'])
                     break
         else:
-            clusters.append({'name':k['entity'],'clusters':[k['span']]})
+            clusters.append({'name':k['entity'],'clusters':[k['span']],'score':k['score']})
 
     for i in range(len(clusters)):
+        if 'score' not in clusters[i]:
+            clusters[i]['score'] = -10
+        
         for j in range(len(clusters[i]['clusters'])):
             temp = clusters[i]['clusters'][j]
             try:
