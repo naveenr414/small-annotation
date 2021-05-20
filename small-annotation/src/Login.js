@@ -92,6 +92,7 @@ export default class Login extends React.Component<Props, State> {
               fullWidth
               id="username"
               label="Email"
+              type="email"
               name="username"
               style={{color:"red"}}
               value={this.state.username}

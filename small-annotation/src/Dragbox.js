@@ -125,10 +125,10 @@ class Dragbox extends React.Component<Props, State> {
   
   render_entity = () => {
     if(this.props.entity_number>0 && this.props.entity_name.length>0) {
-      return (<a target="_blank" style={{color: 'black'}} href={"https://wikipedia.org/wiki/"+this.props.entity_name.replaceAll(" ", "_")}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?"2vh":"2vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
+      return (<a target="_blank" style={{color: 'black'}} href={"https://wikipedia.org/wiki/"+this.props.entity_name.replaceAll(" ", "_")}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: "3vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
           </span>  </a>);
     }
-    return (<span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number>0?"2vh":"2vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
+    return (<span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: "3vh", lineHeight: 0}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
           </span> );
   }
   
@@ -163,22 +163,19 @@ class Dragbox extends React.Component<Props, State> {
     return this.props.dropTarget(
       <div>  
         <br /> 
-        <Grid container spacing={3}>
+        <Grid container spacing={this.props.entity_number>0?3:6}>
 
-                    <Grid item xs={3} > 
+                    <Grid item xs={this.props.entity_number>0?3:6} > 
                       {this.render_entity()}
          {this.props.entity_number>0?<br />:<div />}
-        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "1.5vh"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change Entity
+        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "50%"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change
         </button> :''} {this.props.entity_number>0?<span />:<div />}
-        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "1.5vh"}} onClick={this.delete_entity} > Delete
+        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "45%", textAlign: "center"}} onClick={this.delete_entity} > Delete
         </button>:''} <br />
-        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "1.5vh"}} onClick={this.merge_entity} > Merge
+        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "96%"}} onClick={this.merge_entity} > Merge
         </button>:''}
-        {this.props.entity_number>0? <Select style={{marginLeft: 20, fontSize: '1.5vh'}} value={this.state.merge_value} onChange={(event)=>{this.setState({merge_value: event.target.value})}}> 
-          {this.create_dropdown()}
-        </Select>:''}
         </Grid> 
-        <Grid item xs={9}>
+        <Grid item xs={this.props.entity_number>0?9:6}>
         <Modal size="lg" show={this.state.show_search} onHide={this.close_search} animation={false}>
           <Modal.Header closeButton>
             <Modal.Title>Search</Modal.Title>

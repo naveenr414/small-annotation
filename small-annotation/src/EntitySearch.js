@@ -35,6 +35,7 @@ export default class EntitySearch extends React.Component<Props, State> {
     entities: [],
     locations: {},
     year_freq: [],
+    all_entities: false,
   }
   
   render_year_freq = () => {
@@ -55,7 +56,7 @@ export default class EntitySearch extends React.Component<Props, State> {
            }
          ]
          };
-       return <Line width={1000} data={data} />;
+       return <Line width={1500} height={200} data={data} />;
     }
   }
   
@@ -143,16 +144,41 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
   render_entities = () => {
     if(this.state.entities.length>0 && !this.state.loading) {
       
-      return <div> Most common co-occurring entities <ul> 
-      {this.state.entities.map((entity) => (<li style={{marginBottom: 10}}> <a target="_blank" href={"https://wikipedia.org/wiki/"+entity.replaceAll(" ","_")}> {entity} </a> 
-      <button onClick={()=>{this.setState({value: entity},()=>{this.get_results()})}}> Search </button>
-      </li>))}
-      </ul> </div> 
+      let table = [];
+      let i = 0;
+      let top = this.state.entities.length;
+      if(!this.state.all_entities) {
+        top = 4;
+      }
+      while(i<top){ 
+        let temp = [];
+        let next = i+4;
+        while(i<next) {
+          if(i<this.state.entities.length) {
+            let entity = this.state.entities[i];
+            let elem = (<td style={{textAlign: 'center',marginRight: 60, paddingRight: 60}}> <a target="_blank" href={"https://wikipedia.org/wiki/"+entity.replaceAll(" ","_")}> {entity} </a> 
+            <button onClick={()=>{this.setState({value: entity},()=>{this.get_results()})}}> Search </button> </td>);
+            temp.push(elem);
+          }
+           i++;
+
+        }
+        
+        table.push(<tr> {temp} </tr>);
+      }
+      
+      return <div> Most common co-occurring entities <table>
+      {table}
+      </table> <br /> 
+      <Button style={{'border': '1px solid black'}} onClick={()=>{this.setState({all_entities: !this.state.all_entities})}}>
+        {this.state.all_entities? 'Show Less': 'Show More'} 
+        </Button> 
+      </div> 
     }
   }
   
   get_results = () => {
-    this.setState({loading: true, start: 0});
+    this.setState({loading: true, start: 0,all_entities: false});
         fetch(
       address+"/entity/"+this.state.value.replaceAll(" ","_")+"_"+this.state.category_option+"_"+this.state.difficulty_option
       ).then(res=>res.json())
@@ -267,24 +293,25 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
 
     return <div style={{marginLeft: 30, marginBottom: 30}}> 
     <h1> Search Entity  </h1>
-<br />
-          <div style={{marginBottom: 50}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>
+          <div style={{marginBottom: 20}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>
           </div>
-    <br />
-    <b> Entity: </b> 
-
+          
+          <div style={{ display: 'inline-block'}}> 
 
 
         <Autocomplete
-          style={{ fontSize: 24, width: 400, marginBottom: 30 }}
+          style={{ fontSize: 24, width: 400, marginBottom: 30, display: 'inline-block', verticalAlign: 'middle', marginRight: 10 }}
           value={this.state.value}
           onInputChange={this.updateAutocorrect}  
           getOptionLabel={(option) => option}
           options={this.state.autocorrect}
           renderInput={(params) => <TextField {...params} label="Entity" 
+          style={{layout: 'inline'}}
           />}
           openOnFocus={true}
         />
+        
+        <div style={{marginTop: 10, display: 'inline-block'}}> 
         
         Category: 
         
@@ -323,6 +350,10 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
         <Button style={{'border': '1px solid black'}} onClick={this.get_results}>
           Search 
         </Button> 
+        
+        </div> 
+        
+        </div> 
         
         <br /> 
         
