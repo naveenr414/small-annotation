@@ -42,6 +42,7 @@ export default class PacketSearch extends React.Component<Props, State> {
     subcategory_option: "Any",
     start:0,
     entities: [],
+    all_entities: false,
   }
   
   get_results = () => {
@@ -63,9 +64,21 @@ export default class PacketSearch extends React.Component<Props, State> {
   render_entities = () => {
     if(this.state.entities.length>0 && !this.state.loading_search) {
       
-      return <div> Most common co-occurring entities <ul> 
-      {this.state.entities.map((entity) => (<li> <a target="_blank" href={"https://wikipedia.org/wiki/"+entity.replaceAll(" ","_")}> {entity} </a> </li>))}
-      </ul> </div> 
+      let close_entities = [];
+      let i = 0;
+      while(i<this.state.entities.length) {
+        let temp = [];
+        let top = i+4;
+        while(i<top) {
+          let entity = this.state.entities[i];
+          temp.push(<td style={{paddingRight: 150}}> <a target="_blank" href={"https://wikipedia.org/wiki/"+entity.replaceAll(" ","_")}> {entity} </a> </td>);
+          i+=1;
+        }
+        close_entities.push(<tr> {temp} </tr>);
+        
+      }
+      
+      return <div> Most common co-occurring entities <table> {close_entities} </table> </div> 
     }
   }
   
@@ -255,13 +268,28 @@ export default class PacketSearch extends React.Component<Props, State> {
       return <CircularProgress />
     }
     
+    let i =0;
     let top_entities = [];
-    for(let i = 0;i<this.state.summary_stats.length;i++) {
-      top_entities.push(<li style={{marginBottom: 10}}> <a target="_blank" href={"https://wikipedia.org/wiki/"+this.state.summary_stats[i][0].replaceAll(" ","_")}> {this.state.summary_stats[i][0].replaceAll("_"," ")} ({this.state.summary_stats[i][1]} mentions) </a> <button onClick={()=>{this.setState({value: this.state.summary_stats[i][0].replaceAll("_"," ")},()=>{this.get_results()})}}> Search </button> </li>);
+    let top = this.state.summary_stats.length;
+    if(!this.state.all_entities) {
+      top = 4;
     }
+    while(i<top){ 
+      let temp = [];
+      let next = i+4;
+      while(i<next) {
+        if(i<this.state.summary_stats.length) {
+          let j = i+0;
+          let entity = (<td style={{textAlign: 'center',marginRight: 60, paddingRight: 60}}> <a target="_blank" href={"https://wikipedia.org/wiki/"+this.state.summary_stats[i][0].replaceAll(" ","_")}> {this.state.summary_stats[i][0].replaceAll("_"," ")} ({this.state.summary_stats[i][1]} mentions) </a> <button onClick={()=>{this.setState({value: this.state.summary_stats[j][0].replaceAll("_"," ")},()=>{this.get_results()})}}> Search </button> </td>);
+          temp.push(entity);
+        }
+        i = i+1;
+     }
+     top_entities.push(<tr> {temp} </tr>);
+   }
     
     
-    return top_entities;
+    return (<table> {top_entities} </table>);
   }
   
   render_genders = () => {
@@ -316,8 +344,8 @@ export default class PacketSearch extends React.Component<Props, State> {
 
         }
         
-        ret.push(<div style={{width: 500, marginBottom: 50}}> <b> Question: </b> {question_text} <br /> <b> Answer: </b> {answer_text} <br /> 
-        <Button style={{marginLeft: 30, marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",entity+"_"+year+"_"+tournament+"_"+category+"_"+subcategory); setCookie("entity","");}} variant="contained"><a href="/selected"> Annotate Question</a></Button> 
+        ret.push(<div style={{marginRight: 300, marginBottom: 50}}> <b> Question: </b> {question_text} <br /> <b> Answer: </b> {answer_text} <br /> 
+        <Button style={{marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",entity+"_"+year+"_"+tournament+"_"+category+"_"+subcategory); setCookie("entity","");}} variant="contained"><a href="/selected"> Annotate Question</a></Button> 
 
         
         <br /> </div>);
@@ -346,7 +374,7 @@ export default class PacketSearch extends React.Component<Props, State> {
     
 
   increment = () => {
-    if(this.state.start+questions_per_page<=this.state.results.length ){ 
+    if(this.state.start+questions_per_page<this.state.results.length ){ 
       this.setState({start: this.state.start+questions_per_page});
     }
   }
@@ -388,7 +416,7 @@ export default class PacketSearch extends React.Component<Props, State> {
      
     <br />
         <Select
-          style={{marginLeft: 20, marginRight: 20}}
+          style={{marginRight: 20}}
           labelId="demo-simple-select-label"
           value={this.state.difficulty_option}
           onChange={(event)=>{this.setState({difficulty_option:event.target.value, year_option: tournaments[event.target.value][this.state.year_option]!=undefined?this.state.year_option:2015,
@@ -436,48 +464,53 @@ export default class PacketSearch extends React.Component<Props, State> {
         <Button style={{'border': '1px solid black'}} onClick={this.search}> Find Info </Button>
         <br />
         <b> Top Entities </b> 
-        <ol> {this.render_top_entities()} </ol> <br />
+        <div> {this.render_top_entities()}<br />       <Button style={{'border': '1px solid black'}} onClick={()=>{this.setState({all_entities: !this.state.all_entities})}}>
+        {this.state.all_entities? 'Show Less': 'Show More'} 
+        </Button> 
+      </div>  
           {this.render_genders()}
-        <Autocomplete
-          style={{ fontSize: 24, width: 400, marginBottom: 30 }}
-          value={this.state.value}
-          onInputChange={this.updateAutocorrect}  
-          getOptionLabel={(option) => option}
-          options={this.state.autocorrect}
-          renderInput={(params) => <TextField {...params} label="Entity" 
-          />}
-          openOnFocus={true}
-        />      
-        Category: <Select
-          style={{marginLeft: 20, marginRight: 20}}
-          labelId="demo-simple-select-label"
-          value={this.state.category_option}
-          onChange={(event)=>{this.setState({category_option:event.target.value, subcategory_option: "Any"})}}
-        >
-          {categories.map((option, index) => (
-            <MenuItem
-              value={option}
-            >
-              {option}
-            </MenuItem>
-          ))}
-        </Select>
-        Subcategory: <Select
-          style={{marginLeft: 20, marginRight: 20}}
-          labelId="demo-simple-select-label"
-          value={this.state.subcategory_option}
-          onChange={(event)=>{this.setState({subcategory_option:event.target.value}) }}
+          
+        <div style={{display: 'inline-block'}}>
+          <Autocomplete
+            style={{ fontSize: 24, width: 400, marginBottom: 30,display: 'inline-block',verticalAlign: 'middle' }}
+            value={this.state.value}
+            onInputChange={this.updateAutocorrect}  
+            getOptionLabel={(option) => option}
+            options={this.state.autocorrect}
+            renderInput={(params) => <TextField {...params} label="Entity" 
+            />}
+            openOnFocus={true}
+          />      
+          Category: <Select
+            style={{marginLeft: 20, marginRight: 20}}
+            labelId="demo-simple-select-label"
+            value={this.state.category_option}
+            onChange={(event)=>{this.setState({category_option:event.target.value, subcategory_option: "Any"})}}
+          >
+            {categories.map((option, index) => (
+              <MenuItem
+                value={option}
+              >
+                {option}
+              </MenuItem>
+            ))}
+          </Select>
+          Subcategory: <Select
+            style={{marginLeft: 20, marginRight: 20}}
+            labelId="demo-simple-select-label"
+            value={this.state.subcategory_option}
+            onChange={(event)=>{this.setState({subcategory_option:event.target.value}) }}
 
-        >
-          {subcategories[this.state.category_option].map((option, index) => (
-            <MenuItem
-              value={option}
-            >
-              {option}
-            </MenuItem>
-          ))}
-        </Select>
-        
+          >
+            {subcategories[this.state.category_option].map((option, index) => (
+              <MenuItem
+                value={option}
+              >
+                {option}
+              </MenuItem>
+            ))}
+          </Select>
+        </div>
         <Button style={{'border': '1px solid black'}} onClick={this.get_results}>
           Search 
         </Button> 

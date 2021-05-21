@@ -222,7 +222,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       }
       
       
-      let question = (<div style={{width: 500, marginBottom: 50}}> 
+      let question = (<div style={{marginRight: 300, marginBottom: 50}}> 
         <b> Question: </b> {question_text} <br /> <b> Answer: </b> {answer} <br /> <b> Tournament: </b> {this.state.results[i]['tournament']} {this.state.results[i]['year']} <br />
           {annotateButton} </div>);
       ret.push(question);        
