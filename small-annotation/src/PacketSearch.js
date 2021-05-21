@@ -137,14 +137,6 @@ export default class PacketSearch extends React.Component<Props, State> {
             });
           }
           else {
-
-            
-            if(suggestions.length == 0) {
-              suggestions = ["No Entity Found"]
-            }
-            else {
-              suggestions.push("No Entity Found");
-            }
             this.setState({ autocorrect: suggestions },function() {
               return 0;
             });
@@ -479,6 +471,10 @@ export default class PacketSearch extends React.Component<Props, State> {
             options={this.state.autocorrect}
             renderInput={(params) => <TextField {...params} label="Entity" 
             />}
+            onChange={(event: any,value: any,reason: any) =>{if(reason === "select-option"  ) {
+            this.setState({value: value},()=>{this.get_results()})}}}
+
+            onKeyDown={({key})=>{if(key=='Enter'){this.get_results()}}} 
             openOnFocus={true}
           />      
           Category: <Select

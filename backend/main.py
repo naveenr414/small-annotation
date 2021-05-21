@@ -328,6 +328,8 @@ def get_questions_entity(entity_name):
     locations = questions['locations']
     questions = questions['questions']
     common_entities = db.get_entities(questions,category,difficulty)
+    print(common_entities,entity_name)
+    common_entities = [i for i in common_entities if i.lower()!=entity_name.replace("_"," ").lower().strip()][:20]
     results = db.get_question_answers(questions,category,difficulty)
 
     year_freq = Counter([i['year'] for i in results])

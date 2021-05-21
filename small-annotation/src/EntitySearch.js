@@ -117,12 +117,6 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
             });
           }
           else {           
-            if(suggestions.length == 0) {
-              suggestions = ["No Entity Found"]
-            }
-            else {
-              suggestions.push("No Entity Found");
-            }
             this.setState({ autocorrect: suggestions },function() {
               return 0;
             });
@@ -156,7 +150,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
         while(i<next) {
           if(i<this.state.entities.length) {
             let entity = this.state.entities[i];
-            let elem = (<td style={{textAlign: 'center',marginRight: 60, paddingRight: 60}}> <a target="_blank" href={"https://wikipedia.org/wiki/"+entity.replaceAll(" ","_")}> {entity} </a> 
+            let elem = (<td style={{textAlign: 'left',marginRight: 60, paddingRight: 60}}> <a target="_blank" href={"https://wikipedia.org/wiki/"+entity.replaceAll(" ","_")}> {entity} </a> 
             <button onClick={()=>{this.setState({value: entity},()=>{this.get_results()})}}> Search </button> </td>);
             temp.push(elem);
           }
@@ -307,6 +301,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
           options={this.state.autocorrect}
           renderInput={(params) => <TextField {...params} label="Entity" 
           style={{layout: 'inline'}}
+          onKeyDown={({key})=>{if(key=='Enter'){this.get_results()}}} 
           />}
           openOnFocus={true}
         />
