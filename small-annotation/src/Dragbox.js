@@ -124,11 +124,27 @@ class Dragbox extends React.Component<Props, State> {
   }
   
   render_entity = () => {
-    if(this.props.entity_number>0 && this.props.entity_name.length>0) {
-      return (<a target="_blank" style={{color: 'black'}} href={"https://wikipedia.org/wiki/"+this.props.entity_name.replaceAll(" ", "_")}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: "3vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
+    if(this.props.entity_number>0) {
+      let confidence = 0.1;
+      for(var i = 0;i<this.props.current_spans.length;i++) { 
+        confidence = Math.max(confidence,this.props.current_spans[i]['confidence']);
+      }
+      
+      if(this.props.entity_name == "") {
+        confidence = 0.1
+      }
+      
+      let alpha = Math.min(confidence+0.25,1);
+      
+      console.log(this.props.entity_name + " "+alpha);
+      
+      
+
+      
+      return (<a target="_blank" style={{color: 'black'}} href={"https://wikipedia.org/wiki/"+this.props.entity_name.replaceAll(" ", "_")}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", opacity: alpha,textAlign: "center", fontSize: "3vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
           </span>  </a>);
     }
-    return (<span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: "3vh", lineHeight: 0}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
+    return (<span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: "3vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
           </span> );
   }
   

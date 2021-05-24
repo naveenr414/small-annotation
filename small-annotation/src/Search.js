@@ -158,9 +158,8 @@ export default class Search extends React.Component<Props, State> {
       <div>
         <Typography style={{ fontSize: 24 }}>
           {" "}
-          Entity Name:{" "}
         </Typography>
-        <div style={{height: 100, marginBottom: 200}}>
+        <div style={{height: 300, overflow: 'scroll'}}>
         <Typography style={{ fontSize: 24, marginTop: 9}}> 
           <b> {this.state.current_entity} </b>{this.state.suggestions.length>0?':':''} {this.get_definition()}
             {this.get_id()}

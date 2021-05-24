@@ -172,8 +172,8 @@ def get_annotations(username,question_num,question_data):
     names[0] = ""
     names[1] = answer
 
-    spans[0] = [{'start':-1,'end':-1,'content':''}]
-    spans[1] = [{'start':-1,'end':-1,'content':''}]
+    spans[0] = [{'start':-1,'end':-1,'content':'','confidence':1}]
+    spans[1] = [{'start':-1,'end':-1,'content':'','confidence':1}]
 
     num_to_wiki = {}
 
@@ -188,7 +188,7 @@ def get_annotations(username,question_num,question_data):
                 names[i['number']] = i['wiki_page']
                 spans[i['number']] = []
                 wiki_pages.add(i['wiki_page'])
-            spans[i['number']].append({'start':i['start'],'end':i['end'],'content':i['content']})
+            spans[i['number']].append({'start':i['start'],'end':i['end'],'content':i['content'],'confidence':i['confidence']})
 
         if answer not in wiki_pages:
             names[0.5] = answer
@@ -438,7 +438,7 @@ async def write_phrases(noun_phrases: NounPhrase):
         for j in entity_spans[i]:
             mentions.append({'user_id':username,'question_id':question_id,'start':j['start'],
                              'end':j['end'],'wiki_page':entity_names[i],
-                             'content':j['content'],'number': i})
+                             'content':j['content'],'number': i,'confidence':1})
     db.insert_mentions(mentions)
     db.user_updates(username,int(question_id),mentions)
 

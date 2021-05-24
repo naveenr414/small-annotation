@@ -27,9 +27,9 @@ for i in all_files:
         clean_name = temp_json['title']
         summary = temp_json['text'].split("\n\n")
         if len(summary) == 1:
-            summary = summary[0][:500]
+            summary = summary[0][:1000]
         else:
-            summary = summary[1][:500]
+            summary = " ".join(summary[1:])[:1000]
         popularity_wiki = 0
 
         if name in popularity:

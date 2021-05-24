@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, ForeignKey, Column, Text, create_engine,and_,or_, desc, DateTime
+from sqlalchemy import Integer, Float,ForeignKey, Column, Text, create_engine,and_,or_, desc, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import (
     Load,
@@ -18,8 +18,11 @@ import unidecode
 import datetime
 import re
 import random
+import numpy as np 
 from collections import Counter
 
+def sigmoid(x):
+    return 1/(1+np.exp(-x))
 
 Base = declarative_base()
 
@@ -31,6 +34,7 @@ class Mention(Base):
     question_id = Column(Integer, ForeignKey("question.id"), nullable=False,index=True)
     start= Column(Integer)
     end= Column(Integer)
+    confidence = Column(Float)
     wiki_page = Column(Text(),index=True)
     content = Column(Text())
 
@@ -172,9 +176,10 @@ class Database:
 
                 j = 2
                 for mention in wiki_obj['clusters']:
+                    confidence = sigmoid(mention['score'])
                     for span in mention['clusters']:
                             objects.append({'user_id':'system','question_id':wiki_obj['qanta_id'],'start':span[0],
-                                            'end':span[1],'wiki_page':mention['name'],'number':j,'content':span[2]})
+                                            'end':span[1],'wiki_page':mention['name'],'number':j,'content':span[2],'confidence':confidence})
                     j+=1
                 i+=1
                 if i%10000 == 0:
@@ -312,18 +317,20 @@ class Database:
         summaries = summaries[:5]
         ids = ids[:5]
 
+        print(summaries)
+
         print("Took {} time with {} count {}".format(time.time()-start,count,word))
         return [(names[i].replace("&amp;","&"),summaries[i],ids[i]) for i in range(len(names))]
 
     def get_all_mentions(self):
         with self._session_scope as session:
             results = session.query(Mention).filter(Mention.user_id!="system")
-            return [{'question':i.question_id,'user':i.user_id,'start':i.start,'end':i.end,'wiki_page': i.wiki_page} for i in results]
+            return [{'question':i.question_id,'user':i.user_id,'start':i.start,'end':i.end,'wiki_page': i.wiki_page,'confidence':i.confidence} for i in results]
 
     def get_user_mentions(self,username):
         with self._session_scope as session:
             results = session.query(Mention).filter(Mention.user_id==username)
-            return [{'question':i.question_id,'user':i.user_id,'start':i.start,'end':i.end,'wiki_page': i.wiki_page} for i in results]
+            return [{'question':i.question_id,'user':i.user_id,'start':i.start,'end':i.end,'wiki_page': i.wiki_page,'confidence':i.confidence} for i in results]
 
 
     def get_questions_user(self,user):
@@ -347,7 +354,7 @@ class Database:
 
             results = session.query(Mention).filter(and_(Mention.user_id == user,
                                                          Mention.question_id==question_num))
-            results = [{'start':i.start,'end':i.end,'wiki_page':i.wiki_page,'content':i.content,'number':i.number} for i in results]
+            results = [{'start':i.start,'end':i.end,'wiki_page':i.wiki_page,'content':i.content,'number':i.number,'confidence':i.confidence} for i in results]
             return results
 
     def get_entities(self,question_ids,category,difficulty):
@@ -482,7 +489,9 @@ class Database:
     
     def insert_mentions(self,mentions):
         with self._session_scope as session:
-            print(mentions)
+            for i in range(len(mentions)):
+                if 'confidence' not in mentions[i]:
+                    mentions[i]['confidence'] = 1
             session.bulk_insert_mappings(Mention,mentions)
             session.commit()
             return True
