@@ -188,8 +188,6 @@ class Dragbox extends React.Component<Props, State> {
         </button> :''} {this.props.entity_number>0?<span />:<div />}
         {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "45%", textAlign: "center"}} onClick={this.delete_entity} > Delete
         </button>:''} <br />
-        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "96%"}} onClick={this.merge_entity} > Merge
-        </button>:''}
         </Grid> 
         <Grid item xs={this.props.entity_number>0?9:6}>
         <Modal size="lg" show={this.state.show_search} onHide={this.close_search} animation={false}>

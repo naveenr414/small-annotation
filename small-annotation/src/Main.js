@@ -2,6 +2,7 @@ import * as React from "react";
 import {useContext} from "react";
 import Dragbox from "./Dragbox";
 import Search from "./Search";
+import Merge from "./Merge";
 import Span from "./Span";
 import Typography from '@material-ui/core/Typography';
 import Grid from "@material-ui/core/Grid";
@@ -66,6 +67,7 @@ export default class Main extends React.Component<Props, State> {
     entity_list: [[],[]],
     entity_names: ["",""],
     show_instructions: false,
+    show_merge: false,
     underline_span: [],
     is_dragged: false,
     clicked: "",
@@ -143,6 +145,7 @@ export default class Main extends React.Component<Props, State> {
       this.setState({name},()=>{this.get_last_question();});
     }
     else if(this.props.sample) {
+      setCookie("help","");
       this.setState({name},()=>{this.get_sample_question();});
     }
     else {
@@ -509,6 +512,14 @@ export default class Main extends React.Component<Props, State> {
     this.setState({show_instructions: false});
   }
   
+  show_merge = () => {
+    this.setState({show_merge: true});
+  }
+  
+  hide_merge = () => {
+    this.setState({show_merge: false});
+  }
+  
   /* Key Input */   
   handle_key = (key,e) => {
     if(key>='0' && key<='9' && key!=',' && key!='.') {
@@ -793,6 +804,17 @@ export default class Main extends React.Component<Props, State> {
                           </Button>
                         </Modal.Footer>
                       </Modal>
+                      <Modal size="lg" show={this.state.show_merge} onHide={this.hide_merge} animation={false}>
+                        <Modal.Header closeButton>
+                          <Modal.Title>Merge Entities</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body> <Merge merge_entities={this.merge_entity} entity_names={this.state.entity_names} close_merge={this.hide_merge} /> </Modal.Body>
+                        <Modal.Footer>
+                          <Button variant="secondary" onClick={this.hide_merge}>
+                            Close
+                          </Button>
+                        </Modal.Footer>
+                      </Modal>
 
                       <div class="highlight" style={{fontSize: "2.5vh"}}>  
                         (1. Highlight spans and select create span)  <br />
@@ -811,6 +833,7 @@ export default class Main extends React.Component<Props, State> {
                     <Divider orientation="vertical" flexItem />
                     <Grid item xs={6} style={{marginLeft: "55%", paddingLeft: 25, paddingRight: 25, borderLeft:'1px solid black',height: "100%", width: "40%"}}>
                       <h3 class="entity"> Entities </h3>
+                      <button onClick={this.show_merge}> Merge Entities </button>
                       <div style={{height: "100%"}}>
                         {all_but_first(this.render_draggables())}  
 

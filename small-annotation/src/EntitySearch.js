@@ -286,12 +286,16 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
 
 
     return <div style={{marginLeft: 30, marginBottom: 30}}> 
-    <h1> Search Entity  </h1>
+    <h1> Search for an Entity  </h1>
           <div style={{marginBottom: 20}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>
           </div>
           
           <div style={{ display: 'inline-block'}}> 
 
+        <div style={{fontSize: 20}}> 
+          Search for a Wikipedia entity to see it's prevelance over time, co-occuring entities, and which questions reference that entity. <br />
+          For example, to see what clues come up about Chinua Achebe, search for his name, and annotate questions about him or his books
+        </div>
 
         <Autocomplete
           style={{ fontSize: 24, width: 400, marginBottom: 30, display: 'inline-block', verticalAlign: 'middle', marginRight: 10 }}
@@ -301,6 +305,8 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
           options={this.state.autocorrect}
           renderInput={(params) => <TextField {...params} label="Entity" 
           style={{layout: 'inline'}}
+          onChange={(event: any,value: any,reason: any) =>{if(reason === "select-option"  ) {
+          this.setState({value: value},()=>{this.get_results()})}}}
           onKeyDown={({key})=>{if(key=='Enter'){this.get_results()}}} 
           />}
           openOnFocus={true}

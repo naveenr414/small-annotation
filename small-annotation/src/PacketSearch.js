@@ -402,9 +402,16 @@ export default class PacketSearch extends React.Component<Props, State> {
       return <Redirect to="/login" />;
     }
 
-    return <div style={{marginLeft: 30, marginBottom: 30}}> <h1> Tournament Search </h1> 
+    return <div style={{marginLeft: 30, marginBottom: 30}}> <h1> Search by Tournament </h1> 
           <div style={{marginBottom: 50}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>
         </div>
+        
+        <div style={{fontSize: 20}}> 
+          To see what gets asked about at a tournament, select it and click Find Info.<br />
+          You can also search for all references to an entity within a tournament. To find all questions within a category, leave the search blank. 
+        </div>
+
+
      
     <br />
         <Select
@@ -456,9 +463,10 @@ export default class PacketSearch extends React.Component<Props, State> {
         <Button style={{'border': '1px solid black'}} onClick={this.search}> Find Info </Button>
         <br />
         <b> Top Entities </b> 
-        <div> {this.render_top_entities()}<br />       <Button style={{'border': '1px solid black'}} onClick={()=>{this.setState({all_entities: !this.state.all_entities})}}>
-        {this.state.all_entities? 'Show Less': 'Show More'} 
-        </Button> 
+        <div> {this.render_top_entities()}<br />       
+        {this.state.summary_stats!=undefined && this.state.summary_stats.length>0 && (<Button style={{'border': '1px solid black'}} onClick={()=>{this.setState({all_entities: !this.state.all_entities})}}>
+        {this.state.all_entities? 'Show Less': 'Show More'}
+        </Button>)}
       </div>  
           {this.render_genders()}
           
