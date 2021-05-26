@@ -43,7 +43,7 @@ class Span extends React.Component<Props, State> {
 
       <h5> Shortcuts </h5> 
       <ol> 
-        <li> To edit a span, click on the span, and then use the left-right keys to move the left endpoint, and the down-up keys to move the right endpoint </li> 
+        <li> To edit a span, click on the span, and then use the left-right keys to move the right endpoint, and the ,-. keys to move the left endpoint </li> 
         <li> To select which entity a selected span belongs to, use the number/letter keys to assign to the matching box. For example, if a span belongs to entity 3, then press 3. </li> 
       </ol>
       

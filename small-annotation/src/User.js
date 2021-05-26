@@ -85,9 +85,9 @@ export default class User extends React.Component<Props, State> {
       <br /> <br />
       <div style={{marginBottom: 50}}> 
       
-        Look at an <b> example </b> of what type of data we collect and how to annotate: <Button style={{marginLeft: 20}} variant="contained"><a href="/sample"> Sample Annotation </a> </Button> 
+        Look at an <b> example </b> of what type of data we collect and how to annotate: <Button style={{marginLeft: 20}} variant="contained"><a href="/sample"> Walkthrough </a> </Button> 
         <br /> 
-        We also have a video walkthrough <a  target="_blank"  href="https://drive.google.com/file/d/1AhVsmYt83y038Bf_63TyhEA2-l3Iw5o_/view?usp=sharing" > here </a>  <br /> <br />
+        We also have an instruction video <a  target="_blank"  href="https://drive.google.com/file/d/1AhVsmYt83y038Bf_63TyhEA2-l3Iw5o_/view?usp=sharing" > here </a>  <br /> <br />
         <p> To <b> annotate questions and study for tournaments</b>: <Button style={{marginRight: 20}} variant="contained"><a href="/random"> Random Question </a> </Button> 
         
         Category: 
@@ -134,7 +134,7 @@ export default class User extends React.Component<Props, State> {
       <b> Explore question trends </b>, both generally, and in particular tournaments: 
       <Button style={{marginRight: 20, marginLeft: 20}} variant="contained" ><a href="/entitysearch"> Search for Entity </a> </Button>
       <Button variant="contained" ><a href="/packetsearch"> Search by Tournament </a> </Button> <br /> <br />
-      Track how many questions you've annotated, and which cattegories they're in: <Button style={{marginLeft: 20}} variant="contained"><a href="/info"> User stats + Leaderboard </a> </Button> <br /> <br />
+      Track how many questions you've annotated, and which categories they're in: <Button style={{marginLeft: 20}} variant="contained"><a href="/info"> User stats + Leaderboard </a> </Button> <br /> <br />
       <Button style={{marginBottom: 50}} variant="contained" onClick={this.logout}><a href="#"> Logout </a> </Button> 
 
       </div> 

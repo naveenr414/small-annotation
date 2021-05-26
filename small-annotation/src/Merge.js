@@ -16,8 +16,8 @@ interface State {
 export default class Merge extends React.Component<Props, State> {
   
   state: State = {
-    merge_one: 0,
-    merge_two: 0,
+    merge_one: 1,
+    merge_two: 1,
   }
   
   change_item = (item_num,value) => {
@@ -36,7 +36,10 @@ export default class Merge extends React.Component<Props, State> {
   render_select = (choice) => {
     let options = [];
     for(var i = 0;i<this.props.entity_names.length;i++) {
-      options.push(<MenuItem value={i}> {i+1}: {this.props.entity_names[i]} </MenuItem>);
+      console.log(i);
+      if(i!=0) {
+        options.push(<MenuItem value={i}> {i}: {this.props.entity_names[i].replaceAll("_"," ")} </MenuItem>);
+      }
     }
     
     let num = this.state.merge_one;
@@ -44,11 +47,11 @@ export default class Merge extends React.Component<Props, State> {
       num = this.state.merge_two;
     }
     
-    return <Select style={{marginRight: 50, marginLeft: 20}} value={num} onChange={(event)=>{this.change_item(choice,event.target.value)}}> {options} </Select>
+    return <Select style={{marginRight: 20, marginLeft: 20}} value={num} onChange={(event)=>{this.change_item(choice,event.target.value)}}> {options} </Select>
   }
   
   render = () => {
-    return <div> Merge {this.render_select(1)} into {this.render_select(2)} <button onClick={this.submit}> Submit </button> </div>
+    return <div> Merge {this.render_select(1)} into {this.render_select(2)} <button onClick={this.submit}> Merge </button> </div>
   }
  
 }

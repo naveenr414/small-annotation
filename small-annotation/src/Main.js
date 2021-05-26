@@ -106,7 +106,11 @@ export default class Main extends React.Component<Props, State> {
       },
       {
         element: document.querySelector('.entity'),
-        intro: 'Drag your new span over to the correct matching entity'
+        intro: 'Drag your new span over to the correct matching entity.'
+      },
+      {
+        element: document.querySelector('.entity'),
+        intro: 'Notice that some entities are pre-filled by our system. The opacity of the box behind the entity reflects our model\'s confidence.'
       },
       {
         element: document.querySelector('.new'),
@@ -824,7 +828,7 @@ export default class Main extends React.Component<Props, State> {
                         <div> <b> Answer: </b> {this.state.answer.substring(0,250)} </div>
                       </div>
                       <button class="create" style={{fontSize: "2.5vh"}}  onClick={()=>{this.create_tag(0)}} > 
-                      Create Span </button>     <br />   <span id="Popover1" > 
+                      Create Span </button>     <br />   <span id="Popover1" style={{float: 'right', marginRight: 100}}> 
       </span>
                       <br />
                       <div class="unassigned"> {this.render_draggables()[0]} </div>
@@ -833,7 +837,8 @@ export default class Main extends React.Component<Props, State> {
                     <Divider orientation="vertical" flexItem />
                     <Grid item xs={6} style={{marginLeft: "55%", paddingLeft: 25, paddingRight: 25, borderLeft:'1px solid black',height: "100%", width: "40%"}}>
                       <h3 class="entity"> Entities </h3>
-                      <button onClick={this.show_merge}> Merge Entities </button>
+                      <button onClick={this.show_merge}> Merge Entities </button> <br />
+                      To modify span boundaries, click on a span, then use the , . keys for the left end, and the left and right arrows for the right end 
                       <div style={{height: "100%"}}>
                         {all_but_first(this.render_draggables())}  
 
