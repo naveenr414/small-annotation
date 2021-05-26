@@ -11,7 +11,7 @@ def chunk_words(question):
     end = time.time()
     return indexes
 
-def process(question,f,g):
+def process(question,answer,f,g):
     g['doc_key'] = int(g['doc_key'])
 
     chunks = chunk_words(question)
@@ -91,6 +91,10 @@ def process(question,f,g):
             except:
                 return []
 
+    if len(clusters)>0 and clusters[0]['name'] =='':
+        clusters[0]['name'] = answer
+
+
     return clusters
 
 print("Loading blink")
@@ -132,7 +136,8 @@ for i in range(len(question_list)):
         g = coref_data[question_num]
     
     question = question_list[i]['text'].replace("\'","'").replace("\xa0"," ")
-    clusters = process(question,f,g)
+    answer = question_list[i]['page']
+    clusters = process(question,answer,f,g)
 
     w.write("{}\n".format(json.dumps({'clusters':clusters,'qanta_id':question_num})))
 

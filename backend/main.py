@@ -163,7 +163,7 @@ def get_annotations(username,question_num,question_data):
     if len(mentions) == 0:
         mentions = db.get_mentions_by_user("system",question_num)
     
-    answer = question_data['wiki_answer']
+    answer = question_data['wiki_answer'].replace(" ","_")
     names = ["","{}".format(answer)]
     spans = [[],[]]
 
