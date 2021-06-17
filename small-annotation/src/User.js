@@ -5,6 +5,9 @@ import Button from '@material-ui/core/Button';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import { Input } from '@material-ui/core';
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import TextField from '@material-ui/core/TextField';
+import {toNormalString,toNiceString} from "./Util";
 
 interface State {
   username: string;
@@ -24,9 +27,14 @@ export default class User extends React.Component<Props, State> {
   state: State = {
     username: "",
     edits: [],
+    autocorrect: [],
     random_topic: "",
-    category_option: 'Any',
-    difficulty_option: 'Any',
+    value: "",
+    category_option: 'Literature',
+    random_difficulty_option: 'High School',
+    difficulty_option: 'High School',
+    year_option: 2015,
+    tournament_option: 'Maryland Fall',
     option_open: false,
     button_clicked: "",
     advanced_search: false,
@@ -43,13 +51,7 @@ export default class User extends React.Component<Props, State> {
       ).then(res=>res.json())
       .then(res => {
         this.setState({username: res['username'],
-        edits: res['edits']});
-        
-        fetch(address+"/category/"+getCookie("token")).then(res=>res.json()).then(res => {
-          let temp = res.split("_");
-          this.setState({category_option: temp[0],difficulty_option: temp[1]});
-        });
-        
+        edits: res['edits']});        
       })
     
   }
@@ -66,22 +68,115 @@ export default class User extends React.Component<Props, State> {
     this.setState({random_topic});
   }
   
-  update_options = () => {
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", address+"/user_preferences");
-    xhr.send(JSON.stringify(
-      {username: getCookie("token"),
-      category: this.state.category_option,
-      difficulty: this.state.difficulty_option,}));
+  updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
+    this.setState({
+      value: value,
+    });
+
+        
+    
+    let current_target = toNormalString(value);
+    let tagged_word = current_target; 
+   
+    if (current_target !== "") {
+      
+      fetch(
+        address+"/autocorrect/" +
+            encodeURIComponent(current_target.replace(" ","_"))
+      )
+        .then((res) => res.json())
+        .then((res) => {
+          
+          let suggestions = res;
+            for(var i = 0;i<suggestions.length;i++) {
+              suggestions[i] = toNiceString(suggestions[i][0]+" ");
+            }
+            
+          if(suggestions.length<5 && current_target.length>0) {
+            let target_string = "";
+            let split_string = current_target.replace(/_$/,'').split("_");
+            for(var i = 0;i<split_string.length;i++) {
+              target_string+="%2B"+split_string[i];
+              if(i+1<split_string.length) {
+                target_string+="%20";
+              }
+            }
+            target_string+="&nhits=5";
+            fetch("/api/?q="+target_string).then((res2)=>res2.json()).then((res2)=>{
+              for(var i = 0;i<5-suggestions.length;i++) {
+                if(i<res2["hits"].length) {
+                  let name = res2["hits"][i].doc.clean_name;
+                  if(!suggestions.includes(name)){
+                    suggestions.push(name);
+                  }
+                  
+                }
+              }          
+              for(var i = 0;i<suggestions.length;i++) {
+                suggestions[i] = toNiceString(suggestions[i]+" ");
+              }
+              
+              suggestions = Array.from(new Set(suggestions));
+              this.setState({ autocorrect: suggestions },function() {
+                return 0;
+              });
+            });
+          }
+          else {
+            if(suggestions.length == 0) {
+              suggestions = ["No Entity Found"]
+            }
+            else {
+              suggestions.push("No Entity Found");
+            }
+            this.setState({ autocorrect: suggestions },function() {
+              return 0;
+            });
+          }
+        });
+    }
+    else {
+       this.setState({ autocorrect: [] });
+    }
+  };
+  
+  explore_topic = () => {
+    if(this.state.value!="") {
+      setCookie("topic",this.state.value);
+      this.setState({});
+    }
   }
   
-  explore = () => {
+  explore_random_category = () => {
+    setCookie("random_category",this.state.random_category);
+    setCookie("random_difficulty_option",this.state.random_difficulty_option);
+    this.setState({});
+  }
+  
+  explore_random_tournament = () => {
+    setCookie("tournament_option",this.state.tournament_option);
+    setCookie("year_option",this.state.year_option);
+    setCookie("difficulty_option",this.state.difficulty_option);
+    this.setState({});
+  }
+  
+  advanced_search = () => {
     
   }
   
   render() {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
+    }
+    
+    if(getCookie("topic")!="") {
+      return <Redirect to="/entitysearch" />
+    }
+    else if(getCookie("random_difficulty_option")!=="") {
+      return <Redirect to="/entitysearch" />
+    }
+    else if(getCookie("tournament_option")!=="") {
+      return <Redirect to="/packetsearch" />
     }
     
 
@@ -95,8 +190,19 @@ export default class User extends React.Component<Props, State> {
       
       <div> What would you like to explore? </div>
       
-      <div style={{marginBottom: "2%"}}> I would like to explore <Input style={{fontSize: 40, marginLeft: 20}} />
-        <Button style={{marginLeft: 20}} onClick={this.explore} variant="contained" color="primary"> Go! </Button>
+      <div style={{marginBottom: "2%"}}> I would like to explore <Autocomplete
+            style={{ fontSize: 30, width: 400,display: 'inline-block',verticalAlign: 'middle' }}
+            value={this.state.value}
+            onInputChange={this.updateAutocorrect}  
+            getOptionLabel={(option) => option}
+            options={this.state.autocorrect}
+            renderInput={(params) => <TextField {...params}
+            />}
+            onKeyDown={({key})=>{if(key=='Enter'){this.explore_topic()}}} 
+            openOnFocus={true}
+          />      
+          
+        <Button style={{marginLeft: 20}} onClick={this.explore_topic} variant="contained" color="primary"> Go! </Button>
       </div>
       
       <div style={{marginBottom: "1%"}}> 
@@ -106,7 +212,7 @@ export default class User extends React.Component<Props, State> {
           style={{marginLeft: 20, marginRight: 20, fontSize: 36}}
           labelId="demo-simple-select-label"
           value={this.state.category_option}
-          onChange={(event)=>{this.setState({category_option:event.target.value, subcategory_option: "Any"},()=>{this.update_options()})}}
+          onChange={(event)=>{this.setState({category_option:event.target.value})}}
           >
             {categories.map((option, index) => (
               <MenuItem
@@ -117,11 +223,11 @@ export default class User extends React.Component<Props, State> {
             ))}
           </Select>
         question at 
-        <Select
+         <Select
           style={{marginLeft: 20, marginRight: 20, fontSize: 36}}
           labelId="demo-simple-select-label"
-          value={this.state.difficulty_option}
-          onChange={(event)=>{this.setState({difficulty_option:event.target.value},()=>{this.update_options()}) }}
+          value={this.state.random_difficulty_option}
+          onChange={(event)=>{this.setState({random_difficulty_option:event.target.value}) }}
 
         >
           {difficulties.map((option, index) => (
@@ -133,13 +239,13 @@ export default class User extends React.Component<Props, State> {
           ))}
         </Select> 
         difficulty 
-        <Button style={{marginLeft: 20}} onClick={this.explore} variant="contained" color="primary"> Go! </Button> <br /> 
+        <Button style={{marginLeft: 20}} onClick={this.explore_random_category} variant="contained" color="primary"> Go! </Button> <br /> 
         Or a random question at  
         <Select
           style={{marginLeft: 20, marginRight: 20, fontSize: 36}}
           labelId="demo-simple-select-label"
           value={this.state.difficulty_option}
-          onChange={(event)=>{this.setState({difficulty_option:event.target.value},()=>{this.update_options()}) }}
+          onChange={(event)=>{this.setState({difficulty_option:event.target.value, tournament_option: tournaments[event.target.value][this.state.year_option][0]}) }}
 
         >
           {difficulties.map((option, index) => (
@@ -149,23 +255,40 @@ export default class User extends React.Component<Props, State> {
               {option}
             </MenuItem>
           ))}
-        </Select> difficulty from 
+        </Select> difficulty from
+<Select
+          style={{marginLeft: 20, marginRight: 20, fontSize: 36}}
+          labelId="demo-simple-select-label"
+          value={this.state.year_option}
+          onChange={(event)=>{this.setState({year_option:parseInt(event.target.value),
+          tournament_option: tournaments[this.state.difficulty_option][parseInt(event.target.value)][0]})}}
+
+        >
+          {Object.keys(tournaments[this.state.difficulty_option]).map((option, index) => (
+            <MenuItem
+              value={option}
+            >
+              {option}
+            </MenuItem>
+          ))}
+        </Select>
         <Select
           style={{marginLeft: 20, marginRight: 20, fontSize: 36}}
           labelId="demo-simple-select-label"
-          value={this.state.difficulty_option}
-          onChange={(event)=>{this.setState({difficulty_option:event.target.value},()=>{this.update_options()}) }}
+          value={this.state.tournament_option}
+          onChange={(event)=>{this.setState({tournament_option:event.target.value})}}
 
         >
-          {difficulties.map((option, index) => (
+          {tournaments[this.state.difficulty_option][this.state.year_option]!=undefined && tournaments[this.state.difficulty_option][this.state.year_option].map((option, index) => (
             <MenuItem
               value={option}
             >
               {option}
             </MenuItem>
           ))}
-        </Select> 
-        <Button style={{marginLeft: 20}} onClick={this.explore} variant="contained" color="primary"> Go! </Button>        
+        </Select>        
+       
+        <Button style={{marginLeft: 20}} onClick={this.explore_random_tournament} variant="contained" color="primary"> Go! </Button>        
       </div>
 
       <div style={{color: 'blue', cursor: 'pointer', textDecoration: 'underline'}} onClick={()=>{this.setState({advanced_search: !this.state.advanced_search})}}> Advanced Search </div>
@@ -176,8 +299,8 @@ export default class User extends React.Component<Props, State> {
           Difficulty: <Select
             style={{marginLeft: 20, marginRight: 20, fontSize: 36}}
             labelId="demo-simple-select-label"
-            value={this.state.difficulty_option}
-            onChange={(event)=>{this.setState({difficulty_option:event.target.value},()=>{this.update_options()}) }}
+            value={this.state.advanced_difficulty}
+            onChange={(event)=>{this.setState({advanced_difficulty:event.target.value}) }}
 
           >
             {difficulties.map((option, index) => (
@@ -191,8 +314,8 @@ export default class User extends React.Component<Props, State> {
           Category: <Select
               style={{marginLeft: 20, marginRight: 20, fontSize: 36}}
               labelId="demo-simple-select-label"
-              value={this.state.category_option}
-              onChange={(event)=>{this.setState({category_option:event.target.value, subcategory_option: "Any"},()=>{this.update_options()})}}
+              value={this.state.advanced_category}
+              onChange={(event)=>{this.setState({advanced_category:event.target.value})}}
               >
                 {categories.map((option, index) => (
                   <MenuItem
@@ -207,7 +330,7 @@ export default class User extends React.Component<Props, State> {
           style={{marginLeft: 20, marginRight: 20, fontSize: 36}}
           labelId="demo-simple-select-label"
           value={this.state.difficulty_option}
-          onChange={(event)=>{this.setState({difficulty_option:event.target.value},()=>{this.update_options()}) }}
+          onChange={(event)=>{this.setState({advanced_tournament:event.target.value}) }}
 
         >
             {difficulties.map((option, index) => (
@@ -218,7 +341,7 @@ export default class User extends React.Component<Props, State> {
               </MenuItem>
             ))}
           </Select> 
-          
+          <Button style={{marginLeft: 20}} onClick={this.advanced_search} variant="contained" color="primary"> Go! </Button>
         </div>
       }
       <div style={{textAlign: 'center', fontSize: 48}}> 

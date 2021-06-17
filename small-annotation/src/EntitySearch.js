@@ -283,7 +283,10 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
     }
-
+    
+    setCookie("topic","");
+    setCookie("random_difficulty_option","");
+    setCookie("random_category","");
 
     return <div style={{marginLeft: 30, marginBottom: 30}}> 
     <h1> Search for an Entity  </h1>
