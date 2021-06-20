@@ -47,7 +47,7 @@ let address = "/quel";
 const categories = ['Any','Literature', 'Social Science', 'History', 'Science', 'Fine Arts', 'Trash', 'Religion', 'Philosophy', 'Geography', 'Mythology', 'Current Events'];
 const difficulties = ['Any','Middle School','High School','College','Open'];
 
-let questions_per_page = 2;
+let questions_per_page = 10;
 
 export default class EntitySearch extends React.Component<Props, State> {
   state: State = {
@@ -281,10 +281,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
         outsideChevron
         chevronWidth={40}
       >
-        <div style={{ height: 200, background: '#EEE' }}>First card</div>
-        <div style={{ height: 200, background: '#EEE' }}>Second card</div>
-        <div style={{ height: 200, background: '#EEE' }}>Third card</div>
-        <div style={{ height: 200, background: '#EEE' }}>Fourth card</div>
+      {ret}
       </ItemsCarousel> </div>
 ;
   
