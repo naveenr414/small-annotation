@@ -319,18 +319,25 @@ def get_category(username):
 @app.get("/quel/entity/{entity_name}")
 def get_questions_entity(entity_name):
     print("Getting entity name! {}".format(entity_name))
+    start = time.time()
     entity_name = entity_name.strip("_").strip()
     e = entity_name.split("_")
     category = e[-2]
     difficulty = e[-1]
     entity_name = "_".join(e[:-2])
     questions = db.get_questions_by_entity(entity_name)
+    print("Getting questions took {} time".format(time.time()-start))
+    start = time.time()
     locations = questions['locations']
     questions = questions['questions']
     common_entities = db.get_entities(questions,category,difficulty)
-    print(common_entities,entity_name)
     common_entities = [i for i in common_entities if i.lower()!=entity_name.replace("_"," ").lower().strip()][:20]
+    print("Getting common entities took {} time".format(time.time()-start))
+    
     results = db.get_question_answers(questions,category,difficulty)
+
+    start = time.time()
+    print("Getting question answers took {} time".format(time.time()-start))
 
     year_freq = Counter([i['year'] for i in results])
     for year in range(2005,2018):

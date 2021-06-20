@@ -42,6 +42,7 @@ class WikiSummary(Base):
     __tablename__ = "wiki"
     id = Column(Integer, primary_key=True)
     title = Column(Text(), nullable=False, index=True)
+    title_lower = Column(Text(),index=True)
     text = Column(Text(), nullable=False)
     gender = Column(Text(),nullable=False)
     popularity= Column(Integer, index=True)
@@ -77,6 +78,7 @@ class Question(Base):
     question= Column(Text(), index=True)
     answer = Column(Text(), index=True)
     wiki_answer = Column(Text(), ForeignKey("wiki.title"),index=True)
+    wiki_answer_lower = Column(Text(),index=True)
     difficulty = Column(Text(),index=True)
     tournament = Column(Text(), index=True)
     year = Column(Integer, index=True)
@@ -159,7 +161,6 @@ class Database:
             session.bulk_insert_mappings(WikiSummary,objects)
             print("Wiki time {}".format(time.time()-start))
 
-
             # Mentions
             start = time.time()
             print("Populating mentions")
@@ -179,7 +180,7 @@ class Database:
                     confidence = sigmoid(mention['score'])
                     for span in mention['clusters']:
                             objects.append({'user_id':'system','question_id':wiki_obj['qanta_id'],'start':span[0],
-                                            'end':span[1],'wiki_page':mention['name'],'number':j,'content':span[2],'confidence':confidence})
+                                            'end':span[1],'wiki_page':mention['name'].lower(),'number':j,'content':span[2],'confidence':confidence})
                     j+=1
                 i+=1
                 if i%10000 == 0:
@@ -208,7 +209,8 @@ class Database:
             for i in range(len(all_qanta)):
                 objects.append({'id':all_qanta[i]['qanta_id'], 'question': all_qanta[i]['text'], 'category': all_qanta[i]['category'],'wiki_answer':all_qanta[i]['page'].replace("_", " "),
                                 'sub_category': all_qanta[i]['subcategory'],'difficulty': difficulty_map[all_qanta[i]['difficulty'].lower()],'tournament': all_qanta[i]['tournament'],
-                                'year': all_qanta[i]['year'],'answer':all_qanta[i]['answer'].replace("&lt;","<").replace("&gt;",">")})
+                                'year': all_qanta[i]['year'],'answer':all_qanta[i]['answer'].replace("&lt;","<").replace("&gt;",">"),
+                                'wiki_answer_lower':all_qanta[i]['page'].replace("_", " ").lower()})
                 if i%100000 == 0:
                     print(i,time.time()-start)   
                 if i%100000 == 0:
@@ -379,11 +381,11 @@ class Database:
             print("Entity {}".format(entity))
             entity = entity.strip()
             entity = entity.strip("_").replace("_"," ")
-            results = session.query(Mention).filter(and_(Mention.user_id == "system",func.lower(Mention.wiki_page)==entity.lower().replace(" ","_")))
+            results = session.query(Mention).filter(and_(Mention.user_id == "system",Mention.wiki_page==entity.replace(" ","_")))
             locations = {}
             for i in results:
                 locations[i.question_id] = (i.start,i.end)
-            questions = session.query(Question).filter(func.lower(Question.wiki_answer) == entity.lower().replace("_"," "))
+            questions = session.query(Question).filter(Question.wiki_answer == entity.replace("_"," ")).limit(50)
             for i in questions:
                 locations[i.id] = (-1,-1)
 

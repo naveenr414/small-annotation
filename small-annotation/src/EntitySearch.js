@@ -9,17 +9,45 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import {toNormalString,toNiceString} from "./Util";
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { Line } from "react-chartjs-2";
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
+import { Carousel } from 'react-responsive-carousel';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import Typography from '@material-ui/core/Typography';
+import ItemsCarousel from 'react-items-carousel';
 
 
 interface State {
   
 }
 
+const responsive = {
+  superLargeDesktop: {
+    // the naming can be any, depends on you.
+    breakpoint: { max: 4000, min: 3000 },
+    items: 5
+  },
+  desktop: {
+    breakpoint: { max: 3000, min: 1024 },
+    items: 3
+  },
+  tablet: {
+    breakpoint: { max: 1024, min: 464 },
+    items: 2
+  },
+  mobile: {
+    breakpoint: { max: 464, min: 0 },
+    items: 1
+  }
+};
+
+
 let address = "/quel";
 const categories = ['Any','Literature', 'Social Science', 'History', 'Science', 'Fine Arts', 'Trash', 'Religion', 'Philosophy', 'Geography', 'Mythology', 'Current Events'];
 const difficulties = ['Any','Middle School','High School','College','Open'];
 
-let questions_per_page = 5;
+let questions_per_page = 2;
 
 export default class EntitySearch extends React.Component<Props, State> {
   state: State = {
@@ -36,6 +64,11 @@ export default class EntitySearch extends React.Component<Props, State> {
     locations: {},
     year_freq: [],
     all_entities: false,
+    current_question: 0,
+  }
+  
+  update_current_question = (current_question) => {
+    this.setState({current_question});
   }
   
   render_year_freq = () => {
@@ -216,13 +249,45 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       }
       
       
-      let question = (<div style={{marginRight: 300, marginBottom: 50}}> 
+      let question = /*(<div style={{marginRight: 300, marginBottom: 50}}> 
         <b> Question: </b> {question_text} <br /> <b> Answer: </b> {answer} <br /> <b> Tournament: </b> {this.state.results[i]['tournament']} {this.state.results[i]['year']} <br />
-          {annotateButton} </div>);
+          {annotateButton} </div>)*/
+              (<div style={{marginBottom: 20, width: 400}}> <Card>
+      <CardContent>
+        <Typography variant="h5" component="h2">
+        Question {i+1}
+        </Typography>
+        <Typography  color="textSecondary">
+        {this.state.results[i]['tournament']} {this.state.results[i]['year']}
+        </Typography>
+        <Typography variant="body2" component="p">
+        {question_text.substring(0,200)+"..."}
+        </Typography>
+      </CardContent>
+      <CardActions>
+      {annotateButton}
+      </CardActions>
+    </Card> </div>);
       ret.push(question);        
     }
-    
-    return ret;
+        
+    return      <div style={{padding: '0 40px'}}> <ItemsCarousel
+        requestToChangeActive={this.update_current_question}
+        activeItemIndex={this.state.current_question}
+        numberOfCards={2}
+        gutter={20}
+        leftChevron={<button>{'<'}</button>}
+        rightChevron={<button>{'>'}</button>}
+        outsideChevron
+        chevronWidth={40}
+      >
+        <div style={{ height: 200, background: '#EEE' }}>First card</div>
+        <div style={{ height: 200, background: '#EEE' }}>Second card</div>
+        <div style={{ height: 200, background: '#EEE' }}>Third card</div>
+        <div style={{ height: 200, background: '#EEE' }}>Fourth card</div>
+      </ItemsCarousel> </div>
+;
+  
   }
   
   componentDidMount = () => {
@@ -268,7 +333,8 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
                 Next 
           </Button> 
       
-      {this.render_questions(this.state.start,this.state.start+questions_per_page)}
+      
+      {this.render_questions(this.state.start,this.state.start+questions_per_page)} 
 <Button style={{'border': '1px solid black'}} onClick={this.decrement}>
                 Previous 
           </Button> 
@@ -284,9 +350,22 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       return <Redirect to="/login" />;
     }
     
-    setCookie("topic","");
-    setCookie("random_difficulty_option","");
-    setCookie("random_category","");
+    if(getCookie("topic")!=="") {
+      this.setState({value: getCookie("topic"),difficulty_option: 'Any', category_option: 'Any'},()=>{this.get_results()});
+      setCookie("topic","");
+    }
+    
+    let carousel = (<Carousel>
+                <div>
+                    <p className="legend">Legend 1</p>
+                </div>
+                <div>
+                    <p className="legend">Legend 2</p>
+                </div>
+                <div>
+                    <p className="legend">Legend 3</p>
+                </div>
+            </Carousel>);
 
     return <div style={{marginLeft: 30, marginBottom: 30}}> 
     <h1> Search for an Entity  </h1>
@@ -294,7 +373,8 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
           </div>
           
           <div style={{ display: 'inline-block'}}> 
-
+    
+    {carousel}
         <div style={{fontSize: 20}}> 
           Search for a Wikipedia entity to see it's prevelance over time, co-occuring entities, and which questions reference that entity. <br />
           For example, to see what clues come up about Chinua Achebe, search for his name, and annotate questions about him or his books
@@ -364,7 +444,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
         {this.render_year_freq()}
         {this.render_entities()}
     {this.render_results()}
-  
+
         
     </div>
     
