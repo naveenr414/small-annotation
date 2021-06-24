@@ -3,13 +3,26 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import TextField from '@material-ui/core/TextField';
 import {toNormalString,toNiceString} from './Util';
 
-  let address = "/quel";
+let address = "/quel";
 
 export default class AutoComplete extends React.Component<Props, State> {
   
   state: State = {
     value: "",
-    autocorrect: [], 
+    autocorrect: [],
+  }
+  
+  componentWillReceiveProps(nextProps) {
+    // You don't have to do this check first, but it can help prevent an unneeded render
+    if (nextProps.initial_value !== this.state.value && nextProps.initial_value != this.props.initial_value && nextProps.initial_value != "") {
+      this.setState({ value: nextProps.initial_value });
+    }
+  }
+  
+  componentDidMount = () => {
+    if(this.props.initial_value != undefined) {
+      this.setState({value: this.props.initial_value});
+    }
   }
 
   updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {

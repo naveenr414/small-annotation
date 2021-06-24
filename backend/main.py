@@ -338,29 +338,31 @@ def get_questions_entity(entity_name):
 
     start = time.time()
     print("Getting question answers took {} time".format(time.time()-start))
-
     year_freq = Counter([i['year'] for i in results])
     for year in range(2005,2018):
         if year not in year_freq:
             year_freq[year] = 0
 
     years = [year_freq[i] for i in range(2005,2018)]
-    
-    chunked = {}
-    for i in range(len(results)):
-        chunked[results[i]['id']] = chunk_words(results[i]['question'])[1]
 
-    for i in locations:
-        if locations[i][0]!=-1:
-            if i in chunked:
-                start = chunked[i][locations[i][0]]
-                if locations[i][1]+1 != len(chunked[i]):
-                    end = chunked[i][locations[i][1]+1]
-                else:
-                    end = chunked[i][locations[i][1]]
-                locations[i] = (start,end)
-    return {'results':results,'entities':common_entities,
-            'locations':locations,'year_freq': years}
+    print("Chunking took {} time".format(time.time()-start))
+    start = time.time()
+
+##    chunked = {}
+##    for i in range(len(results)):
+##        chunked[results[i]['id']] = chunk_words(results[i]['question'])[1]
+##
+##    for i in locations:
+##        if locations[i][0]!=-1:
+##            if i in chunked:
+##                start = chunked[i][locations[i][0]]
+##                if locations[i][1]+1 != len(chunked[i]):
+##                    end = chunked[i][locations[i][1]+1]
+##                else:
+##                    end = chunked[i][locations[i][1]]
+##                locations[i] = (start,end)
+    print("Post processing took {} time".format(time.time()-start))
+    return {'results':results,'entities':common_entities,'year_freq': years}
 
 @app.get("/quel/tournament_entity/{entity_name}")
 def get_questions_entity(entity_name):

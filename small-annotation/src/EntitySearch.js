@@ -6,8 +6,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import {toNormalString,toNiceString} from "./Util";
-import Autocomplete from '@material-ui/lab/Autocomplete';
+import {toNormalString,toNiceString, categories,difficulties} from "./Util";
 import { Line } from "react-chartjs-2";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { Carousel } from 'react-responsive-carousel';
@@ -16,38 +15,15 @@ import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import ItemsCarousel from 'react-items-carousel';
+import AutoComplete from './Autocomplete';
+import Dropdown from './Dropdown';
 
 
 interface State {
   
 }
 
-const responsive = {
-  superLargeDesktop: {
-    // the naming can be any, depends on you.
-    breakpoint: { max: 4000, min: 3000 },
-    items: 5
-  },
-  desktop: {
-    breakpoint: { max: 3000, min: 1024 },
-    items: 3
-  },
-  tablet: {
-    breakpoint: { max: 1024, min: 464 },
-    items: 2
-  },
-  mobile: {
-    breakpoint: { max: 464, min: 0 },
-    items: 1
-  }
-};
-
-
 let address = "/quel";
-const categories = ['Any','Literature', 'Social Science', 'History', 'Science', 'Fine Arts', 'Trash', 'Religion', 'Philosophy', 'Geography', 'Mythology', 'Current Events'];
-const difficulties = ['Any','Middle School','High School','College','Open'];
-
-let questions_per_page = 10;
 
 export default class EntitySearch extends React.Component<Props, State> {
   state: State = {
@@ -61,10 +37,10 @@ export default class EntitySearch extends React.Component<Props, State> {
     value: "",
     autocorrect: [],
     entities: [],
-    locations: {},
     year_freq: [],
     all_entities: false,
     current_question: 0,
+    initial_search: "",
   }
   
   update_current_question = (current_question) => {
@@ -93,81 +69,6 @@ export default class EntitySearch extends React.Component<Props, State> {
     }
   }
   
-updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
-    this.setState({
-      value: value,
-    });
-
-
-        
-  
-    let current_target = toNormalString(value);
-    let tagged_word = current_target; 
-   
-    if (current_target !== "") {
-      
-      fetch(
-        address+"/autocorrect/" +
-          encodeURIComponent(current_target.replace(" ","_"))
-      )
-        .then((res) => res.json())
-        .then((res) => {
-          
-          let suggestions = res;
-          for(var i = 0;i<suggestions.length;i++) {
-            suggestions[i] = toNiceString(suggestions[i][0]+" ");
-          }
-            
-          if(suggestions.length<5 && current_target.length>0) {
-            let target_string = "";
-            let split_string = current_target.replace(/_$/,'').split("_");
-            for(var i = 0;i<split_string.length;i++) {
-              target_string+="%2B"+split_string[i];
-              if(i+1<split_string.length) {
-                target_string+="%20";
-              }
-            }
-            target_string+="&nhits=5";
-            fetch("/api/?q="+target_string).then((res2)=>res2.json()).then((res2)=>{
-              for(var i = 0;i<5-suggestions.length;i++) {
-                if(i<res2["hits"].length) {
-                  let name = res2["hits"][i].doc.clean_name;
-                  if(!suggestions.includes(name)){
-                    suggestions.push(name);
-                  }
-                  
-                }
-              }
-                            
-              for(var i = 0;i<suggestions.length;i++) {
-                suggestions[i] = toNiceString(suggestions[i]+" ");
-              }
-              
-              suggestions = Array.from(new Set(suggestions));
-              this.setState({ autocorrect: suggestions },function() {
-                return 0;
-              });
-            });
-          }
-          else {           
-            this.setState({ autocorrect: suggestions },function() {
-              return 0;
-            });
-          }
-          
-
-          
-          
-        });
-    }
-    else {
-      
-       this.setState({ autocorrect: [] });
-    }
-    
-
-  };
-  
   render_entities = () => {
     if(this.state.entities.length>0 && !this.state.loading) {
       
@@ -184,7 +85,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
           if(i<this.state.entities.length) {
             let entity = this.state.entities[i];
             let elem = (<td style={{textAlign: 'left',marginRight: 60, paddingRight: 60}}> <a target="_blank" href={"https://wikipedia.org/wiki/"+entity.replaceAll(" ","_")}> {entity} </a> 
-            <button onClick={()=>{this.setState({value: entity},()=>{this.get_results()})}}> Search </button> </td>);
+            <button onClick={()=>{this.setState({value: entity, initial_search: entity, difficulty_option: 'Any', category_option: 'Any', current_question: 0},()=>{this.get_results();})}}> Search </button> </td>);
             temp.push(elem);
           }
            i++;
@@ -210,7 +111,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       address+"/entity/"+this.state.value.replaceAll(" ","_")+"_"+this.state.category_option+"_"+this.state.difficulty_option
       ).then(res=>res.json())
       .then(res => {
-        this.setState({results: res['results'], entities: res['entities'],year_freq: res['year_freq'],loading: false, locations:res['locations'] });
+        this.setState({results: res['results'], entities: res['entities'],year_freq: res['year_freq'],loading: false, current_question: 0 });
         setCookie("entity","");
       })
   }
@@ -236,22 +137,9 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       let annotateButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",""); setCookie("entity",this.state.value.replaceAll("_"," ")+"_"+this.state.category_option+"_"+this.state.difficulty_option); }} variant="contained"><a href="/selected"> Annotate Question</a></Button>);
       let answer = this.state.results[i]['answer'];
       let question_id = this.state.results[i]['id'];
-      let loc = this.state.locations[question_id];
-      let question_text = this.state.results[i]['question'];
-      
-      if(loc[0] == -1) {
-        answer = (<span style={{backgroundColor: 'yellow'}}> {this.state.results[i]['answer']} </span>);
-      } else {
-        let begin = question_text.substring(0,loc[0]);
-        let middle = question_text.substring(loc[0],loc[1]);
-        let end = question_text.substring(loc[1]);
-        question_text = (<span> <span> {begin} </span> <span style={{backgroundColor: 'yellow'}}> {middle} </span>  <span> {end} </span> </span>);
-      }
-      
-      
-      let question = /*(<div style={{marginRight: 300, marginBottom: 50}}> 
-        <b> Question: </b> {question_text} <br /> <b> Answer: </b> {answer} <br /> <b> Tournament: </b> {this.state.results[i]['tournament']} {this.state.results[i]['year']} <br />
-          {annotateButton} </div>)*/
+      let question_text = this.state.results[i]['question'].substring(0,200)+"...";
+             
+      let question = 
               (<div style={{marginBottom: 20, width: 400}}> <Card>
       <CardContent>
         <Typography variant="h5" component="h2">
@@ -261,7 +149,10 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
         {this.state.results[i]['tournament']} {this.state.results[i]['year']}
         </Typography>
         <Typography variant="body2" component="p">
-        {question_text.substring(0,200)+"..."}
+        {question_text}
+        </Typography>
+        <Typography variant="body2" component="p">
+        <b> Answer: </b> {answer}
         </Typography>
       </CardContent>
       <CardActions>
@@ -292,23 +183,13 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       let e = getCookie("entity").split("_");
       this.setState({
         value: e[0],
+        initial_search: e[0],
         category_option: e[1],
         difficulty_option: e[2],
       },()=>{this.get_results()});
-    }
-  }
-  
-  decrement = () => {
-    if(this.state.start-questions_per_page>=0){
-      this.setState({start: this.state.start-questions_per_page});
-    }
-  }
-  
-    
-
-  increment = () => {
-    if(this.state.start+questions_per_page<=this.state.results.length ){ 
-      this.setState({start: this.state.start+questions_per_page});
+    } 
+    else if(getCookie("topic")!="") {
+      this.setState({value: getCookie("topic"),initial_search: getCookie("topic"),difficulty_option: 'Any', category_option: 'Any'},()=>{this.get_results(); setCookie("topic","");});
     }
   }
   
@@ -322,22 +203,7 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
     }
     else {
       return <div> 
-        <div> Showing {this.state.start+1}-{Math.min(this.state.start+questions_per_page,this.state.results.length)} of {this.state.results.length} </div>  
-          <Button style={{'border': '1px solid black'}} onClick={this.decrement}>
-                Previous 
-          </Button> 
-          <Button style={{'border': '1px solid black'}} onClick={this.increment}>
-                Next 
-          </Button> 
-      
-      
-      {this.render_questions(this.state.start,this.state.start+questions_per_page)} 
-<Button style={{'border': '1px solid black'}} onClick={this.decrement}>
-                Previous 
-          </Button> 
-          <Button style={{'border': '1px solid black'}} onClick={this.increment}>
-                Next 
-          </Button> 
+      {this.render_questions(0,this.state.results.length)} 
       </div>;
     }
   }
@@ -347,102 +213,34 @@ updateAutocorrect = (event: React.ChangeEvent<{}>, value: any) => {
       return <Redirect to="/login" />;
     }
     
-    if(getCookie("topic")!=="") {
-      this.setState({value: getCookie("topic"),difficulty_option: 'Any', category_option: 'Any'},()=>{this.get_results()});
-      setCookie("topic","");
-    }
     
-    let carousel = (<Carousel>
-                <div>
-                    <p className="legend">Legend 1</p>
-                </div>
-                <div>
-                    <p className="legend">Legend 2</p>
-                </div>
-                <div>
-                    <p className="legend">Legend 3</p>
-                </div>
-            </Carousel>);
-
     return <div style={{marginLeft: 30, marginBottom: 30}}> 
     <h1> Search for an Entity  </h1>
           <div style={{marginBottom: 20}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>
           </div>
           
-          <div style={{ display: 'inline-block'}}> 
-    
-    {carousel}
-        <div style={{fontSize: 20}}> 
+        <div style={{fontSize: 20, display: 'inline-block'}}> 
           Search for a Wikipedia entity to see it's prevelance over time, co-occuring entities, and which questions reference that entity. <br />
           For example, to see what clues come up about Chinua Achebe, search for his name, and annotate questions about him or his books
         </div>
-
-        <Autocomplete
-          style={{ fontSize: 24, width: 400, marginBottom: 30, display: 'inline-block', verticalAlign: 'middle', marginRight: 10 }}
-          value={this.state.value}
-          onInputChange={this.updateAutocorrect}  
-          getOptionLabel={(option) => option}
-          options={this.state.autocorrect}
-          renderInput={(params) => <TextField {...params} label="Entity" 
-          style={{layout: 'inline'}}
-          onChange={(event: any,value: any,reason: any) =>{if(reason === "select-option"  ) {
-          this.setState({value: value},()=>{this.get_results()})}}}
-          onKeyDown={({key})=>{if(key=='Enter'){this.get_results()}}} 
-          />}
-          openOnFocus={true}
-        />
+        <AutoComplete update_value={(value)=>{this.setState({value})}} initial_value={this.state.initial_search} />
         
         <div style={{marginTop: 10, display: 'inline-block'}}> 
-        
-        Category: 
-        
-        <Select id="hello"
-          style={{marginLeft: 20, marginRight: 20}}
-          labelId="demo-simple-select-label"
-          value={this.state.category_option}
-          onChange={(event)=>{this.setState({category_option:event.target.value})}}
-        >
-          {categories.map((option, index) => (
-            <MenuItem
-              value={option}
-            >
-              {option}
-            </MenuItem>
-          ))}
-        </Select>
-        
-        Difficulty: 
-        
-        <Select
-          style={{marginLeft: 20, marginRight: 20}}
-          labelId="demo-simple-select-label"
-          value={this.state.difficulty_option}
-          onChange={(event)=>{this.setState({difficulty_option:event.target.value})}}
-
-        >
-          {difficulties.map((option, index) => (
-            <MenuItem
-              value={option}
-            >
-              {option}
-            </MenuItem>
-          ))}
-        </Select>
-        <Button style={{'border': '1px solid black'}} onClick={this.get_results}>
-          Search 
-        </Button> 
-        
+          Category: 
+          <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={"Any"} options={categories} />
+          
+          Difficulty: 
+          <Dropdown update_value={(difficulty_option)=>{this.setState({difficulty_option})}} default_value={"Any"} options={difficulties.concat(["Any"])} />
+          
+          <Button style={{'border': '1px solid black'}} onClick={this.get_results}>
+            Search 
+          </Button> 
         </div> 
-        
-        </div> 
-        
         <br /> 
-        
         {this.render_year_freq()}
         {this.render_entities()}
-    {this.render_results()}
+        {this.render_results()}
 
-        
     </div>
     
   }
