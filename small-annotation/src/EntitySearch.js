@@ -7,14 +7,13 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import {toNormalString,toNiceString, categories,difficulties} from "./Util";
-import { Line } from "react-chartjs-2";
+import LineGraph from "./LineGraph";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
-import { Carousel } from 'react-responsive-carousel';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
-import ItemsCarousel from 'react-items-carousel';
+import Carousel from './Carousel';
 import AutoComplete from './Autocomplete';
 import Dropdown from './Dropdown';
 
@@ -53,19 +52,8 @@ export default class EntitySearch extends React.Component<Props, State> {
       for(var i = 2005;i<=2017;i++) {
         years.push(i.toString());
       }
-       let data = {
-         labels: years,
-         datasets: [
-           {
-            label: "Entity Frequency by Year",
-            data: this.state.year_freq,
-            fill: true,
-            backgroundColor: "rgba(75,192,192,0.2)",
-            borderColor: "rgba(75,192,192,1)",
-           }
-         ]
-         };
-       return <Line width={1500} height={200} data={data} />;
+  
+      return <LineGraph labels={years} data={this.state.year_freq} label={"Entity Frequency by Year"} />
     }
   }
   
@@ -162,18 +150,7 @@ export default class EntitySearch extends React.Component<Props, State> {
       ret.push(question);        
     }
         
-    return      <div style={{padding: '0 40px'}}> <ItemsCarousel
-        requestToChangeActive={this.update_current_question}
-        activeItemIndex={this.state.current_question}
-        numberOfCards={2}
-        gutter={20}
-        leftChevron={<button>{'<'}</button>}
-        rightChevron={<button>{'>'}</button>}
-        outsideChevron
-        chevronWidth={40}
-      >
-      {ret}
-      </ItemsCarousel> </div>
+    return <Carousel cards={ret} />    
 ;
   
   }
