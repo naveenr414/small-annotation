@@ -97,7 +97,7 @@ export default class User extends React.Component<Props, State> {
       
       <div> What would you like to explore? </div>
       
-      <div style={{marginBottom: "2%"}}> I would like to explore 
+      <div style={{marginBottom: "2%"}}> <span style={{marginRight: 20}}> I would like to explore </span>
         <AutoComplete update_value={(value)=>{this.setState({value})}} />      
         <Button style={{marginLeft: 20}} onClick={this.explore_topic} variant="contained" color="primary"> Go! </Button>
       </div>

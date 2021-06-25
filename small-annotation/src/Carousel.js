@@ -22,7 +22,7 @@ export default class LineGraph extends React.Component<Props, State> {
       return <div style={{padding: '0 40px'}}> <ItemsCarousel
         requestToChangeActive={this.update_current_question}
         activeItemIndex={this.state.current_question}
-        numberOfCards={2}
+        numberOfCards={4}
         gutter={20}
         leftChevron={<button>{'<'}</button>}
         rightChevron={<button>{'>'}</button>}

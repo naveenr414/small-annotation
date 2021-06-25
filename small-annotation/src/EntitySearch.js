@@ -16,6 +16,7 @@ import Typography from '@material-ui/core/Typography';
 import Carousel from './Carousel';
 import AutoComplete from './Autocomplete';
 import Dropdown from './Dropdown';
+import BarGraph from './BarGraph';
 
 
 interface State {
@@ -40,6 +41,10 @@ export default class EntitySearch extends React.Component<Props, State> {
     all_entities: false,
     current_question: 0,
     initial_search: "",
+    definition: "",
+    search: "",
+    common_definitions: {},
+    categories: {},
   }
   
   update_current_question = (current_question) => {
@@ -58,39 +63,28 @@ export default class EntitySearch extends React.Component<Props, State> {
   }
   
   render_entities = () => {
-    if(this.state.entities.length>0 && !this.state.loading) {
-      
-      let table = [];
-      let i = 0;
-      let top = this.state.entities.length;
-      if(!this.state.all_entities) {
-        top = 4;
-      }
-      while(i<top){ 
-        let temp = [];
-        let next = i+4;
-        while(i<next) {
-          if(i<this.state.entities.length) {
-            let entity = this.state.entities[i];
-            let elem = (<td style={{textAlign: 'left',marginRight: 60, paddingRight: 60}}> <a target="_blank" href={"https://wikipedia.org/wiki/"+entity.replaceAll(" ","_")}> {entity} </a> 
-            <button onClick={()=>{this.setState({value: entity, initial_search: entity, difficulty_option: 'Any', category_option: 'Any', current_question: 0},()=>{this.get_results();})}}> Search </button> </td>);
-            temp.push(elem);
-          }
-           i++;
-
-        }
-        
-        table.push(<tr> {temp} </tr>);
-      }
-      
-      return <div> Most common co-occurring entities <table>
-      {table}
-      </table> <br /> 
-      <Button style={{'border': '1px solid black'}} onClick={()=>{this.setState({all_entities: !this.state.all_entities})}}>
-        {this.state.all_entities? 'Show Less': 'Show More'} 
-        </Button> 
-      </div> 
+    let entities = [];
+    for(var i = 0;i<this.state.entities.length;i++) {
+      let entity = this.state.entities[i];
+      let searchButton = (<Button style={{marginRight: 30}} onClick={()=>{this.setState({value: entity, initial_search: entity, difficulty_option: 'Any', category_option: 'Any', current_question: 0},()=>{this.get_results()})}} variant="contained"> Search </Button>);
+      let definition = this.state.common_definitions[this.state.entities[i]].substring(0,200);
+      let card = (<div style={{marginBottom: 20, width: 400}}> <Card>
+      <CardContent>
+        <Typography variant="h5" component="h2">
+        {entity}
+        </Typography>
+        <Typography variant="body2" component="p">
+        {definition}
+        </Typography>
+      </CardContent>
+      <CardActions>
+      {searchButton}
+      </CardActions>
+    </Card> </div>);
+      entities.push(card);
     }
+    
+    return <Carousel cards={entities} />
   }
   
   get_results = () => {
@@ -99,7 +93,7 @@ export default class EntitySearch extends React.Component<Props, State> {
       address+"/entity/"+this.state.value.replaceAll(" ","_")+"_"+this.state.category_option+"_"+this.state.difficulty_option
       ).then(res=>res.json())
       .then(res => {
-        this.setState({results: res['results'], entities: res['entities'],year_freq: res['year_freq'],loading: false, current_question: 0 });
+        this.setState({results: res['results'], search: this.state.value.replaceAll("_"," "),entities: res['entities'],year_freq: res['year_freq'],loading: false, current_question: 0, definition: res['definition'], common_definitions: res['common_definitions'],categories: res['categories']});
         setCookie("entity","");
       })
   }
@@ -185,6 +179,18 @@ export default class EntitySearch extends React.Component<Props, State> {
     }
   }
   
+  render_entity_info = () => {
+    if(!this.state.loading && this.state.results.length>0) {
+      return (<div> <b> {this.state.search} </b> - {this.state.definition}.. </div>)
+    }
+  }
+  
+  render_bar_graph = () => {
+    if(this.state.results.length>0) {
+      return <BarGraph data={this.state.categories} title='Categories' />
+    }
+  }
+  
   render() {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
@@ -196,7 +202,7 @@ export default class EntitySearch extends React.Component<Props, State> {
           <div style={{marginBottom: 20}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>
           </div>
           
-        <div style={{fontSize: 20, display: 'inline-block'}}> 
+        <div style={{fontSize: 20, display: 'inline-block', marginRight: 20}}> 
           Search for a Wikipedia entity to see it's prevelance over time, co-occuring entities, and which questions reference that entity. <br />
           For example, to see what clues come up about Chinua Achebe, search for his name, and annotate questions about him or his books
         </div>
@@ -214,8 +220,10 @@ export default class EntitySearch extends React.Component<Props, State> {
           </Button> 
         </div> 
         <br /> 
-        {this.render_year_freq()}
+        {this.render_entity_info()}
         {this.render_entities()}
+        {this.render_bar_graph()}
+        {this.render_year_freq()}
         {this.render_results()}
 
     </div>

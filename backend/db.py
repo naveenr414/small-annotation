@@ -324,6 +324,22 @@ class Database:
         print("Took {} time with {} count {}".format(time.time()-start,count,word))
         return [(names[i].replace("&amp;","&"),summaries[i],ids[i]) for i in range(len(names))]
 
+    def get_definition(self,word):
+        with self._session_scope as session:
+            word = word.strip().replace(" ", "_").lower().strip("_")
+            print("Getting definition for word {}".format(word))
+            results = session.query(WikiSummary).filter(WikiSummary.title == word).limit(1)
+            return [i.text for i in results]+['']
+
+    def multiple_definitions(self,word_list):
+        with self._session_scope as session:
+            d = {}
+            for i in word_list:
+                d[i] = session.query(WikiSummary).filter(WikiSummary.title == i.replace(" ", "_").lower().strip()).limit(1)
+                d[i] = ([k.text for k in d[i]]+[''])[0]
+
+            return d
+    
     def get_all_mentions(self):
         with self._session_scope as session:
             results = session.query(Mention).filter(Mention.user_id!="system")
@@ -398,7 +414,7 @@ class Database:
             
             for i in question_ids:
                 results = session.query(Question).filter(Question.id==i).limit(1)
-                data += [{'question':i.question,'answer':i.answer.replace("{","").replace("}",""),'difficulty': i.difficulty, 'tournament': i.tournament,'id':i.id,'year':i.year}
+                data += [{'question':i.question,'answer':i.answer.replace("{","").replace("}",""),'difficulty': i.difficulty, 'tournament': i.tournament,'id':i.id,'year':i.year,'category':i.category}
                          for i in results if (category == 'Any' or category.lower() == i.category.lower()) and (difficulty == 'Any' or i.difficulty.lower() == difficulty.lower())]
 
             return data

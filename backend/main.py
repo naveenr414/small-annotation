@@ -332,11 +332,16 @@ def get_questions_entity(entity_name):
     questions = questions['questions']
     common_entities = db.get_entities(questions,category,difficulty)
     common_entities = [i for i in common_entities if i.lower()!=entity_name.replace("_"," ").lower().strip()][:20]
+    common_entitiy_definitions = db.multiple_definitions(common_entities)
+    
     print("Getting common entities took {} time".format(time.time()-start))
     
     results = db.get_question_answers(questions,category,difficulty)
 
+    category_freq = dict(Counter([i['category'] for i in results]))
+
     start = time.time()
+    
     print("Getting question answers took {} time".format(time.time()-start))
     year_freq = Counter([i['year'] for i in results])
     for year in range(2005,2018):
@@ -362,7 +367,8 @@ def get_questions_entity(entity_name):
 ##                    end = chunked[i][locations[i][1]]
 ##                locations[i] = (start,end)
     print("Post processing took {} time".format(time.time()-start))
-    return {'results':results,'entities':common_entities,'year_freq': years}
+    return {'results':results,'entities':common_entities,'year_freq': years,'definition':db.get_definition(entity_name),
+            'common_definitions':common_entitiy_definitions,'categories':category_freq}
 
 @app.get("/quel/tournament_entity/{entity_name}")
 def get_questions_entity(entity_name):
@@ -490,6 +496,10 @@ def get_all_mentions():
 def get_autocorrect(word):
     word = word.replace("&","&amp;")    
     return db.get_autocorrect(word)
+
+@app.get("/quel/definition/{word}")
+def get_definition(word):
+    return db.get_definition(word)[0]
 
 @app.get("/quel/status")
 def status_check():
