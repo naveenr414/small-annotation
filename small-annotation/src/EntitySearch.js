@@ -6,7 +6,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import {toNormalString,toNiceString, categories,difficulties} from "./Util";
+import {toNormalString,toNiceString, categories,difficulties,emptyOrValue} from "./Util";
 import LineGraph from "./LineGraph";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import Card from '@material-ui/core/Card';
@@ -45,6 +45,8 @@ export default class EntitySearch extends React.Component<Props, State> {
     search: "",
     common_definitions: {},
     categories: {},
+    default_category: "Any",
+    default_difficulty: "Any",
   }
   
   update_current_question = (current_question) => {
@@ -159,7 +161,10 @@ export default class EntitySearch extends React.Component<Props, State> {
       },()=>{this.get_results()});
     } 
     else if(getCookie("topic")!="") {
-      this.setState({value: getCookie("topic"),initial_search: getCookie("topic"),difficulty_option: 'Any', category_option: 'Any'},()=>{this.get_results(); setCookie("topic","");});
+      let difficulty_option = emptyOrValue(getCookie("difficulty_option"),'Any');
+      let category_option = emptyOrValue(getCookie("category_option"),'Any');      
+      
+      this.setState({value: getCookie("topic"),initial_search: getCookie("topic"),difficulty_option,category_option,default_difficulty: difficulty_option, default_category: category_option},()=>{this.get_results(); setCookie("topic",""); setCookie("difficulty_option",""); setCookie("category_option",""); });
     }
   }
   
@@ -180,7 +185,7 @@ export default class EntitySearch extends React.Component<Props, State> {
   }
   
   render_entity_info = () => {
-    if(!this.state.loading && this.state.results.length>0) {
+    if(!this.state.loading && this.state.definition!=="") {
       return (<div> <b> {this.state.search} </b> - {this.state.definition}.. </div>)
     }
   }
@@ -211,10 +216,10 @@ export default class EntitySearch extends React.Component<Props, State> {
           <span style={{marginRight: 20}}> <AutoComplete on_enter={this.get_results} update_value={(value)=>{this.setState({value})}} initial_value={this.state.initial_search} /> </span>
 
           Category: 
-          <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={"Any"} options={categories} fontSize={24} />
+          <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={this.state.default_category} options={categories} fontSize={24} />
           
           Difficulty: 
-          <Dropdown update_value={(difficulty_option)=>{this.setState({difficulty_option})}} default_value={"Any"} options={difficulties.concat(["Any"])} fontSize={24} />
+          <Dropdown update_value={(difficulty_option)=>{this.setState({difficulty_option})}} default_value={this.state.default_difficulty} options={difficulties.concat(["Any"])} fontSize={24} />
           
           <Button style={{'border': '1px solid black'}} onClick={this.get_results}>
             Search 

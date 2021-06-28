@@ -28,7 +28,7 @@ export default class User extends React.Component<Props, State> {
     tournament_option: 'Maryland Fall',
     button_clicked: "",
     advanced_difficulty: 'High School',
-    advanced_year: 2015,
+    advanced_year: "Any",
     advanced_category: 'Literature',
     advanced_tournament: 'Maryland Fall',
   }
@@ -66,7 +66,14 @@ export default class User extends React.Component<Props, State> {
   }
   
   advanced_search = () => {
-    
+    if(this.state.advanced_value!="") {
+      setCookie("topic",this.state.advanced_value);
+      setCookie("tournament_option",this.state.advanced_tourament);
+      setCookie("year_option",this.state.advanced_year);
+      setCookie("difficulty_option", this.state.advanced_difficulty);
+      setCookie("category_option",this.state.advanced_category);
+      this.setState({});
+    }
   }
   
   render() {
@@ -74,13 +81,13 @@ export default class User extends React.Component<Props, State> {
       return <Redirect to="/login" />;
     }
     
-    if(getCookie("topic")!="") {
+    if(getCookie("topic")!="" && (getCookie("year_option")==="Any" || getCookie("year_option") == "")) {
       return <Redirect to="/entitysearch" />
     }
     else if(getCookie("random_difficulty_option")!=="") {
       //return <Redirect to="/entitysearch" />
     }
-    else if(getCookie("tournament_option")!=="") {
+    else if(getCookie("year_option")!=="Any" && getCookie("year_option")!=="") {
       return <Redirect to="/packetsearch" />
     }
     
@@ -131,8 +138,8 @@ export default class User extends React.Component<Props, State> {
           Category: <Dropdown update_value={(advanced_category)=>{this.setState({advanced_category})}} default_value={"Literature"} options={categories} />  <br />
               
          Tournament: 
-         <Dropdown update_value={(advanced_year)=>{this.setState({advanced_year})}} default_value={2015} options={Object.keys(tournaments[this.state.advanced_difficulty])} />
-         <Dropdown update_value={(advanced_tournament)=>{this.setState({advanced_tournament})}} default_value={"Maryland Fall"} options={undefinedOrEmpty(tournaments[this.state.advanced_difficulty][this.state.advanced_year])} />
+         <Dropdown update_value={(advanced_year)=>{this.setState({advanced_year})}} default_value={'Any'} options={Object.keys(tournaments[this.state.advanced_difficulty]).concat(['Any'])} />
+         <Dropdown update_value={(advanced_tournament)=>{this.setState({advanced_tournament})}} default_value={""} options={undefinedOrEmpty(tournaments[this.state.advanced_difficulty][this.state.advanced_year])} />
            
           <Button style={{marginLeft: 20}} onClick={this.advanced_search} variant="contained" color="primary"> Go! </Button>
         </div>

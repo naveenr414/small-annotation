@@ -183,7 +183,7 @@ class Database:
                     confidence = sigmoid(mention['score'])
                     for span in mention['clusters']:
                             objects.append({'user_id':'system','question_id':wiki_obj['qanta_id'],'start':span[0],
-                                            'end':span[1],'wiki_page':mention['name'].lower(),'number':j,'content':span[2],'confidence':confidence})
+                                            'end':span[1],'wiki_page':unidecode.unidecode(mention['name'].lower()),'number':j,'content':span[2],'confidence':confidence})
                     j+=1
                 i+=1
                 if i%10000 == 0:
@@ -331,8 +331,12 @@ class Database:
         with self._session_scope as session:
             word = word.strip().replace(" ", "_").lower().strip("_")
             print("Getting definition for word {}".format(word))
-            results = session.query(WikiSummary).filter(WikiSummary.title == word).limit(1)
-            return [i.text for i in results]+['']
+            results = session.query(WikiSummary).filter(WikiSummary.title == word)
+            results = [(i.text,i.popularity) for i in results]
+            results = sorted(results,key=lambda k: k[1])
+            if len(results)>0:
+                return [results[-1][0]]
+            return ['']
 
     def multiple_definitions(self,word_list):
         with self._session_scope as session:

@@ -112,6 +112,10 @@ export function undefinedOrEmpty(l) {
   return l==undefined?[]:l;
 }
 
+export function emptyOrValue(a,b) {
+  return a==""?b:a;
+}
+
 export function setCookie(cname: string, cvalue: any, exdays: number) {
     var d = new Date();
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));

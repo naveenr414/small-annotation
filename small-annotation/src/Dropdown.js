@@ -7,6 +7,13 @@ export default class Dropdown extends React.Component<Props,State> {
     value: this.props.default_value,
   }
   
+  componentWillReceiveProps(nextProps) {
+    // You don't have to do this check first, but it can help prevent an unneeded render
+    if (nextProps.default_value !== this.props.default_value) {
+      this.setState({ value: nextProps.default_value });
+    }
+  }
+  
   render = () => {
     return (<Select
           style={{marginLeft: 20, marginRight: 20, fontSize: this.props.fontSize==undefined?36:this.props.fontSize}}
