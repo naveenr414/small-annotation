@@ -98,7 +98,7 @@ export default class User extends React.Component<Props, State> {
       <div> What would you like to explore? </div>
       
       <div style={{marginBottom: "2%"}}> <span style={{marginRight: 20}}> I would like to explore </span>
-        <AutoComplete update_value={(value)=>{this.setState({value})}} />      
+        <AutoComplete update_value={(value)=>{this.setState({value})}} on_enter={this.explore_topic} />      
         <Button style={{marginLeft: 20}} onClick={this.explore_topic} variant="contained" color="primary"> Go! </Button>
       </div>
       
@@ -125,7 +125,7 @@ export default class User extends React.Component<Props, State> {
       
       {this.state.advanced_search && 
         <div>
-          Topic (blank for any topic): <AutoComplete update_value={(advanced_value)=>{this.setState({advanced_value})}} />    
+          Topic (blank for any topic): <AutoComplete on_enter={this.advanced_search} update_value={(advanced_value)=>{this.setState({advanced_value})}} />    
           <br />
           Difficulty: <Dropdown update_value={(advanced_difficulty)=>{this.setState({advanced_difficulty})}} default_value={"High School"} options={difficulties} />  <br />
           Category: <Dropdown update_value={(advanced_category)=>{this.setState({advanced_category})}} default_value={"Literature"} options={categories} />  <br />

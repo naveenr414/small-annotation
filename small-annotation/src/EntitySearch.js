@@ -68,7 +68,7 @@ export default class EntitySearch extends React.Component<Props, State> {
       let entity = this.state.entities[i];
       let searchButton = (<Button style={{marginRight: 30}} onClick={()=>{this.setState({value: entity, initial_search: entity, difficulty_option: 'Any', category_option: 'Any', current_question: 0},()=>{this.get_results()})}} variant="contained"> Search </Button>);
       let definition = this.state.common_definitions[this.state.entities[i]].substring(0,200);
-      let card = (<div style={{marginBottom: 20, width: 400}}> <Card>
+      let card = (<div style={{marginBottom: 20, width: "100%"}}> <Card>
       <CardContent>
         <Typography variant="h5" component="h2">
         {entity}
@@ -84,7 +84,9 @@ export default class EntitySearch extends React.Component<Props, State> {
       entities.push(card);
     }
     
-    return <Carousel cards={entities} />
+    if(entities.length>0 && !this.state.loading) {
+      return <div> <div style={{textAlign: 'center', marginTop: 20, marginBottom: 20, fontSize: 24}}> Similar/Co-Occuring Entities </div> <Carousel cards={entities} /> </div>
+    }
   }
   
   get_results = () => {
@@ -98,7 +100,7 @@ export default class EntitySearch extends React.Component<Props, State> {
       })
   }
   
-  render_questions = (start,end) => {
+  render_questions = () => {
     let ret = [];
     let ids = [];
     for(var i = 0;i<this.state.results.length;i++) {
@@ -112,17 +114,14 @@ export default class EntitySearch extends React.Component<Props, State> {
         return dup;
       }
 
-    for(var i = start;i<end;i++) {
-      if(i>=this.state.results.length) {
-        return ret; 
-      }
+    for(var i = 0;i<this.state.results.length;i++) {
       let annotateButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",""); setCookie("entity",this.state.value.replaceAll("_"," ")+"_"+this.state.category_option+"_"+this.state.difficulty_option); }} variant="contained"><a href="/selected"> Annotate Question</a></Button>);
       let answer = this.state.results[i]['answer'];
       let question_id = this.state.results[i]['id'];
       let question_text = this.state.results[i]['question'].substring(0,200)+"...";
              
       let question = 
-              (<div style={{marginBottom: 20, width: 400}}> <Card>
+              (<div style={{marginBottom: 20, width: "100%"}}> <Card>
       <CardContent>
         <Typography variant="h5" component="h2">
         Question {i+1}
@@ -174,6 +173,7 @@ export default class EntitySearch extends React.Component<Props, State> {
     }
     else {
       return <div> 
+      <div style={{textAlign: 'center', marginTop: 20, marginBottom: 20, fontSize: 24}}> {this.state.results.length} Questions featuring {this.state.search} </div>
       {this.render_questions(0,this.state.results.length)} 
       </div>;
     }
@@ -186,7 +186,7 @@ export default class EntitySearch extends React.Component<Props, State> {
   }
   
   render_bar_graph = () => {
-    if(this.state.results.length>0) {
+    if(this.state.results.length>0 && !this.state.loading) {
       return <BarGraph data={this.state.categories} title='Categories' />
     }
   }
@@ -206,14 +206,15 @@ export default class EntitySearch extends React.Component<Props, State> {
           Search for a Wikipedia entity to see it's prevelance over time, co-occuring entities, and which questions reference that entity. <br />
           For example, to see what clues come up about Chinua Achebe, search for his name, and annotate questions about him or his books
         </div>
-        <AutoComplete update_value={(value)=>{this.setState({value})}} initial_value={this.state.initial_search} />
         
         <div style={{marginTop: 10, display: 'inline-block'}}> 
+          <span style={{marginRight: 20}}> <AutoComplete on_enter={this.get_results} update_value={(value)=>{this.setState({value})}} initial_value={this.state.initial_search} /> </span>
+
           Category: 
-          <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={"Any"} options={categories} />
+          <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={"Any"} options={categories} fontSize={24} />
           
           Difficulty: 
-          <Dropdown update_value={(difficulty_option)=>{this.setState({difficulty_option})}} default_value={"Any"} options={difficulties.concat(["Any"])} />
+          <Dropdown update_value={(difficulty_option)=>{this.setState({difficulty_option})}} default_value={"Any"} options={difficulties.concat(["Any"])} fontSize={24} />
           
           <Button style={{'border': '1px solid black'}} onClick={this.get_results}>
             Search 

@@ -19,11 +19,17 @@ export default class BarGraph extends React.Component<Props, State> {
     
     return      <Bar
           data={data}
+          height={50}
           options={{
             title:{
               display:true,
               text:this.props.title,
               fontSize:20
+            },
+            scales: {
+              xAxes: [{
+              barPercentage: 0.4
+              }]
             },
             legend:{
               display:true,

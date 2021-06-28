@@ -102,7 +102,8 @@ export default class AutoComplete extends React.Component<Props, State> {
             onInputChange={this.updateAutocorrect}  
             getOptionLabel={(option) => option}
             options={this.state.autocorrect}
-            renderInput={(params) => <TextField {...params}
+            
+            renderInput={(params) => <TextField {...params} onKeyPress={(e) => {if(e.key == 'Enter') {this.props.on_enter() } }}
             />}
             openOnFocus={true}
           />);

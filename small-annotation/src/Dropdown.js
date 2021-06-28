@@ -9,7 +9,7 @@ export default class Dropdown extends React.Component<Props,State> {
   
   render = () => {
     return (<Select
-          style={{marginLeft: 20, marginRight: 20, fontSize: 36}}
+          style={{marginLeft: 20, marginRight: 20, fontSize: this.props.fontSize==undefined?36:this.props.fontSize}}
           labelId="demo-simple-select-label"
           value={this.state.value}
           onChange={(event)=>{this.setState({value:event.target.value},()=>{this.props.update_value(this.state.value)})}}

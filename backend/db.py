@@ -142,6 +142,7 @@ class Database:
             
             objects = []
             i = 0
+            wiki_pages = {}
             while True:
                 line = w.readline()
                 if line.strip() == '':
@@ -150,8 +151,10 @@ class Database:
                 gender = 'none'
                 if wiki_obj['name'].replace("_"," ") in gender_list:
                     gender = gender_list[wiki_obj['name'].replace("_"," ")]
-                
-                objects.append({'id':int(wiki_obj['id']),'title':wiki_obj['name'],'text':wiki_obj['summary'],'popularity':wiki_obj['popularity'],'gender':gender})
+
+                if wiki_obj['name'] not in wiki_pages or wiki_pages[wiki_obj['name']]<wiki_obj['popularity']:
+                    objects.append({'id':int(wiki_obj['id']),'title':wiki_obj['name'],'text':wiki_obj['summary'],'popularity':wiki_obj['popularity'],'gender':gender})
+                    wiki_pages[wiki_obj['name']] = wiki_obj['popularity']
                 i+=1
 
                 if i%100000 == 0:
@@ -397,7 +400,7 @@ class Database:
             print("Entity {}".format(entity))
             entity = entity.strip()
             entity = entity.strip("_").replace("_"," ")
-            results = session.query(Mention).filter(and_(Mention.user_id == "system",Mention.wiki_page==entity.replace(" ","_")))
+            results = session.query(Mention).filter(and_(Mention.user_id == "system",Mention.wiki_page==entity.replace(" ","_").lower())).limit(100)
             locations = {}
             for i in results:
                 locations[i.question_id] = (i.start,i.end)

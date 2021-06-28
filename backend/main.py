@@ -331,7 +331,13 @@ def get_questions_entity(entity_name):
     locations = questions['locations']
     questions = questions['questions']
     common_entities = db.get_entities(questions,category,difficulty)
-    common_entities = [i for i in common_entities if i.lower()!=entity_name.replace("_"," ").lower().strip()][:20]
+    temp = []
+    for i in common_entities:
+        if i.lower()!=entity_name.replace("_", " ").lower().strip():
+            if i.lower() not in ["ftps","file transfer protocol"]:
+                print(i)
+                temp.append(i)
+    common_entities = temp
     common_entitiy_definitions = db.multiple_definitions(common_entities)
     
     print("Getting common entities took {} time".format(time.time()-start))

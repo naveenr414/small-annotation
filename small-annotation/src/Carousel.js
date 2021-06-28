@@ -11,15 +11,16 @@ export default class LineGraph extends React.Component<Props, State> {
   }
 
   componentWillReceiveProps(nextProps) {
-    // You don't have to do this check first, but it can help prevent an unneeded render
-    if (nextProps.cards !== this.props.cards) {
+    console.log(nextProps);
+    console.log(this.props.cards);
+    if (nextProps !== this.props.cards) {
       this.setState({ current_question: 0 });
     }
   }
 
   
   render = () => {
-      return <div style={{padding: '0 40px'}}> <ItemsCarousel
+      return <div style={{padding: '0 40px', marginRight: 20, marginLeft: 20}}> <ItemsCarousel
         requestToChangeActive={this.update_current_question}
         activeItemIndex={this.state.current_question}
         numberOfCards={4}
