@@ -1,5 +1,5 @@
 import * as React from "react";
-import {getCookie,setCookie} from "./Util";
+import {getCookie,setCookie, categories} from "./Util";
 import {Redirect} from 'react-router-dom';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -12,15 +12,18 @@ import Button from '@material-ui/core/Button';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import CircularProgress from '@material-ui/core/CircularProgress';
-
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Typography from '@material-ui/core/Typography';
+import Grid from "@material-ui/core/Grid";
+import Dropdown from './Dropdown';
 
 interface State {
 
 }
 
 let address = "/quel";
-
-const categories = ['Any','Literature', 'Social Science', 'History', 'Science', 'Fine Arts', 'Trash', 'Religion', 'Philosophy', 'Geography', 'Mythology', 'Current Events'];
 
 
 export default class Info extends React.Component<Props, State> {
@@ -31,6 +34,7 @@ export default class Info extends React.Component<Props, State> {
     leaderboard: [],
     loading_text: "",
     leaderboard_loading: false,
+    value: 'one',
   }
   
   get_top_categories = () => {
@@ -155,43 +159,58 @@ export default class Info extends React.Component<Props, State> {
           ))}
         </TableBody>
       </Table>
-      {this.render_chart()}
       </div>
     }
   }
+  
+    handleChange = (event, value) => {
+    this.setState({ value });
+  };
+  
+  render_stats = () => {
+    if(Object.keys(this.state.categories).length == 0) {
+      return <div style={{marginTop: 20}}> 
+    {this.state.username} <br /> <br />
+    <b> No entities annotated </b>
+    </div> 
+    }
+
+    return <div style={{marginTop: 20}}> 
+    {this.state.username} <br /> <br />
+    <div style={{textAlign: 'center'}}> 
+      Top Entities: 
+    </div>
+    <Grid container> 
+      <Grid item xs={6}> 
+        Top Categories: 
+        {this.render_chart()}
+
+      </Grid>
+      <Grid item xs={6}> 
+            <button style={{marginRight: 20}} onClick={this.download_questions}> Download PDF </button>  Category: <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={"Any"} options={categories.concat(['Any'])} />  <br />
+      </Grid>
+    </Grid>
+    </div> 
+  }
+
   
   render() {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
     }
 
+    let main_menu = <div  style={{marginTop: 100}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button> </div>; 
  
-    return <div style={{marginLeft: 30}}> <h1> {this.state.username} </h1> <br />
-          <div style={{marginBottom: 50}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>
-
-
-        </div>
-   
-   <br />
-      <button style={{marginRight: 20}} onClick={this.download_questions}> Download PDF </button> 
-      Category: 
-                   <Select
-          style={{marginLeft: 20, marginRight: 20}}
-          labelId="demo-simple-select-label"
-          value={this.state.category_option}
-          onChange={(event)=>{this.setState({category_option:event.target.value})}}
-        >
-          {categories.map((option, index) => (
-            <MenuItem
-              value={option}
-            >
-              {option}
-            </MenuItem>
-          ))}
-        </Select>
-
-      <br /> <br />
-        {this.get_info()}
+    return <div style={{marginLeft: 30}}> 
+            <AppBar>
+                          
+          <Tabs value={this.state.value} onChange={this.handleChange}>
+            <Tab value="one" label="Leaderboard" />
+            <Tab value="two" label="Personal Stats" />
+          </Tabs>
+        </AppBar>
+        {this.state.value === 'one' && <div>  {main_menu} {this.get_info()} </div>}
+        {this.state.value  === 'two' && <Typography>{main_menu} {this.render_stats()} </Typography>}
    </div>
     
   }

@@ -228,7 +228,6 @@ def load_question(name,question_num):
         entity_names = json.dumps(json.loads(annotation_data['names'])+[""])
         entity_list = json.dumps(json.loads(annotation_data['spans'])+[[]])
 
-    print("Metadata {}".format(metadata))
     answer = bytes(unidecode.unidecode(answer),'ascii').decode("unicode-escape")
     question = bytes(unidecode.unidecode(question),'ascii').decode('unicode-escape')
 
@@ -259,13 +258,10 @@ def get_noun_phrase_suggested_num(question_num):
     name = "_".join(question_num.split("_")[1:])
     question_num = question_num.split("_")[0]
 
-    print("Name {}".format(name))
-
     name = security.decode_token(name)
     all_user_topics = db.get_all_user_topics_user(name)
 
     question_num = suggest_questions.get_random_question(all_user_topics)
-    print("Question num {}".format(question_num))
     return load_question(name,question_num)
 
 @app.get("/quel/noun_phrases_last/{username}")
@@ -335,7 +331,6 @@ def get_questions_entity(entity_name):
     for i in common_entities:
         if i.lower()!=entity_name.replace("_", " ").lower().strip():
             if i.lower() not in ["ftps","file transfer protocol"]:
-                print(i)
                 temp.append(i)
     common_entities = temp
     common_entitiy_definitions = db.multiple_definitions(common_entities)
@@ -474,7 +469,6 @@ async def write_phrases(noun_phrases: NounPhrase):
 
     system_mentions = ["{}_{}_{}_{}".format(j['question'],j['start'],j['end'],j['wiki_page'].lower()) for j in system_mentions]
 
-    print(system_mentions,mentions)
     user_mentions = [j for j in mentions if ("{}_{}_{}_{}".format(j['question_id'],j['start'],j['end'],j['wiki_page'].lower())) not in system_mentions]
     num_mentions = len(user_mentions)
 

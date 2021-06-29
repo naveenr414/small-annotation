@@ -322,8 +322,6 @@ class Database:
         summaries = summaries[:5]
         ids = ids[:5]
 
-        print(summaries)
-
         print("Took {} time with {} count {}".format(time.time()-start,count,word))
         return [(names[i].replace("&amp;","&"),summaries[i],ids[i]) for i in range(len(names))]
 

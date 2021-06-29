@@ -96,7 +96,7 @@ export default class User extends React.Component<Props, State> {
     <div style={{marginTop: 20, marginLeft: 50, marginBottom: 30, fontSize: 30}}> 
       <header> <span> 
         <a href="/"  style={{fontSize: 60, color: "black", textDecoration: 'none'}}> QUEL </a> </span> <span style={{fontSize: 16}}> Entity and topic exploration made easy 
-      </span> </header>
+      </span> <span style={{float: 'right',marginTop: 20, marginRight: 50, fontSize: 24}}> <a href="/info"> Personal Stats </a> </span> </header>
       
       <div style={{marginBottom: "2%"}}> Allowing Quizbowl players to explore 
         <span style={{color: 'blue', fontSize: 40}}> {this.state.random_topic} </span> 
