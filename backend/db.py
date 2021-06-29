@@ -393,7 +393,7 @@ class Database:
             other_entities = list(Counter(all_entities).items())
             other_entities = sorted(other_entities,key=lambda k: k[1],reverse=True)
             other_entities = [i[0].replace("_"," ") for i in other_entities if i[0]!='']
-            other_entities = [i for i in other_entities if "File Transfer Protocol" not in i and "FTPS" not in i]
+            other_entities = [i for i in other_entities if "file transfer protocol" not in i and "ftps" not in i]
             return other_entities
 
 

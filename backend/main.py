@@ -551,8 +551,11 @@ def get_topic_distro(username):
 
     all_user_topics = db.get_all_user_topics_user(username)
     topics = [i['topic'] for i in all_user_topics]
-
-    return Counter(topics)
+    questions = [i['question_id'] for i in all_user_topics]
+    common_entities = db.get_entities(questions,'Any','Any')[:20]
+    common_entity_definitions = db.multiple_definitions(common_entities)
+    return {'topics':Counter(topics),'common_entities':common_entities,
+            'common_entity_definitions': common_entity_definitions}
             
 
 @app.get("/quel/pdf/{username}")

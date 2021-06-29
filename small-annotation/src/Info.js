@@ -18,6 +18,11 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Grid from "@material-ui/core/Grid";
 import Dropdown from './Dropdown';
+import Carousel from './Carousel';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import BarGraph from './BarGraph';
 
 interface State {
 
@@ -42,7 +47,8 @@ export default class Info extends React.Component<Props, State> {
       address+"/topics/"+getCookie("token")
       ).then(res=>res.json())
       .then(res => {
-        this.setState({categories: res,});
+        this.setState({categories: res['topics'],common_entities: res['common_entities'],
+        common_entity_definitions: res['common_entity_definitions']});
       })
   }
   
@@ -91,6 +97,7 @@ export default class Info extends React.Component<Props, State> {
   }
   
   render_chart = () => {
+    
     let value_sum = 0;
     for(var el in this.state.categories) {
       value_sum+=this.state.categories[el];
@@ -100,33 +107,32 @@ export default class Info extends React.Component<Props, State> {
       return <div> No questions annotated! </div>
     }
 
-    
-    let data = {labels: Object.keys(this.state.categories).concat(['']),
-  datasets: [
-    {
-      label: 'Questions',
-      backgroundColor: 'rgba(75,192,192,1)',
-      borderColor: 'rgba(0,0,0,1)',
-      borderWidth: 2,
-      data: Object.values(this.state.categories).concat([0]),
+    return <BarGraph data={this.state.categories} height={100} title={'Questions annotated by Category'} /> 
+  }
+  
+  render_entities = () => {
+    let entities = [];
+    for(var i = 0;i<this.state.common_entities.length;i++) {
+      let entity = this.state.common_entities[i];
+      let searchButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("topic",entity)}} variant="contained"> Search </Button>);
+      let definition = this.state.common_entity_definitions[entity].substring(0,200)+"...";
+      let card = (<div style={{marginBottom: 20, width: "100%"}}> <Card>
+      <CardContent>
+        <Typography variant="h5" component="h2">
+        {entity}
+        </Typography>
+        <Typography variant="body2" component="p">
+        {definition}
+        </Typography>
+      </CardContent>
+      <CardActions>
+      {searchButton}
+      </CardActions>
+    </Card> </div>);
+      entities.push(card);
     }
-    ]};
     
-    
-    return      <Bar
-          data={data}
-          options={{
-            title:{
-              display:true,
-              text:'Questions annotated by Category',
-              fontSize:20
-            },
-            legend:{
-              display:true,
-              position:'right'
-            }
-          }}
-        />
+    return <Carousel cards={entities} /> 
   }
   
   get_info = () => {
@@ -178,8 +184,9 @@ export default class Info extends React.Component<Props, State> {
     return <div style={{marginTop: 20}}> 
     {this.state.username} <br /> <br />
     <div style={{textAlign: 'center'}}> 
-      Top Entities: 
+      Top Entities:
     </div>
+    {this.render_entities()}
     <Grid container> 
       <Grid item xs={6}> 
         Top Categories: 
@@ -197,6 +204,9 @@ export default class Info extends React.Component<Props, State> {
   render() {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
+    }
+    else if(getCookie("topic") !== "") {
+      return <Redirect to="/entity" />;
     }
 
     let main_menu = <div  style={{marginTop: 100}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button> </div>; 

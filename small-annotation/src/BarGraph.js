@@ -19,7 +19,7 @@ export default class BarGraph extends React.Component<Props, State> {
     
     return      <Bar
           data={data}
-          height={50}
+          height={this.props.height?this.props.height:50}
           options={{
             title:{
               display:true,
