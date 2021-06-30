@@ -556,7 +556,40 @@ def get_topic_distro(username):
     common_entity_definitions = db.multiple_definitions(common_entities)
     return {'topics':Counter(topics),'common_entities':common_entities,
             'common_entity_definitions': common_entity_definitions}
-            
+
+@app.get("/quel/factbook/{username}")
+def write_factbook(username):
+    username,category = "_".join(username.split("_")[:-1]),username.split("_")[-1]
+    username = security.decode_token(username)
+    all_user_topics = db.get_all_user_topics_user(username)
+    topics = [i['topic'] for i in all_user_topics]
+    questions = [i['question_id'] for i in all_user_topics]
+    common_entities = db.get_entities(questions,category,'Any')
+    common_entity_definitions = db.multiple_definitions(common_entities)
+    pdf = FPDF()
+    pdf.add_page()
+
+    if len(common_entities) == 0:
+        pdf.set_font('Arial','',14)
+        pdf.write(5,"No questions annotated")
+
+    for entity in common_entities:
+        pdf.set_font('Arial', 'B', 14)
+        pdf.set_text_color(0, 0, 255)
+        pdf.set_font('', 'U')
+        id = db.get_id(entity.replace(" ","_"))
+        url = "https://en.wikipedia.org"
+        if len(id)>0:
+            url = 'https://en.wikipedia.org/wiki?curid={}'.format(id[0])
+        pdf.write(5,"{}".format(unidecode.unidecode(entity)),url)
+        pdf.set_font('Arial', '', 14)
+        pdf.set_font('', '')
+        pdf.set_text_color(0, 0, 0)
+        pdf.write(5," - {}...\n\n\n\n".format(unidecode.unidecode(common_entity_definitions[entity])))
+
+    pdf.output('facts.pdf', 'F')
+    file_path = "facts.pdf"
+    return FileResponse(path=file_path, filename=file_path, media_type='text')
 
 @app.get("/quel/pdf/{username}")
 def write_pdf(username):

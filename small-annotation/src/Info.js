@@ -96,6 +96,23 @@ export default class Info extends React.Component<Props, State> {
       });
   }
   
+  download_facts = () => {
+    this.setState({loading_text: "Loading Facts"});
+    fetch(
+      address+"/factbook/"+getCookie("token")+"_"+this.state.category_option
+      ).then(res => {
+        return res.blob();
+      })
+      .then((blob)=>{
+        this.setState({loading_text: ""});
+        const href = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = href;
+        a.download = 'facts.pdf';
+        a.click();
+      });
+  }
+  
   render_chart = () => {
     
     let value_sum = 0;
@@ -114,7 +131,7 @@ export default class Info extends React.Component<Props, State> {
     let entities = [];
     for(var i = 0;i<this.state.common_entities.length;i++) {
       let entity = this.state.common_entities[i];
-      let searchButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("topic",entity)}} variant="contained"> Search </Button>);
+      let searchButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("topic",entity); this.setState({});}} variant="contained"> Search </Button>);
       let definition = this.state.common_entity_definitions[entity].substring(0,200)+"...";
       let card = (<div style={{marginBottom: 20, width: "100%"}}> <Card>
       <CardContent>
@@ -195,6 +212,7 @@ export default class Info extends React.Component<Props, State> {
       </Grid>
       <Grid item xs={6}> 
             <button style={{marginRight: 20}} onClick={this.download_questions}> Download PDF </button>  Category: <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={"Any"} options={categories.concat(['Any'])} />  <br />
+            <button style={{marginRight: 20}} onClick={this.download_facts}> Download Wikipedia Book </button>  Category: <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={"Any"} options={categories.concat(['Any'])} />  <br />
       </Grid>
     </Grid>
     </div> 
