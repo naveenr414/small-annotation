@@ -333,7 +333,9 @@ def get_questions_entity(entity_name):
             if i.lower() not in ["ftps","file transfer protocol"]:
                 temp.append(i)
     common_entities = temp
-    common_entitiy_definitions = db.multiple_definitions(common_entities)
+    common_entity_definitions = db.multiple_definitions(common_entities)
+    ids = common_entity_definitions['ids']
+    common_entity_definitions = common_entity_definitions['definitions']
     
     print("Getting common entities took {} time".format(time.time()-start))
     
@@ -369,7 +371,8 @@ def get_questions_entity(entity_name):
 ##                locations[i] = (start,end)
     print("Post processing took {} time".format(time.time()-start))
     return {'results':results,'entities':common_entities,'year_freq': years,'definition':db.get_definition(entity_name),
-            'common_definitions':common_entitiy_definitions,'categories':category_freq}
+            'common_definitions':common_entity_definitions,'categories':category_freq,
+            'common_ids':ids}
 
 @app.get("/quel/tournament_entity/{entity_name}")
 def get_questions_entity(entity_name):
@@ -554,8 +557,11 @@ def get_topic_distro(username):
     questions = [i['question_id'] for i in all_user_topics]
     common_entities = db.get_entities(questions,'Any','Any')[:20]
     common_entity_definitions = db.multiple_definitions(common_entities)
+    ids = common_entity_definitions['ids']
+    common_entity_definitions = common_entity_definitions['definitions']
     return {'topics':Counter(topics),'common_entities':common_entities,
-            'common_entity_definitions': common_entity_definitions}
+            'common_entity_definitions': common_entity_definitions,
+            'common_ids':ids}
 
 @app.get("/quel/factbook/{username}")
 def write_factbook(username):
@@ -566,6 +572,8 @@ def write_factbook(username):
     questions = [i['question_id'] for i in all_user_topics]
     common_entities = db.get_entities(questions,category,'Any')
     common_entity_definitions = db.multiple_definitions(common_entities)
+    common_ids = common_entity_definitions['ids']
+    common_entity_definitions = common_entity_definitions['definitions']
     pdf = FPDF()
     pdf.add_page()
 
@@ -577,10 +585,10 @@ def write_factbook(username):
         pdf.set_font('Arial', 'B', 14)
         pdf.set_text_color(0, 0, 255)
         pdf.set_font('', 'U')
-        id = db.get_id(entity.replace(" ","_"))
+        id = common_ids[entity]
         url = "https://en.wikipedia.org"
-        if len(id)>0:
-            url = 'https://en.wikipedia.org/wiki?curid={}'.format(id[0])
+        if id>0:
+            url = 'https://en.wikipedia.org/wiki?curid={}'.format(id)
         pdf.write(5,"{}".format(unidecode.unidecode(entity)),url)
         pdf.set_font('Arial', '', 14)
         pdf.set_font('', '')

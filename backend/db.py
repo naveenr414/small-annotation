@@ -339,11 +339,12 @@ class Database:
     def multiple_definitions(self,word_list):
         with self._session_scope as session:
             d = {}
+            e = {}
             for i in word_list:
                 d[i] = session.query(WikiSummary).filter(WikiSummary.title == i.replace(" ", "_").lower().strip()).limit(1)
+                e[i] = ([k.id for k in d[i]]+[0])[0]
                 d[i] = ([k.text for k in d[i]]+[''])[0]
-
-            return d
+            return {'definitions':d,'ids':e}
     
     def get_all_mentions(self):
         with self._session_scope as session:

@@ -40,6 +40,7 @@ export default class Info extends React.Component<Props, State> {
     loading_text: "",
     leaderboard_loading: false,
     value: 'one',
+    common_ids: {},
   }
   
   get_top_categories = () => {
@@ -48,7 +49,7 @@ export default class Info extends React.Component<Props, State> {
       ).then(res=>res.json())
       .then(res => {
         this.setState({categories: res['topics'],common_entities: res['common_entities'],
-        common_entity_definitions: res['common_entity_definitions']});
+        common_entity_definitions: res['common_entity_definitions'], common_ids: res['common_ids']});
       })
   }
   
@@ -136,7 +137,7 @@ export default class Info extends React.Component<Props, State> {
       let card = (<div style={{marginBottom: 20, width: "100%"}}> <Card>
       <CardContent>
         <Typography variant="h5" component="h2">
-        {entity}
+        <a href={"https://wikipedia.org/wiki?curid="+this.state.common_ids[entity]} target="_blank"> {entity} </a> 
         </Typography>
         <Typography variant="body2" component="p">
         {definition}

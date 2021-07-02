@@ -28,8 +28,9 @@ export default class BarGraph extends React.Component<Props, State> {
             },
             scales: {
               xAxes: [{
-              barPercentage: 0.4
+              barPercentage: 0.4, label: "hello"
               }]
+              
             },
             legend:{
               display:true,
