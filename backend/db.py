@@ -425,7 +425,7 @@ class Database:
 
             return data
         
-    def get_tournament_entities(self,entity_name,tournament,year,category,subcategory):
+    def get_tournament_entities(self,entity_name,tournament,year):
         with self._session_scope as session:
             entity_name = entity_name.replace("_", " ").strip()
             data = []
@@ -471,9 +471,7 @@ class Database:
                     i['subcategory'] = ""
 
 
-                category_works = (i['category'].lower() == category.lower() or category == 'Any')
-                subcategory_works = (i['subcategory'].lower() == subcategory.lower() or subcategory == 'Any')
-                if has_entity and category_works and subcategory_works:
+                if has_entity:
                     other_entities+=list(set(mentions))
                     data.append({'question':i['question'],'answer':i['answer'],'question_id': i['id'],'category':i['category'],'subcategory':i['subcategory'],'location':coords})
 
@@ -496,6 +494,7 @@ class Database:
     def get_tournament(self,year,tournament):
         with self._session_scope as session:
             results = session.query(Question).filter(and_(Question.tournament==tournament,Question.year==year))
+            categories = Counter([i.category for i in results])
             mentions = [{'question': i.id, 'page': i.wiki_answer} for i in results]
             results = [i.id for i in results]
 
@@ -503,7 +502,7 @@ class Database:
                 results = session.query(Mention).filter(Mention.question_id == i)
                 mentions+=[{'question': j.question_id, 'page': j.wiki_page} for j in results if (j.user_id == "system") and (j.wiki_page!="")]
 
-            return mentions
+            return {'entities':mentions,'categories':categories}
 
     def insert_question(self,question):
         with self._session_scope as session:

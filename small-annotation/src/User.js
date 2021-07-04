@@ -117,7 +117,7 @@ export default class User extends React.Component<Props, State> {
         <Dropdown update_value={(random_difficulty_option)=>{this.setState({random_difficulty_option})}} default_value={"High School"} options={difficulties} /> 
         difficulty 
         <Button style={{marginLeft: 20}} onClick={this.explore_random_category} variant="contained" color="primary"> Go! </Button> <br /> 
-        Or a random question at
+        Or explore questions at 
 
         <Dropdown update_value={(difficulty_option)=>{this.setState({difficulty_option:difficulty_option, tournament_option: undefinedOrEmpty(tournaments[difficulty_option][this.state.year_option])})}} default_value={"High School"} options={difficulties} /> 
         difficulty from

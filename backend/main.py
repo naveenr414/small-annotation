@@ -377,16 +377,13 @@ def get_questions_entity(entity_name):
 @app.get("/quel/tournament_entity/{entity_name}")
 def get_questions_entity(entity_name):
     e = entity_name.split("_")
-    tourney = e[-3]
-    year = e[-4]
-    category = e[-2]
-    subcategory = e[-1]
-    entity_name = "_".join(e[:-4]).strip().strip("_")
+    tourney = e[-1]
+    year = e[-2]
+    entity_name = "_".join(e[:-2]).strip().strip("_")
 
-    print("Category {}, subcategory {}".format(category,subcategory))
-
-    results = db.get_tournament_entities(entity_name,tourney,year,category,subcategory)
-
+    results = db.get_tournament_entities(entity_name,tourney,year)
+    
+    
     if entity_name!='':
         chunked = [chunk_words(results['data'][i]['question'])[1] for i in range(len(results['data']))]
 
@@ -405,6 +402,8 @@ def get_questions_entity(entity_name):
 def get_tournament(tournament):
     year,tournament = tournament.split("_")
     tourney_data = db.get_tournament(int(year),tournament)
+    categories = tourney_data['categories']
+    tourney_data = tourney_data['entities'] 
 
     print("Searching for {} {}".format(year,tournament))
 
@@ -428,8 +427,16 @@ def get_tournament(tournament):
         counter['male'] = 0
     if 'female' not in counter:
         counter['female'] = 0
-        
-    return {'data':data,'genders':counter}
+
+    data = [i[0] for i in data]
+    common_entity_definitions = db.multiple_definitions(data)
+    ids = common_entity_definitions['ids']
+    common_entity_definitions = common_entity_definitions['definitions']
+    
+    
+
+    return {'data':data,'genders':counter,'definitions': common_entity_definitions,
+            'ids': ids,'categories': categories}
 
 @app.post("/quel/user_preferences")
 async def update_preferences(preference: Preference):
