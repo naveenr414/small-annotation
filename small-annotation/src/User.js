@@ -80,16 +80,16 @@ export default class User extends React.Component<Props, State> {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
     }
-    
+        
     if(getCookie("topic")!="" && (getCookie("year_option")==="Any" || getCookie("year_option") == "")) {
       return <Redirect to="/entitysearch" />
+    } else if(getCookie("year_option")!=="Any" && getCookie("year_option")!=="") {
+      return <Redirect to="/packetsearch" />
     }
     else if(getCookie("random_difficulty_option")!=="") {
       //return <Redirect to="/entitysearch" />
     }
-    else if(getCookie("year_option")!=="Any" && getCookie("year_option")!=="") {
-      return <Redirect to="/packetsearch" />
-    }
+
     
     return (<div> 
     
@@ -135,12 +135,8 @@ export default class User extends React.Component<Props, State> {
           Topic (blank for any topic): <AutoComplete on_enter={this.advanced_search} update_value={(advanced_value)=>{this.setState({advanced_value})}} />    
           <br />
           Difficulty: <Dropdown update_value={(advanced_difficulty)=>{this.setState({advanced_difficulty})}} default_value={"High School"} options={difficulties} />  <br />
-          Category: <Dropdown update_value={(advanced_category)=>{this.setState({advanced_category})}} default_value={"Literature"} options={categories} />  <br />
-              
-         Tournament: 
-         <Dropdown update_value={(advanced_year)=>{this.setState({advanced_year})}} default_value={'Any'} options={Object.keys(tournaments[this.state.advanced_difficulty]).concat(['Any'])} />
-         <Dropdown update_value={(advanced_tournament)=>{this.setState({advanced_tournament})}} default_value={""} options={undefinedOrEmpty(tournaments[this.state.advanced_difficulty][this.state.advanced_year])} />
-           
+          Category: <Dropdown update_value={(advanced_category)=>{this.setState({advanced_category})}} default_value={"Literature"} options={categories} /> 
+                         
           <Button style={{marginLeft: 20}} onClick={this.advanced_search} variant="contained" color="primary"> Go! </Button>
         </div>
       }

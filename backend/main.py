@@ -377,11 +377,12 @@ def get_questions_entity(entity_name):
 @app.get("/quel/tournament_entity/{entity_name}")
 def get_questions_entity(entity_name):
     e = entity_name.split("_")
-    tourney = e[-1]
-    year = e[-2]
-    entity_name = "_".join(e[:-2]).strip().strip("_")
+    category = e[-1]
+    tourney = e[-2]
+    year = e[-3]
+    entity_name = "_".join(e[:-3]).strip().strip("_")
 
-    results = db.get_tournament_entities(entity_name,tourney,year)
+    results = db.get_tournament_entities(entity_name,tourney,year,category)
     
     
     if entity_name!='':

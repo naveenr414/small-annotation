@@ -15,6 +15,7 @@ import Typography from '@material-ui/core/Typography';
 import Carousel from './Carousel';
 import BarGraph from './BarGraph';
 import AutoComplete from './Autocomplete';
+import Dropdown from './Dropdown';
 
 interface State {
 
@@ -25,7 +26,7 @@ let address = "/quel";
 export default class PacketSearch extends React.Component<Props, State> {
   state: State = {
     difficulty_option: "High School", 
-    year_option: 2015,
+    year_option: -1,
     tournament_option: "",
     common_entities: [],
     search_results: [],
@@ -47,7 +48,7 @@ export default class PacketSearch extends React.Component<Props, State> {
     let year = this.state.year_option;
     let tournament = this.state.tournament_option;
     fetch(
-      address+"/tournament_entity/"+entity+"_"+year+"_"+tournament
+      address+"/tournament_entity/"+entity+"_"+year+"_"+tournament+"_"+this.state.category_option
       ).then(res=>res.json())
       .then(res => {
         this.setState({search_results: res['data'],loading_search: false});
@@ -57,9 +58,9 @@ export default class PacketSearch extends React.Component<Props, State> {
   componentDidMount = () => {
     if(getCookie("packet")!="") {
       let packet_vals = getCookie("packet").split("_");
-      this.setState({value: packet_vals[0],year_option: parseInt(packet_vals[1]),
-                      tournament_option: packet_vals[2], 
-      category_option: packet_vals[3], subcategory_option: packet_vals[4]},()=>{this.search();});
+      this.setState({search_entity: packet_vals[0],year_option: parseInt(packet_vals[1]),
+                      tournament_option: packet_vals[2], initial_search: packet_vals[0],
+      difficulty_option: packet_vals[3]},()=>{this.get_results(); this.search();});
     } 
     
     if(getCookie("tournament_option")!= "") {
@@ -74,8 +75,8 @@ export default class PacketSearch extends React.Component<Props, State> {
     for(var i = 0;i<this.state.search_results.length;i++) {
       ids.push(this.state.search_results[i]['question_id']);
     }
-    for(var i = 0;i<this.state.search_results.length;i++) {
-      let annotateButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",""); setCookie("entity",this.state.search_entity.replaceAll("_"," ")+"_"+this.state.category_option+"_"+this.state.difficulty_option); }} variant="contained"><a href="/selected"> Annotate Question</a></Button>);
+    for(let i = 0;i<this.state.search_results.length;i++) {
+      let annotateButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",this.state.search_entity.replaceAll("_"," ")+"_"+this.state.year_option+"_"+this.state.tournament_option+"_"+this.state.difficulty_option) }} variant="contained"><a href="/selected"> Annotate Question</a></Button>);
       let answer = this.state.search_results[i]['answer'];
       let question_id = this.state.search_results[i]['question_id'];
       let question_text = this.state.search_results[i]['question'].substring(0,200)+"...";
@@ -102,8 +103,10 @@ export default class PacketSearch extends React.Component<Props, State> {
     </Card> </div>);
       ret.push(question);        
     }
-        
-    return <Carousel cards={ret} />    
+    
+    if(this.state.common_entities.length>0) {
+      return <Carousel cards={ret} />  
+    }
   }
 
   search = () => {
@@ -128,7 +131,9 @@ export default class PacketSearch extends React.Component<Props, State> {
   
   render_search = () => {
     if(this.state.common_entities.length>0) {
-      return <div>  <div style={{textAlign: 'center', fontSize: 36}}> Search in Tournament </div> <div style={{marginLeft: 50, marginTop: 20}}> <AutoComplete on_enter={this.get_results} update_value={(search_entity)=>{this.setState({search_entity})}} initial_value={this.state.initial_search} />           <Button style={{'border': '1px solid black', marginLeft: 20}} onClick={this.get_results}>
+      return <div>  <div style={{textAlign: 'center', fontSize: 36}}> Search in Tournament </div> <div style={{marginLeft: 50, marginTop: 20}}> <AutoComplete on_enter={this.get_results} update_value={(search_entity)=>{this.setState({search_entity})}} initial_value={this.state.initial_search} /> 
+      <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={"Any"} options={categories.concat(["Any"])} fontSize={24} />
+      <Button style={{'border': '1px solid black', marginLeft: 20}} onClick={this.get_results}>
             Go! 
           </Button> </div> </div>
     }
@@ -194,7 +199,7 @@ export default class PacketSearch extends React.Component<Props, State> {
           <div style={{marginBottom: 50}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>
         </div>
     
-        <div style={{textAlign: 'center', fontSize: 48, fontWeight: 'bold'}}> {this.state.tournament_option} </div> <br />
+    {this.state.year_option>0 && <div style={{textAlign: 'center', fontSize: 48, fontWeight: 'bold'}}> {this.state.tournament_option} {this.state.year_option} </div>} <br />
           {this.render_search()}
         {this.render_search_results()}
 

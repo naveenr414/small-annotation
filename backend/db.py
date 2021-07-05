@@ -425,7 +425,7 @@ class Database:
 
             return data
         
-    def get_tournament_entities(self,entity_name,tournament,year):
+    def get_tournament_entities(self,entity_name,tournament,year,category):
         with self._session_scope as session:
             entity_name = entity_name.replace("_", " ").strip()
             data = []
@@ -471,8 +471,8 @@ class Database:
                 if i['subcategory'] == None:
                     i['subcategory'] = ""
 
-
-                if has_entity:
+                has_category = i['category'] == category or i['category'] == None or category == 'Any'
+                if has_entity and has_category:
                     other_entities+=list(set(mentions))
                     data.append({'question':i['question'],'answer':i['answer'],'question_id': i['id'],'category':i['category'],'subcategory':i['subcategory'],'location':coords
                                  ,'year':i['year'],'tournament':i['tournament']})
