@@ -374,6 +374,13 @@ def get_questions_entity(entity_name):
             'common_definitions':common_entity_definitions,'categories':category_freq,
             'common_ids':ids}
 
+@app.get("/quel/random_question/{question}")
+def get_random_question(question):
+    q =question.split("_")
+    difficulty = q[1]
+    category = q[0]
+    return db.get_random_question(category,difficulty)
+
 @app.get("/quel/tournament_entity/{entity_name}")
 def get_questions_entity(entity_name):
     e = entity_name.split("_")

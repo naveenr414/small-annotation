@@ -243,20 +243,20 @@ class Database:
             print("{} {}".format(category,difficulty))
             start = time.time()
             if category == "Any" and difficulty == "Any":
-                return random.randint(0,190624)
+                return [random.randint(0,190624) for i in range(50)]
             elif category == "Any":
-                rows = session.query(Question).filter(Question.difficulty == difficulty).order_by(func.random()).first()
+                rows = session.query(Question).filter(Question.difficulty == difficulty).order_by(func.random()).limit(50)
             elif difficulty == "Any":
-                rows = session.query(Question).filter(Question.category == category).order_by(func.random()).first()
+                rows = session.query(Question).filter(Question.category == category).order_by(func.random()).limit(50)
             else:
-                rows = session.query(Question).filter(and_(Question.category == category,Question.difficulty == difficulty)).order_by(func.random()).first()
+                rows = session.query(Question).filter(and_(Question.category == category,Question.difficulty == difficulty)).order_by(func.random()).limit(50)
 
             print("Took {} time".format(time.time()-start))
 
             if not rows:
-                return random.randint(0,190624)
+                return [random.randint(0,190624) for i in range(50)]
             
-            return rows.id
+            return [i.id for i in rows]
 
     def user_starts(self,user_id,question_id):
         with self._session_scope as session:
@@ -433,7 +433,8 @@ class Database:
             tournament_questions = [{'answer':i.answer.replace("{","").replace("}",""),'question':i.question,'category':i.category,
                                      'subcategory':i.sub_category,'id':i.id, 'tournament': i.tournament, 'year': i.year}
                                     for i in session.query(Question).filter(and_(Question.tournament==tournament,Question.year==year))]
-
+            print("{} Tournament questions".format(len(tournament_questions)))
+    
             other_entities = []
 
             for i in tournament_questions:
@@ -471,7 +472,7 @@ class Database:
                 if i['subcategory'] == None:
                     i['subcategory'] = ""
 
-                has_category = i['category'] == category or i['category'] == None or category == 'Any'
+                has_category = i['category'] == category or i['category'] == None or category in ['Any','','undefined']
                 if has_entity and has_category:
                     other_entities+=list(set(mentions))
                     data.append({'question':i['question'],'answer':i['answer'],'question_id': i['id'],'category':i['category'],'subcategory':i['subcategory'],'location':coords
@@ -481,6 +482,8 @@ class Database:
             other_entities = sorted(other_entities,key=lambda k: k[1],reverse=True)
             other_entities = [i[0].replace("_"," ") for i in other_entities if i[0]!='' and i[0] not in ['FTPS',"File Transfer Protocol"]][:20]
 
+            print("Ended with {} data".format(len(data)))
+            print("Category {}".format(category))
             
             return {'data':data,'entities':other_entities}
 

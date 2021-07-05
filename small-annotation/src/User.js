@@ -53,9 +53,15 @@ export default class User extends React.Component<Props, State> {
   }
   
   explore_random_category = () => {
-    setCookie("random_category",this.state.random_category);
-    setCookie("random_difficulty_option",this.state.random_difficulty_option);
-    this.setState({});
+    fetch(
+      address+"/random_question/"+this.state.category_option+"_"+this.state.random_difficulty_option
+      ).then(res=>res.json())
+      .then(res => {
+        setCookie("questions",JSON.stringify(res));
+        setCookie("main","true");
+        this.setState({});
+      });
+    
   }
   
   explore_random_tournament = () => {
@@ -85,9 +91,8 @@ export default class User extends React.Component<Props, State> {
       return <Redirect to="/entitysearch" />
     } else if(getCookie("year_option")!=="Any" && getCookie("year_option")!=="") {
       return <Redirect to="/packetsearch" />
-    }
-    else if(getCookie("random_difficulty_option")!=="") {
-      //return <Redirect to="/entitysearch" />
+    } else if(getCookie("questions") !== "") {
+      return <Redirect to="/selected" /> 
     }
 
     
@@ -117,10 +122,10 @@ export default class User extends React.Component<Props, State> {
         <Dropdown update_value={(random_difficulty_option)=>{this.setState({random_difficulty_option})}} default_value={"High School"} options={difficulties} /> 
         difficulty 
         <Button style={{marginLeft: 20}} onClick={this.explore_random_category} variant="contained" color="primary"> Go! </Button> <br /> 
-        Or explore questions at 
+        Explore 
 
         <Dropdown update_value={(difficulty_option)=>{this.setState({difficulty_option:difficulty_option, tournament_option: undefinedOrEmpty(tournaments[difficulty_option][this.state.year_option])})}} default_value={"High School"} options={difficulties} /> 
-        difficulty from
+        questions from 
         
         <Dropdown update_value={(year_option)=>{this.setState({year_option})}} default_value={"2015"} options={Object.keys(tournaments[this.state.difficulty_option])} /> 
         <Dropdown update_value={(tournament_option)=>{this.setState({tournament_option})}} default_value={"Maryland Fall"} options={undefinedOrEmpty(tournaments[this.state.difficulty_option][this.state.year_option])} />      
