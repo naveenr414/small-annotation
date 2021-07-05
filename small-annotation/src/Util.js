@@ -1,3 +1,12 @@
+export function arrayRotate(arr, n) {
+    let dup = arr.slice();
+    for(var i = 0;i<n;i++) {
+      dup.push(dup.shift());
+    }
+    return dup;
+}
+
+
 export function titleCase(string: string) {
   if(string.length == 0) {
     return string;

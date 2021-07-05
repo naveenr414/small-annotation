@@ -1,5 +1,5 @@
 import * as React from "react";
-import {getCookie,setCookie} from "./Util";
+import {getCookie,setCookie,arrayRotate} from "./Util";
 import {Redirect} from 'react-router-dom';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -109,13 +109,6 @@ export default class EntitySearch extends React.Component<Props, State> {
     for(var i = 0;i<this.state.results.length;i++) {
       ids.push(this.state.results[i].id);
     }
-      function arrayRotate(arr, n) {
-        let dup = arr.slice();
-        for(var i = 0;i<n;i++) {
-          dup.push(dup.shift());
-        }
-        return dup;
-      }
 
     for(var i = 0;i<this.state.results.length;i++) {
       let annotateButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",""); setCookie("entity",this.state.value.replaceAll("_"," ")+"_"+this.state.category_option+"_"+this.state.difficulty_option); }} variant="contained"><a href="/selected"> Annotate Question</a></Button>);

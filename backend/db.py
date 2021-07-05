@@ -430,7 +430,8 @@ class Database:
             entity_name = entity_name.replace("_", " ").strip()
             data = []
             year = int(year)
-            tournament_questions = [{'id':i.id,'answer':i.answer.replace("{","").replace("}",""),'question':i.question,'category':i.category,'subcategory':i.sub_category,'id':i.id}
+            tournament_questions = [{'answer':i.answer.replace("{","").replace("}",""),'question':i.question,'category':i.category,
+                                     'subcategory':i.sub_category,'id':i.id, 'tournament': i.tournament, 'year': i.year}
                                     for i in session.query(Question).filter(and_(Question.tournament==tournament,Question.year==year))]
 
             other_entities = []
@@ -473,7 +474,8 @@ class Database:
 
                 if has_entity:
                     other_entities+=list(set(mentions))
-                    data.append({'question':i['question'],'answer':i['answer'],'question_id': i['id'],'category':i['category'],'subcategory':i['subcategory'],'location':coords})
+                    data.append({'question':i['question'],'answer':i['answer'],'question_id': i['id'],'category':i['category'],'subcategory':i['subcategory'],'location':coords
+                                 ,'year':i['year'],'tournament':i['tournament']})
 
             other_entities = list(Counter(other_entities).items())
             other_entities = sorted(other_entities,key=lambda k: k[1],reverse=True)
