@@ -163,7 +163,7 @@ def get_annotations(username,question_num,question_data):
     if len(mentions) == 0:
         mentions = db.get_mentions_by_user("system",question_num)
     
-    answer = question_data['wiki_answer'].replace(" ","_")
+    answer = question_data['wiki_answer'].replace(" ","_").lower()
     names = ["","{}".format(answer)]
     spans = [[],[]]
 
@@ -195,9 +195,27 @@ def get_annotations(username,question_num,question_data):
             spans[0.5] = []
 
     keys = sorted(list(names.keys()))
+
+    real_names_keys = {}
+    real_names = []
+    real_spans = []
+
+    num = 0
+    for i in keys:
+        if names[i] not in real_names_keys or 'no_entity' in names[i]:
+            real_names_keys[names[i]] = num
+            real_names.append(names[i])
+            real_spans.append(spans[i])
+            num+=1
+        else:
+            real_spans[real_names_keys[names[i]]]+=spans[i]
+    
         
-    return {'names':json.dumps([names[i] for i in keys]),
-            'spans':json.dumps([spans[i] for i in keys])}
+
+    print("Names are {}".format(names))
+    
+    return {'names':json.dumps(real_names),
+            'spans':json.dumps(real_spans)}
 
 @app.get("/quel/question_num/{question_num}")
 def get_question_num(question_num):

@@ -70,6 +70,10 @@ export default class PacketSearch extends React.Component<Props, State> {
   
   
   render_search_results = () => {
+    if(this.state.loading_search) {
+      return <CircularProgress />
+    }
+    
     let ret = [];
     let ids = [];
     for(var i = 0;i<this.state.search_results.length;i++) {
@@ -131,8 +135,8 @@ export default class PacketSearch extends React.Component<Props, State> {
   
   render_search = () => {
     if(this.state.common_entities.length>0) {
-      return <div>  <div style={{textAlign: 'center', fontSize: 36}}> Search in Tournament </div> <div style={{marginLeft: 50, marginTop: 20}}> <AutoComplete on_enter={this.get_results} update_value={(search_entity)=>{this.setState({search_entity})}} initial_value={this.state.initial_search} /> 
-      <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={"Any"} options={categories.concat(["Any"])} fontSize={24} />
+      return <div>  <div style={{textAlign: 'center', fontSize: 36}}> Search in Tournament </div> <div style={{marginLeft: 50, marginTop: 20}}> Search: <AutoComplete on_enter={this.get_results} update_value={(search_entity)=>{this.setState({search_entity})}} initial_value={this.state.initial_search} /> 
+      <span style={{marginLeft: 20}}> Category: </span> <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={"Any"} options={categories.concat(["Any"])} fontSize={24} />
       <Button style={{'border': '1px solid black', marginLeft: 20}} onClick={this.get_results}>
             Go! 
           </Button> </div> </div>

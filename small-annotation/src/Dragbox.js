@@ -110,7 +110,7 @@ class Dragbox extends React.Component<Props, State> {
   }
   
   save_search_results = () => {
-    this.setState({show_search: false, entity_name: this.state.entity_search},()=>{this.props.update_entity_name(this.state.entity_search,this.props.entity_number);});
+    this.setState({show_search: false, entity_name: this.state.entity_search.toLowerCase()},()=>{this.props.update_entity_name(this.state.entity_search.toLowerCase(),this.props.entity_number);});
   }
   
   delete_entity = () => {
@@ -127,7 +127,11 @@ class Dragbox extends React.Component<Props, State> {
     if(this.props.entity_number>0) {
       let confidence = 0.1;
       for(var i = 0;i<this.props.current_spans.length;i++) { 
-        confidence = Math.max(confidence,this.props.current_spans[i]['confidence']);
+        if(!("confidence" in this.props.current_spans[i])) {
+          confidence = 1;
+        } else {
+          confidence = Math.max(confidence,this.props.current_spans[i]['confidence']);
+        }
       }
       
       if(this.props.entity_name == "") {

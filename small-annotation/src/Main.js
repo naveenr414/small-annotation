@@ -221,6 +221,10 @@ export default class Main extends React.Component<Props, State> {
     return dup;
   }
 
+  done = () => {
+    
+  }
+
   previous = () => {
     let nums = this.state.next_numbers;
     setCookie("questions",JSON.stringify(this.arrayRotate(nums,1,true)));
@@ -702,10 +706,6 @@ export default class Main extends React.Component<Props, State> {
           // Then it goes [Text]
           highlights.push();
           highlights.push(<span id={fields[0]} onMouseEnter={()=>{if(fields[3]!=undefined) {this.update_popover(fields[3])} }} onMouseLeave={()=>{if(fields[3] == undefined) {this.setState({popoverOpen: false});} if(fields[3]!=undefined) {if(this.state.current_title == this.state.entity_names[fields[3]].replaceAll("_"," ")){this.setState({popoverOpen: false,current_title: "", current_summary: ""})}} }} key={fields[0]+"else2"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>);
-          if(fields[3]!=undefined){ 
-            highlights.push(this.get_popover(fields[3],"Popover1"));
-          }
-
         }
     }
     
@@ -730,6 +730,7 @@ export default class Main extends React.Component<Props, State> {
       return   <div style={{display:'inline-block', paddingTop: 20}}> 
           <button style={{fontSize: "2.5vh"}} onClick={()=>{this.final_submit(); this.previous();}}> Previous </button>
           <button style={{marginLeft: 50, fontSize: "2.5vh"}} onClick={()=>{this.final_submit();this.next()}}> Next </button> 
+          <button style={{marginLeft: 50, fontSize: "2.5vh"}} onClick={()=>{this.final_submit();this.done()}}> Finished Question </button> 
 
     </div>
     }
@@ -759,7 +760,6 @@ export default class Main extends React.Component<Props, State> {
   update_summary = (entity_num) => {
     entity_num = parseInt(entity_num);
     if(this.state.entity_names[entity_num]!="") {
-      this.setState({current_title: this.state.entity_names[entity_num]});
       fetch(address+"/autocorrect/"+this.state.entity_names[entity_num].replaceAll(" ","_").toLowerCase()).then((res) => res.json())
     .then((res) => {console.log(res); if(res.length>0){this.setState({popoverOpen: true,current_summary: res[0][1].substring(0,200),current_title: this.state.entity_names[entity_num].replaceAll("_"," ")})}});
 
@@ -771,14 +771,6 @@ export default class Main extends React.Component<Props, State> {
   
   update_popover = (entity_num) => {
    this.update_summary(entity_num);
-  }
-  
-  get_popover = (entity_num,id) => { 
-   let popover =  (<Popover placement='bottom' isOpen={this.state.popoverOpen && this.state.current_title!=""} target={id} toggle={()=>{this.setState({popoverOpen: !this.state.popoverOpen})}}>
-            <PopoverHeader>{this.state.current_title}</PopoverHeader>
-            <PopoverBody>{this.state.current_summary}</PopoverBody>
-          </Popover>);
-    return popover;
   }
   
   render() {
@@ -838,10 +830,14 @@ export default class Main extends React.Component<Props, State> {
                         <div> <b> Answer: </b> {this.state.answer.substring(0,250)} </div>
                       </div>
                       <button class="create" style={{fontSize: "2.5vh"}}  onClick={()=>{this.create_tag(0)}} > 
-                      Create Span </button>     <br />   <span id="Popover1" style={{float: 'right', marginRight: 100}}> 
-      </span>
+                      Create Span </button>     <br />   
                       <br />
                       <div class="unassigned"> {this.render_draggables()[0]} </div>
+                      <span style={{fontSize: "2.5vh"}}> Info Box </span> 
+                      <div style={{minHeight: 80, width: "50%", padding: 5, borderRadius: 4,border:"1px solid #444444"}}> 
+                        {this.state.current_summary!="" && <b> {this.state.current_title.replaceAll("_"," ")} </b>}
+                          {this.state.current_summary!="" && <span> - {this.state.current_summary} </span> } 
+                      </div>                      
                     </Grid>
                     
                     <Divider orientation="vertical" flexItem />
