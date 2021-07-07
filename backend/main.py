@@ -580,6 +580,17 @@ def get_leaderboard():
 
     return l
 
+@app.get("/quel/multipledefinitions/{words}")
+def get_multiple_definitions(words):
+    common_entities = words.strip().split(" ")
+    print(common_entities)
+    common_entities = [i.lower() for i in common_entities if len(i)>0 and 'no_entity' not in i]
+    common_entity_definitions = db.multiple_definitions(common_entities)
+    ids = common_entity_definitions['ids']
+    common_entity_definitions = common_entity_definitions['definitions']
+
+    return {'definitions': common_entity_definitions, 'ids': ids}
+    
 @app.get("/quel/topics/{username}")
 def get_topic_distro(username):
     username = security.decode_token(username)

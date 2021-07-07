@@ -64,6 +64,7 @@ export default class PacketSearch extends React.Component<Props, State> {
     } 
     
     if(getCookie("tournament_option")!= "") {
+
       this.setState({tournament_option: getCookie("tournament_option"), value: "", year_option: getCookie("year_option"), difficulty_option: getCookie("difficulty_option")},()=>{this.search()});
     }
   }
@@ -114,6 +115,10 @@ export default class PacketSearch extends React.Component<Props, State> {
   }
 
   search = () => {
+    setCookie("tournament_option","");
+    setCookie("year_option", "");
+    setCookie("difficulty_option","");
+    setCookie("packet","");
 
     if(this.state.difficulty_option!="" &&
     this.state.year_option>0 &&
@@ -125,15 +130,12 @@ export default class PacketSearch extends React.Component<Props, State> {
       ).then(res=>res.json())
       .then(res => {
         this.setState({common_entities: res['data'], common_entity_definitions: res['definitions'], common_entity_ids: res['ids'], gender_counts: res['genders'], category_frequency: res['categories'], loading_info: false});
-        setCookie("packet","");
-        setCookie("tournament_option","");
-        setCookie("year_option", "");
-        setCookie("difficulty_option","");
       })
     }
   }
   
   render_search = () => {
+ 
     if(this.state.common_entities.length>0) {
       return <div>  <div style={{textAlign: 'center', fontSize: 36}}> Search in Tournament </div> <div style={{marginLeft: 50, marginTop: 20}}> Search: <AutoComplete on_enter={this.get_results} update_value={(search_entity)=>{this.setState({search_entity})}} initial_value={this.state.initial_search} /> 
       <span style={{marginLeft: 20}}> Category: </span> <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={"Any"} options={categories.concat(["Any"])} fontSize={24} />

@@ -74,11 +74,14 @@ export default class Main extends React.Component<Props, State> {
     qanta_id: "",
     metadata: {'difficulty': '', 'category': '', 'tournament': '', 'year': ''},
     submitted: false,
+    done: false, 
     start: 0,
     left: 10,
     popoverOpen: false,
     current_summary: "",
     current_title: "",
+    summary_dict: {}, 
+    id_dict: {}
   }
   
   show_walkthrough = () => {
@@ -176,6 +179,7 @@ export default class Main extends React.Component<Props, State> {
         answer: res['answer'],
         qanta_id: res['question_num'],
         submitted: false,
+        done: false, 
         start: new Date() / 1000,
         entity_names: JSON.parse(res['entity_names']), entity_list: JSON.parse(res['entity_list']),underline_span: []}
         ,()=>{this.setState({clicked: ""})}));
@@ -221,8 +225,20 @@ export default class Main extends React.Component<Props, State> {
     return dup;
   }
 
+  get_summaries = () => {
+    let a = this.state.entity_names;
+    for(var i = 0;i<a.length;i++ ){
+      a[i] = a[i].replace(" ","_").toLowerCase();
+    }
+    let names = a.join(" ")
+    fetch(address+"/multipledefinitions/"+names).then((res) => res.json())
+      .then((res) => {
+      this.setState({summary_dict: res['definitions'], id_dict: res['ids']})});    
+  }
+
   done = () => {
-    
+    this.setState({done: true});
+    this.get_summaries();
   }
 
   previous = () => {
@@ -757,6 +773,8 @@ export default class Main extends React.Component<Props, State> {
     });
   }
   
+  
+  
   update_summary = (entity_num) => {
     entity_num = parseInt(entity_num);
     if(this.state.entity_names[entity_num]!="") {
@@ -767,6 +785,22 @@ export default class Main extends React.Component<Props, State> {
     else {
       this.setState({current_title: "Unknown Entity", current_summary: "Unknown", popoverOpen: true});
     }
+  }
+  
+  render_done = () => {
+    let summaries = []
+    for(var i in this.state.summary_dict) {
+      summaries.push(<div style={{fontSize: 24}}> <b> <a href={"https://wikipedia.org/wiki?curid="+this.state.id_dict[i]} target="_blank"> {i.replaceAll("_"," ")} </a>   </b> - {this.state.summary_dict[i].substring(0,200)}... </div>);
+    }
+    
+    return <div> 
+  <div style={{fontSize: 24, textAlign: 'center'}}> 
+    View more from <a href="/packetsearch" onClick={()=>{setCookie("tournament_option",this.state.metadata.tournament); setCookie("year_option",parseInt(this.state.metadata.year)); setCookie("difficulty_option", "Any");}}> {this.state.metadata.tournament} {this.state.metadata.year} </a> </div> <br />
+    <div style={{fontSize: 24, textAlign: 'center'}}> Entities annotated </div>
+<div style={{height: 250, overflow: 'scroll'}}> {summaries} </div>  <br /> 
+<div style={{fontSize: 24, textAlign: 'center'}}> Similar Questions </div>  <br />
+<div style={{fontSize: 24, textAlign: 'center'}}> Other Entities to Explore </div>  
+    </div>
   }
   
   update_popover = (entity_num) => {
@@ -821,8 +855,10 @@ export default class Main extends React.Component<Props, State> {
                           </Button>
                         </Modal.Footer>
                       </Modal>
+                      
+                      {this.state.done && this.render_done()}  
 
-                      <div class="highlight" style={{fontSize: "2.5vh"}}>  
+                      {!this.state.done && <div> <div class="highlight" style={{fontSize: "2.5vh"}}>  
                         1. Highlight spans and select create span <br />
                         <b> Category</b>:  {" "} {this.state.metadata.category}, from {this.state.metadata.tournament} {this.state.metadata.year} 
                        
@@ -837,7 +873,7 @@ export default class Main extends React.Component<Props, State> {
                       <div style={{minHeight: 80, width: "50%", padding: 5, borderRadius: 4,border:"1px solid #444444"}}> 
                         {this.state.current_summary!="" && <b> {this.state.current_title.replaceAll("_"," ")} </b>}
                           {this.state.current_summary!="" && <span> - {this.state.current_summary} </span> } 
-                      </div>                      
+                      </div> </div> }                     
                     </Grid>
                     
                     <Divider orientation="vertical" flexItem />
