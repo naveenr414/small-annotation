@@ -235,10 +235,16 @@ export default class Main extends React.Component<Props, State> {
       .then((res) => {
       this.setState({summary_dict: res['definitions'], id_dict: res['ids']})});    
   }
+  
+  get_similar_questions = () => {
+    alert("Getting similar questions")
+    fetch(address+"/similar/"+this.state.name+"_"+this.state.qanta_id+"_"+this.state.metadata.difficulty).then((res)=>res.json()).then((res)=>{console.log(res);});
+  }
 
   done = () => {
     this.setState({done: true});
     this.get_summaries();
+    this.get_similar_questions();
   }
 
   previous = () => {

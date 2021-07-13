@@ -19,6 +19,7 @@ import security
 from sqlalchemy import func
 from collections import Counter
 import unidecode
+from scipy.spatial.distance import cosine
 
 app = FastAPI()
 origins = [
@@ -66,6 +67,10 @@ wiki = {}#pickle.load(open("all_wiki.p","rb"))
 names = []#sorted(wiki.keys())
 print("Took {} time".format(time.time()-start))
 
+wikipedia_embeddings = pickle.load(open("wikipedia_vectors_lower.p","rb"))
+wikipedia_distances = pickle.load(open("wikipedia_distances.p","rb"))
+wiki_pages = list(wikipedia_embeddings.keys())
+
 start = time.time()
 db = Database()
 print("Took {} time to create databases".format(time.time()-start))
@@ -106,6 +111,7 @@ def load_annotations(person_name):
 
     return annotations
         
+
 
 def write_annotation(question_num,start,end,annotation,is_nel,person_name):
     l = load_annotations(person_name)
@@ -220,6 +226,13 @@ def get_annotations(username,question_num,question_data):
 @app.get("/quel/question_num/{question_num}")
 def get_question_num(question_num):
     return db.get_question(int(question_num))
+
+def k_closest(entity,k):
+    closest = []
+    for i in wiki_pages:
+        closest.append((i,cosine(wikipedia_embeddings[i],wikipedia_embeddings[entity])))
+    closest = sorted(closest,key=lambda k: k[1])[1:k+1]
+    return [i[0] for i in closest]
 
 def load_question(name,question_num):
     question_data = db.get_question(int(question_num))
@@ -350,7 +363,10 @@ def get_questions_entity(entity_name):
         if i.lower()!=entity_name.replace("_", " ").lower().strip():
             if i.lower() not in ["ftps","file transfer protocol"]:
                 temp.append(i)
-    common_entities = temp
+    embedding_closest = k_closest(entity_name.lower(),10)
+    embedding_closest = [i.replace("_", " ") for i in embedding_closest]
+    print("Embedding closest {}".format(embedding_closest))
+    common_entities = list(set(temp + embedding_closest))[:20]
     common_entity_definitions = db.multiple_definitions(common_entities)
     ids = common_entity_definitions['ids']
     common_entity_definitions = common_entity_definitions['definitions']
@@ -373,6 +389,7 @@ def get_questions_entity(entity_name):
 
     print("Chunking took {} time".format(time.time()-start))
     start = time.time()
+
 
 ##    chunked = {}
 ##    for i in range(len(results)):
@@ -423,6 +440,25 @@ def get_questions_entity(entity_name):
                 results['data'][i]['location'] = (start,end)
 
     return results
+
+@app.get("/quel/similar/{question_id}")
+def get_similar_questions(question_id):
+    print("HERE!!!")
+    username = security.decode_token("_".join(question_id.split("_")[:-2]))
+    difficulty = question_id.split("_")[-1]
+    question_id = int(question_id.split("_")[-2])
+    mentions = db.get_mentions_by_user(username,str(question_id))
+    wiki_pages = [db.get_answer(str(question_id)).replace(" ","_")]
+    print(Counter([i['wiki_page'] for i in mentions]))
+    wiki_pages+=[i[0] for i in sorted(Counter([i['wiki_page'] for i in mentions]).items(),key=lambda k: k[1],reverse=True)[:2]]
+    wiki_pages = list(set(wiki_pages))
+    print("Wiki pages {}".format(wiki_pages))
+
+    similar_questions = db.get_similar_questions(wiki_pages,difficulty)
+    print(similar_questions)
+    
+    return similar_questions
+
 
 @app.get("/quel/tournament/{tournament}")
 def get_tournament(tournament):

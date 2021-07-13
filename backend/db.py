@@ -286,6 +286,20 @@ class Database:
             return [{'user_id':i.user_id,'question_id':i.question_id,'topic':i.topic,'num_mentions':i.num_mentions} for i in
                 session.query(UserTopic)]
 
+    def get_answer(self,question_id):
+        with self._session_scope as session:
+            rows = session.query(Question).filter(Question.id == question_id).limit(1)
+            
+            return [i.wiki_answer_lower for i in rows][0]
+
+    def get_similar_questions(self,wiki_pages,difficulty):
+        with self._session_scope as session:
+            question_ids = []
+            for i in wiki_pages:
+                rows = session.query(Question).filter(and_(Question.wiki_answer_lower == i.replace("_"," "),Question.difficulty == difficulty)).limit(5)
+                question_ids += [j.id for j in rows]
+                print(len([j.id for j in rows]),i)
+            return question_ids
 
     def user_updates(self,user_id,question_id,mentions):
         with self._session_scope as session:

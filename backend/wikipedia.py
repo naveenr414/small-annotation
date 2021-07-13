@@ -47,6 +47,7 @@ def get_buckets(k,pages,question_ids):
 
 wikipedia_info = pickle.load(open("wikipedia_vectors_small.p","rb"))
 
+
 l = {}
 for i in questions:
     if i['page'] in wikipedia_info:
