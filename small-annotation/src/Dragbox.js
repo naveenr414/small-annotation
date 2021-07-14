@@ -148,7 +148,7 @@ class Dragbox extends React.Component<Props, State> {
       return (<a target="_blank" style={{color: 'black'}} href={"https://wikipedia.org/wiki/"+this.props.entity_name.replaceAll(" ", "_")}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", opacity: alpha,textAlign: "center", fontSize: "3vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
           </span>  </a>);
     }
-    return (<span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: "3vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):(<span> 2. Move unassigned spans on right to entity </span> )}
+    return (<span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number > 0?"3vh":"2.5vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):(<span> 2. Move unassigned spans on right to entity </span> )}
           </span> );
   }
   
@@ -178,6 +178,19 @@ class Dragbox extends React.Component<Props, State> {
       
       let json_string = JSON.stringify({start: this.props.current_spans[i].start, end: this.props.current_spans[i].end, number: i, entity_number: this.props.entity_number});
       spans.push(<Span remove_bolded={this.props.remove_bolded} add_bolded={this.props.add_bolded} content={this.props.current_spans[i].content} start={this.props.current_spans[i].start} end={this.props.current_spans[i].end} delete_span={this.props.delete_span} update_clicked={()=>{this.props.update_clicked(json_string)}} toggle_drag={this.props.toggle_drag} number={i} clicked={this.props.clicked === json_string} />);
+    }
+    
+    if(this.props.entity_number == 0) {
+      return <div> 
+      
+      {this.render_entity()} 
+      <div style={{width: "80%", minHeight: 40, padding: 5, borderRadius: 4,border: this.props.dragged?"2px dashed #000000":"1px solid #444444"}}> 
+          
+
+          <div> {spans} </div> 
+          <br /> 
+          </div>
+      </div>
     }
     
     return this.props.dropTarget(
