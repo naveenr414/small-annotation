@@ -297,8 +297,7 @@ class Database:
             question_ids = []
             for i in wiki_pages:
                 rows = session.query(Question).filter(and_(Question.wiki_answer_lower == i.replace("_"," "),Question.difficulty == difficulty)).limit(5)
-                question_ids += [j.id for j in rows]
-                print(len([j.id for j in rows]),i)
+                question_ids += [{'id':j.id,'question':j.question,'answer':j.answer, 'tournament': j.tournament, 'year': j.year} for j in rows]
             return question_ids
 
     def user_updates(self,user_id,question_id,mentions):

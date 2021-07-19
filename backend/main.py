@@ -67,9 +67,7 @@ wiki = {}#pickle.load(open("all_wiki.p","rb"))
 names = []#sorted(wiki.keys())
 print("Took {} time".format(time.time()-start))
 
-wikipedia_embeddings = pickle.load(open("wikipedia_vectors_lower.p","rb"))
-wikipedia_distances = pickle.load(open("wikipedia_distances.p","rb"))
-wiki_pages = list(wikipedia_embeddings.keys())
+wikipedia_embeddings = pickle.load(open("k_closest_wiki.p","rb"))
 
 start = time.time()
 db = Database()
@@ -228,11 +226,7 @@ def get_question_num(question_num):
     return db.get_question(int(question_num))
 
 def k_closest(entity,k):
-    closest = []
-    for i in wiki_pages:
-        closest.append((i,cosine(wikipedia_embeddings[i],wikipedia_embeddings[entity])))
-    closest = sorted(closest,key=lambda k: k[1])[1:k+1]
-    return [i[0] for i in closest]
+    return wikipedia_embeddings[unidecode.unidecode(entity)]
 
 def load_question(name,question_num):
     question_data = db.get_question(int(question_num))
@@ -348,10 +342,14 @@ def get_questions_entity(entity_name):
     print("Getting entity name! {}".format(entity_name))
     start = time.time()
     entity_name = entity_name.strip("_").strip()
+    print("Entity name {}".format(entity_name))
     e = entity_name.split("_")
     category = e[-2]
     difficulty = e[-1]
-    entity_name = "_".join(e[:-2])
+    entity_name = "_".join(e[:-2]).strip("_")
+    print(entity_name)
+    print("Splitting up entity took {}".format(time.time()-start))
+    start = time.time()
     questions = db.get_questions_by_entity(entity_name)
     print("Getting questions took {} time".format(time.time()-start))
     start = time.time()
@@ -363,15 +361,18 @@ def get_questions_entity(entity_name):
         if i.lower()!=entity_name.replace("_", " ").lower().strip():
             if i.lower() not in ["ftps","file transfer protocol"]:
                 temp.append(i)
+    print("Getting common entities took {} time".format(time.time()-start))
+    start = time.time()
     embedding_closest = k_closest(entity_name.lower(),10)
     embedding_closest = [i.replace("_", " ") for i in embedding_closest]
-    print("Embedding closest {}".format(embedding_closest))
-    common_entities = list(set(temp + embedding_closest))[:20]
+    common_entities = list(dict.fromkeys(embedding_closest+temp[:10]))
+    print("Getting close embeddings {}".format(time.time()-start))
+    start = time.time()
     common_entity_definitions = db.multiple_definitions(common_entities)
     ids = common_entity_definitions['ids']
     common_entity_definitions = common_entity_definitions['definitions']
-    
-    print("Getting common entities took {} time".format(time.time()-start))
+    print("Getting info on these entities took {} time".format(time.time()-start))
+    start = time.time()
     
     results = db.get_question_answers(questions,category,difficulty)
 
@@ -455,7 +456,6 @@ def get_similar_questions(question_id):
     print("Wiki pages {}".format(wiki_pages))
 
     similar_questions = db.get_similar_questions(wiki_pages,difficulty)
-    print(similar_questions)
     
     return similar_questions
 

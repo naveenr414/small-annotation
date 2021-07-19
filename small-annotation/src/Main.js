@@ -12,16 +12,20 @@ import {all_but_first,getSelectionCharacterOffsetsWithin,span_length,intersects}
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
+import Button from '@material-ui/core/Button';
 import Instructions from './Instructions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Divider from '@material-ui/core/Divider';
 import KeyboardEventHandler from 'react-keyboard-event-handler';
-import {getCookie,setCookie} from "./Util";
+import {getCookie,setCookie,arrayRotate} from "./Util";
 import {Redirect} from 'react-router-dom';
 import introJs from 'intro.js';
 import 'intro.js/introjs.css';
 import { Popover, PopoverHeader, PopoverBody } from 'reactstrap';
+import Carousel from './Carousel';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
 
 let address = "/quel";
 
@@ -81,7 +85,10 @@ export default class Main extends React.Component<Props, State> {
     current_summary: "",
     current_title: "",
     summary_dict: {}, 
-    id_dict: {}
+    id_dict: {},
+    similar_questions: [],
+    loading: false,
+    redirect: false,
   }
   
   show_walkthrough = () => {
@@ -108,11 +115,11 @@ export default class Main extends React.Component<Props, State> {
         intro: 'Your new span will now be in the unassigned spans box'
       },
       {
-        element: document.querySelector('.entity'),
+        element: document.querySelector('.entity_title'),
         intro: 'Drag your new span over to the correct matching entity.'
       },
       {
-        element: document.querySelector('.entity'),
+        element: document.querySelector('.entity_title'),
         intro: 'Notice that some entities are pre-filled by our system. The opacity of the box behind the entity reflects our model\'s confidence.'
       },
       {
@@ -120,8 +127,11 @@ export default class Main extends React.Component<Props, State> {
         intro: 'If none of the entities match, you can create a new entity for this span'
       },
       {
-        intro: 'Click "change entity" to change the name of the entity box',
-        element: document.querySelector(".entity"),
+        intro: 'Click "change/select entity" to change the name of the entity box',
+        element: document.querySelector(".entity_title"),
+      },{
+        intro: 'If you want to merge entities and their spans together, click on the merge button',
+        element: document.querySelector(".merge"),
       },
       {
         intro: "To explore the prevalence of entities in different tournaments, or to view person annotation stats, click on \"Main Menu\"",
@@ -156,7 +166,7 @@ export default class Main extends React.Component<Props, State> {
       this.setState({name},()=>{this.get_sample_question();});
     }
     else {
-      this.setState({name},()=>{this.get_noun_phrases(0);});
+      this.setState({name},()=>{this.get_question_num();});
     }
     
     
@@ -166,6 +176,7 @@ export default class Main extends React.Component<Props, State> {
   }
 
   get_question = (url,question_num) => {
+    this.setState({loading: true});
     fetch(
       url
       )
@@ -174,6 +185,7 @@ export default class Main extends React.Component<Props, State> {
         {current_question: question_num, 
         metadata: res['metadata'],
         words: res['words'], 
+        loading: false,
         indices: res['indices'],
         question: res['question'],
         answer: res['answer'],
@@ -202,14 +214,14 @@ export default class Main extends React.Component<Props, State> {
   }
   
   get_question_num = () => {
-    let numbers = getCookie("questions"); 
+    let numbers = getCookie("questions");
     if(numbers!="" && JSON.parse(numbers).length>0) {
       numbers = JSON.parse(numbers);
       this.setState({next_numbers: numbers});
       this.get_question(address+"/noun_phrases_selected/"+numbers[0]+"_"+this.state.name,numbers[0]);
     }
     else {
-      this.get_noun_phrases(5);
+      this.setState({redirect: true});
     }
   }
   
@@ -237,8 +249,10 @@ export default class Main extends React.Component<Props, State> {
   }
   
   get_similar_questions = () => {
-    alert("Getting similar questions")
-    fetch(address+"/similar/"+this.state.name+"_"+this.state.qanta_id+"_"+this.state.metadata.difficulty).then((res)=>res.json()).then((res)=>{console.log(res);});
+    fetch(address+"/similar/"+this.state.name+"_"+this.state.qanta_id+"_"+this.state.metadata.difficulty).then((res)=>res.json()).then((res)=>{
+      this.setState({similar_questions: res,});
+      
+    });
   }
 
   done = () => {
@@ -750,9 +764,9 @@ export default class Main extends React.Component<Props, State> {
   render_navigation_buttons = () => {
     if(this.state.next_numbers.length>0) {
       return   <div style={{display:'inline-block', paddingTop: 10}}> 
-          <button style={{fontSize: "2.5vh"}} onClick={()=>{this.final_submit(); this.previous();}}> Previous </button>
-          <button style={{marginLeft: 50, fontSize: "2.5vh"}} onClick={()=>{this.final_submit();this.next()}}> Next </button> 
-          <button style={{marginLeft: 50, fontSize: "2.5vh"}} onClick={()=>{this.final_submit();this.done()}}> Finished Question </button> 
+          <button style={{fontSize: "2.5vh"}} onClick={()=>{this.final_submit(); this.previous();}}> Previous Question </button>
+          <button style={{marginLeft: 50, fontSize: "2.5vh"}} onClick={()=>{this.final_submit();this.next()}}> Next Question </button> 
+            {!this.state.done && <button style={{marginLeft: 50, fontSize: "2.5vh"}} onClick={()=>{this.final_submit();this.done()}}> Finish+See Summary </button>}
 
     </div>
     }
@@ -793,6 +807,45 @@ export default class Main extends React.Component<Props, State> {
     }
   }
   
+  render_similar_questions = () => {
+    let ret = [];
+    let ids = [];
+    for(var i = 0;i<this.state.similar_questions.length;i++) {
+      ids.push(this.state.similar_questions[i].id);
+    }
+
+    for(var i = 0;i<this.state.similar_questions.length;i++) {
+      let annotateButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",""); setCookie("entity",this.state.value.replaceAll("_"," ")+"_"+this.state.category_option+"_"+this.state.difficulty_option); }} variant="contained"><a href="/selected"> Annotate Question</a></Button>);
+      let answer = this.state.similar_questions[i]['answer'];
+      let question_id = this.state.similar_questions[i]['id'];
+      let question_text = this.state.similar_questions[i]['question'].substring(0,200)+"...";
+             
+      let question = 
+              (<div style={{marginBottom: 20, width: "100%"}}> <Card>
+      <CardContent>
+        <Typography variant="h5" component="h2">
+        Question {i+1}
+        </Typography>
+        <Typography  color="textSecondary">
+        {this.state.similar_questions[i]['tournament']} {this.state.similar_questions[i]['year']}
+        </Typography>
+        <Typography variant="body2" component="p">
+        {question_text}
+        </Typography>
+        <Typography variant="body2" component="p">
+        <b> Answer: </b> {answer}
+        </Typography>
+      </CardContent>
+      <CardActions>
+      {annotateButton}
+      </CardActions>
+    </Card> </div>);
+      ret.push(question);        
+    }
+        
+    return <Carousel cards={ret} />    
+  }
+  
   render_done = () => {
     let summaries = []
     for(var i in this.state.summary_dict) {
@@ -800,12 +853,12 @@ export default class Main extends React.Component<Props, State> {
     }
     
     return <div> 
-  <div style={{fontSize: 24, textAlign: 'center'}}> 
-    View more from <a href="/packetsearch" onClick={()=>{setCookie("tournament_option",this.state.metadata.tournament); setCookie("year_option",parseInt(this.state.metadata.year)); setCookie("difficulty_option", "Any");}}> {this.state.metadata.tournament} {this.state.metadata.year} </a> </div> <br />
-    <div style={{fontSize: 24, textAlign: 'center'}}> Entities annotated </div>
-<div style={{height: 250, overflow: 'scroll'}}> {summaries} </div>  <br /> 
-<div style={{fontSize: 24, textAlign: 'center'}}> Similar Questions </div>  <br />
-<div style={{fontSize: 24, textAlign: 'center'}}> Other Entities to Explore </div>  
+      <div style={{fontSize: 24, textAlign: 'center'}}> 
+        View more from <a href="/packetsearch" onClick={()=>{setCookie("tournament_option",this.state.metadata.tournament); setCookie("year_option",parseInt(this.state.metadata.year)); setCookie("difficulty_option", "Any");}}> {this.state.metadata.tournament} {this.state.metadata.year} </a> </div> <br />
+        <div style={{fontSize: 24, textAlign: 'center'}}> Entities in Question </div>
+    <div style={{height: 250, overflow: 'scroll'}}> {summaries} </div>  <br /> 
+    <div style={{fontSize: 24, textAlign: 'center'}}> Similar Questions {this.render_similar_questions()} </div>  <br />
+    <div style={{fontSize: 24, textAlign: 'center'}}> Other Entities to Explore </div>  
     </div>
   }
   
@@ -813,22 +866,11 @@ export default class Main extends React.Component<Props, State> {
    this.update_summary(entity_num);
   }
   
-  render() {
-    if (getCookie("token") === "") {
-      return <Redirect to="/login" />;
-    }
-    else if(this.state.words.length == 0) {
-      return <h1> Loading </h1> 
-    }
-    else {
-      return  <DndProvider backend={HTML5Backend}> 
-        { <div> 
-                  <Grid container style={{marginTop: 50}} spacing={3}>
-
-                    <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}} onClick={()=>{this.setState({popoverOpen: false})}}> 
-                      <div  style={{}}> 
+  render_menu = () => {
+    return <div> 
+    <div  style={{}}> 
                         {this.back_button()}
-                        <button class="user" style={{fontSize: "2.5vh"}}><a href="/user"> Main Menu </a> </button>
+                        <button class="user" style={{fontSize: "2.5vh"}}><a onClick={()=>{setCookie("questions","")}} href="/user"> Main Menu </a> </button>
                         <button  style={{marginLeft: 50, fontSize: "2.5vh"}}  onClick={this.show_instructions}>Instructions</button> 
                         <button  class="walk" style={{marginLeft: 50, fontSize: "2.5vh"}}  onClick={()=>{setCookie("help",""); this.show_walkthrough(); }}>Walkthrough</button> 
                         <button  style={{marginLeft: 50, fontSize: "2.5vh"}}  onClick={this.logout}>Logout</button> 
@@ -860,7 +902,41 @@ export default class Main extends React.Component<Props, State> {
                           </Button>
                         </Modal.Footer>
                       </Modal>
+    </div>
+  }
+  
+  render() {
+    if (getCookie("token") === "") {
+      return <Redirect to="/login" />;
+    } else if(this.state.redirect) {
+      return <Redirect to="/" />;   
+    }
+    else if(this.state.words.length == 0) {
+      return <h1> Loading </h1> 
+    }
+    else if(this.state.done) {
+      return <div>
+       <Grid container style={{marginTop: 3}} spacing={3}>
+
+                    <Grid item xs={6} style={{width: "50%", marginLeft: 50}} onClick={()=>{this.setState({popoverOpen: false})}}>
+      {this.render_menu()} 
+      </Grid>
+      </Grid>
+      <div style={{marginLeft: 30, marginRight: 30}}>
+        {this.render_done()}
+        
+      </div>
+        
+      </div>
+    }
+    else {
+      return  <DndProvider backend={HTML5Backend}> 
+        { <div> 
+                  <Grid container style={{marginTop: 50}} spacing={3}>
+
+                    <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}} onClick={()=>{this.setState({popoverOpen: false})}}> 
                       
+                      {this.render_menu()}
                       {this.state.done && this.render_done()}  
 
                       {!this.state.done && <div> <div class="highlight" style={{fontSize: "2.5vh"}}>  
@@ -886,10 +962,11 @@ export default class Main extends React.Component<Props, State> {
                     
                     <Divider orientation="vertical" flexItem />
                     <Grid item xs={6} style={{marginLeft: "55%", paddingLeft: 25, paddingRight: 25, borderLeft:'1px solid black',height: "100%", width: "40%"}}>
-                      <h3 class="entity"> Entities </h3>
-                      <button onClick={this.show_merge}> Merge Entities </button> <br />
+                      <h3 class="entity_title"> Entities </h3>
+                      <button class="merge" onClick={this.show_merge}> Merge Entities </button> <br />
                       3. Drag spans to appropriate entity. <br /> Some spans are pre-generated by a model and assigned to an entity; entities which the model is less certain of contain a lighter background and are at the top. <br />
-                      To modify span boundaries, click on a span, then use the &#60; &#62; keys for the left end, and the ← → keys for the right end.
+                      To modify span boundaries, click on a span, then use the &#60; &#62; keys for the left end, and the ← → keys for the right end. <br />
+                      <b> Note that your changes are autosaved </b> 
                       <div style={{height: "100%"}}>
                               
 

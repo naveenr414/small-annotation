@@ -201,7 +201,7 @@ class Dragbox extends React.Component<Props, State> {
                     <Grid item xs={this.props.entity_number>0?3:6} > 
                       {this.render_entity()}
          {this.props.entity_number>0?<br />:<div />}
-        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "50%"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > Change
+        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "50%"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > {this.props.entity_name ==""? 'Select Entity':'Change Entity'}
         </button> :''} {this.props.entity_number>0?<span />:<div />}
         {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "45%", textAlign: "center"}} onClick={this.delete_entity} > Delete
         </button>:''} <br />
