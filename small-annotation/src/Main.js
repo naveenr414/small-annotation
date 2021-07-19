@@ -282,7 +282,6 @@ export default class Main extends React.Component<Props, State> {
       return <button style={{fontSize: "2.5vh", marginRight: 50}}  class="entity"><a href="/entitysearch"> Back </a> </button>
     }
     if(getCookie("main")!="") {
-      setCookie("questions","");
       return <button style={{fontSize: "2.5vh", marginRight: 50}}  class="entity"><a href="/"> Back </a> </button>
     }
   }

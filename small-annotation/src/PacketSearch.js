@@ -115,11 +115,6 @@ export default class PacketSearch extends React.Component<Props, State> {
   }
 
   search = () => {
-    setCookie("tournament_option","");
-    setCookie("year_option", "");
-    setCookie("difficulty_option","");
-    setCookie("packet","");
-
     if(this.state.difficulty_option!="" &&
     this.state.year_option>0 &&
     this.state.tournament_option!="") {

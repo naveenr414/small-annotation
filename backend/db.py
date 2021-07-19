@@ -26,6 +26,8 @@ def sigmoid(x):
 
 Base = declarative_base()
 
+gender_dict = pickle.load(open("gender_dict.p","rb"))
+
 class Mention(Base):
     __tablename__ = "mention"
     id = Column(Integer, primary_key=True)
@@ -563,9 +565,9 @@ class Database:
 
     def get_gender(self,wiki_page):
         with self._session_scope as session:
-            results = session.query(WikiSummary).filter(WikiSummary.title==wiki_page.lower().replace(" ","_")).limit(1)
-            results = [i.gender for i in results]+['none']
-            return results[0]
+            if wiki_page.lower().replace(" ","_") in gender_dict:
+                return gender_dict[wiki_page.lower().replace(" ","_")]
+            return 'None'
 
     def get_id(self,word):
         start = time.time()

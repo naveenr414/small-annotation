@@ -462,12 +462,14 @@ def get_similar_questions(question_id):
 
 @app.get("/quel/tournament/{tournament}")
 def get_tournament(tournament):
+    start = time.time()
     year,tournament = tournament.split("_")
     tourney_data = db.get_tournament(int(year),tournament)
     categories = tourney_data['categories']
     tourney_data = tourney_data['entities'] 
 
-    print("Searching for {} {}".format(year,tournament))
+    print("Searching for {} {} in {} time".format(year,tournament,time.time()-start))
+    start = time.time()
 
     entity_popularity = {}
     for i in tourney_data:
@@ -480,21 +482,26 @@ def get_tournament(tournament):
     data = [(i,len(entity_popularity[i])) for i in entity_popularity]
     data = sorted(data,key=lambda k: k[1],reverse=True)[:20]
 
-    
+    print("Got popular entities in {} time".format(time.time()-start))
+    start = time.time()
+
     gender_counts = [db.get_gender(i) for i in set([j['page'] for j in tourney_data])]
+    print("Length is {}".format(len(gender_counts)))
     counter = Counter(gender_counts)
-    del counter['none']
+    del counter['None']
 
     if 'male' not in counter:
         counter['male'] = 0
     if 'female' not in counter:
         counter['female'] = 0
 
+    print("Gender took {} time".format(time.time()-start))
+    start = time.time()
     data = [i[0] for i in data]
     common_entity_definitions = db.multiple_definitions(data)
     ids = common_entity_definitions['ids']
     common_entity_definitions = common_entity_definitions['definitions']
-    
+    print("Final part took {} time".format(time.time()-start))
     
 
     return {'data':data,'genders':counter,'definitions': common_entity_definitions,

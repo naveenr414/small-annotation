@@ -31,6 +31,7 @@ export default class User extends React.Component<Props, State> {
     advanced_year: "Any",
     advanced_category: 'Literature',
     advanced_tournament: 'Maryland Fall',
+    redirect_location: "",
   }
   
   logout = () => {
@@ -48,7 +49,7 @@ export default class User extends React.Component<Props, State> {
   explore_topic = () => {
     if(this.state.value!="") {
       setCookie("topic",this.state.value);
-      this.setState({});
+      this.setState({redirect_location: "/entitysearch"});
     }
   }
   
@@ -59,7 +60,7 @@ export default class User extends React.Component<Props, State> {
       .then(res => {
         setCookie("questions",JSON.stringify(res));
         setCookie("main","true");
-        this.setState({});
+        this.setState({redirect_location: "/selected"});
       });
     
   }
@@ -78,7 +79,13 @@ export default class User extends React.Component<Props, State> {
       setCookie("year_option",this.state.advanced_year);
       setCookie("difficulty_option", this.state.advanced_difficulty);
       setCookie("category_option",this.state.advanced_category);
-      this.setState({});
+      
+      if(this.state.advanced_year !== "Any" && this.state.advanced_year !== "") {
+        this.setState({redirect_location: "/packetsearch"});
+      }
+      else {
+        this.setState({redirect_location: "/entitysearch"});
+      }
     }
   }
   
@@ -87,13 +94,10 @@ export default class User extends React.Component<Props, State> {
       return <Redirect to="/login" />;
     }
         
-    if(getCookie("topic")!="" && (getCookie("year_option")==="Any" || getCookie("year_option") == "")) {
-      return <Redirect to="/entitysearch" />
-    } else if(getCookie("year_option")!=="Any" && getCookie("year_option")!=="") {
-      return <Redirect to="/packetsearch" />
-    } else if(getCookie("questions") !== "") {
-      return <Redirect to="/selected" /> 
+    if(this.state.redirect_location != "") {
+      return <Redirect to={this.state.redirect_location} />
     }
+    
 
     
     return (<div> 
@@ -137,7 +141,7 @@ export default class User extends React.Component<Props, State> {
       
       {this.state.advanced_search && 
         <div>
-          Topic (blank for any topic): <AutoComplete on_enter={this.advanced_search} update_value={(advanced_value)=>{this.setState({advanced_value})}} />    
+          Topic: <AutoComplete on_enter={this.advanced_search} update_value={(advanced_value)=>{this.setState({advanced_value})}} />    
           <br />
           Difficulty: <Dropdown update_value={(advanced_difficulty)=>{this.setState({advanced_difficulty})}} default_value={"High School"} options={difficulties} />  <br />
           Category: <Dropdown update_value={(advanced_category)=>{this.setState({advanced_category})}} default_value={"Literature"} options={categories} /> 

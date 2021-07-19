@@ -158,7 +158,7 @@ export default class EntitySearch extends React.Component<Props, State> {
       let difficulty_option = emptyOrValue(getCookie("difficulty_option"),'Any');
       let category_option = emptyOrValue(getCookie("category_option"),'Any');      
       
-      this.setState({value: getCookie("topic"),initial_search: getCookie("topic"),difficulty_option,category_option,default_difficulty: difficulty_option, default_category: category_option},()=>{this.get_results(); setCookie("topic",""); setCookie("difficulty_option",""); setCookie("category_option",""); });
+      this.setState({value: getCookie("topic"),initial_search: getCookie("topic"),difficulty_option,category_option,default_difficulty: difficulty_option, default_category: category_option},()=>{this.get_results();});
     }
   }
   
