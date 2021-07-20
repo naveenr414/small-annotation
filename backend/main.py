@@ -529,11 +529,23 @@ async def write_phrases(noun_phrases: NounPhrase):
     mentions = []
     last_question[username] = question_id
 
+    entity_to_number = {}
+
+    print("Entity names {}".format(entity_names))
+
+    curr_number = 1
+    for i in range(1,len(entity_names)):
+        if entity_names[i] not in entity_to_number:
+            entity_to_number[entity_names[i]] = curr_number
+            curr_number+=1
+
+    print(entity_to_number)
+
     for i in range(1,len(entity_names)):
         for j in entity_spans[i]:
             mentions.append({'user_id':username,'question_id':question_id,'start':j['start'],
                              'end':j['end'],'wiki_page':entity_names[i],
-                             'content':j['content'],'number': i,'confidence':1})
+                             'content':j['content'],'number': entity_to_number[entity_names[i]],'confidence':1})
     db.insert_mentions(mentions)
     db.user_updates(username,int(question_id),mentions)
 

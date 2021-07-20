@@ -54,15 +54,9 @@ export default class User extends React.Component<Props, State> {
   }
   
   explore_random_category = () => {
-    fetch(
-      address+"/random_question/"+this.state.category_option+"_"+this.state.random_difficulty_option
-      ).then(res=>res.json())
-      .then(res => {
-        setCookie("questions",JSON.stringify(res));
-        setCookie("main","true");
-        this.setState({redirect_location: "/selected"});
-      });
-    
+    this.setState({redirect_location: "/selected"});
+    setCookie("category_option",this.state.category_option);
+    setCookie("difficulty_option",this.state.random_difficulty_option); 
   }
   
   explore_random_tournament = () => {

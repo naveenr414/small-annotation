@@ -153,7 +153,19 @@ export default class Main extends React.Component<Props, State> {
 
   
     if(this.props.selected) {
-      this.setState({name},()=>{this.get_question_num();});
+      if(getCookie("questions")!=="") {
+         this.setState({name},()=>{this.get_question_num();});
+      }
+      else if(getCookie("category_option")!=="") {
+            fetch(
+      address+"/random_question/"+getCookie("category_option")+"_"+getCookie("difficulty_option")
+      ).then(res=>res.json())
+      .then(res => {
+        setCookie("questions",JSON.stringify(res));
+        this.setState({name},()=>{this.get_question_num();});
+
+      });
+      }
     }
     else if(this.props.suggested) {
       this.setState({name},()=>{this.get_noun_phrases_suggested(0);});
@@ -168,7 +180,6 @@ export default class Main extends React.Component<Props, State> {
     else {
       this.setState({name},()=>{this.get_question_num();});
     }
-    
     
     if(name!="" && getCookie("help")!=="done") {
       this.show_walkthrough();
@@ -287,7 +298,12 @@ export default class Main extends React.Component<Props, State> {
   }
 
   submit = () => {
-    let str_entity_names = JSON.stringify(this.state.entity_names);
+    let entity_names = this.state.entity_names;
+    for(var i = 0;i<entity_names.length;i++) {
+      entity_names[i] = entity_names[i].replaceAll(" ","_");
+    }
+    
+    let str_entity_names = JSON.stringify(entity_names);
     let str_entity_spans = JSON.stringify(this.state.entity_list);
     let username = this.state.name;
     let question_id = this.state.qanta_id.toString();
@@ -907,9 +923,7 @@ export default class Main extends React.Component<Props, State> {
   render() {
     if (getCookie("token") === "") {
       return <Redirect to="/login" />;
-    } else if(this.state.redirect) {
-      return <Redirect to="/" />;   
-    }
+    } 
     else if(this.state.words.length == 0) {
       return <h1> Loading </h1> 
     }
@@ -940,6 +954,7 @@ export default class Main extends React.Component<Props, State> {
 
                       {!this.state.done && <div> <div class="highlight" style={{fontSize: "2.5vh"}}>  
                         1. Highlight spans and select create span <br />
+                        Select spans referring to proper nouns, linking them with their  Wikipedia entry <br />
                         <b> Category</b>:  {" "} {this.state.metadata.category}, from {this.state.metadata.tournament} {this.state.metadata.year} 
                        
                         <div id="main_text" style={{popoverOpen: false}}> {this.get_styles()} </div>
