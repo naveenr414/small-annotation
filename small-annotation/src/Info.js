@@ -41,6 +41,7 @@ export default class Info extends React.Component<Props, State> {
     leaderboard_loading: false,
     value: 'one',
     common_ids: {},
+    should_redirect: false,
   }
   
   get_top_categories = () => {
@@ -132,7 +133,7 @@ export default class Info extends React.Component<Props, State> {
     let entities = [];
     for(var i = 0;i<this.state.common_entities.length;i++) {
       let entity = this.state.common_entities[i];
-      let searchButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("topic",entity); this.setState({});}} variant="contained"> Search </Button>);
+      let searchButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("topic",entity); setCookie("difficulty_option", "Any"); setCookie("category_option","Any"); this.setState({should_redirect: true});}} variant="contained"> Search </Button>);
       let definition = this.state.common_entity_definitions[entity].substring(0,200)+"...";
       let card = (<div style={{marginBottom: 20, width: "100%"}}> <Card>
       <CardContent>
@@ -202,7 +203,7 @@ export default class Info extends React.Component<Props, State> {
     return <div style={{marginTop: 20}}> 
     {this.state.username} <br /> <br />
     <div style={{textAlign: 'center'}}> 
-      Top Entities:
+      <h2> Top Entities: </h2>
     </div>
     {this.render_entities()}
     <Grid container> 
@@ -224,8 +225,8 @@ export default class Info extends React.Component<Props, State> {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
     }
-    else if(getCookie("topic") !== "") {
-      return <Redirect to="/entity" />;
+    else if(this.state.should_redirect) {
+      return <Redirect to="/entitysearch" />;
     }
 
     let main_menu = <div  style={{marginTop: 100}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button> </div>; 

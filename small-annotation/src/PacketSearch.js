@@ -192,9 +192,9 @@ export default class PacketSearch extends React.Component<Props, State> {
       return <Redirect to="/login" />;
     }
     
-    if (getCookie("topic") != "") {
+/*    if (getCookie("topic") != "") {
       return <Redirect to="/entitysearch" />; 
-    }
+    }*/
 
     return <div style={{marginLeft: 30, marginBottom: 30}}> <h1> Search by Tournament </h1> 
           <div style={{marginBottom: 50}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>

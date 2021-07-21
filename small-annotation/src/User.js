@@ -49,6 +49,8 @@ export default class User extends React.Component<Props, State> {
   explore_topic = () => {
     if(this.state.value!="") {
       setCookie("topic",this.state.value);
+      setCookie("difficulty_option","Any");
+      setCookie("category_option","Any");
       this.setState({redirect_location: "/entitysearch"});
     }
   }
@@ -63,7 +65,7 @@ export default class User extends React.Component<Props, State> {
     setCookie("tournament_option",this.state.tournament_option);
     setCookie("year_option",this.state.year_option);
     setCookie("difficulty_option",this.state.difficulty_option);
-    this.setState({});
+    this.setState({redirect_location: "/packetsearch"});
   }
   
   advanced_search = () => {
