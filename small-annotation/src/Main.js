@@ -873,8 +873,7 @@ export default class Main extends React.Component<Props, State> {
         <div style={{fontSize: 24, textAlign: 'center'}}> Entities in Question </div>
     <div style={{height: 250, overflow: 'scroll'}}> {summaries} </div>  <br /> 
     <div style={{fontSize: 24, textAlign: 'center'}}> Similar Questions {this.render_similar_questions()} </div>  <br />
-    <div style={{fontSize: 24, textAlign: 'center'}}> Other Entities to Explore </div>  
-    </div>
+      </div>
   }
   
   update_popover = (entity_num) => {
