@@ -209,7 +209,7 @@ export default class EntitySearch extends React.Component<Props, State> {
         <div style={{fontSize: 20, display: 'inline-block', marginRight: 20}}> 
           Search for a Wikipedia entity to see it's prevelance over time, co-occuring entities, and which questions reference that entity. <br />
           For example, to see what clues come up about Chinua Achebe, search for his name, and annotate questions about him or his books
-        </div>
+        </div> <br />
         
         <div style={{marginTop: 10, display: 'inline-block'}}> 
           <span style={{marginRight: 20}}> <AutoComplete on_enter={this.get_results} update_value={(value)=>{this.setState({value})}} initial_value={this.state.initial_search} /> </span>
