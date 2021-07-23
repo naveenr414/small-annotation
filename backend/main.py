@@ -226,7 +226,9 @@ def get_question_num(question_num):
     return db.get_question(int(question_num))
 
 def k_closest(entity,k):
-    return wikipedia_embeddings[unidecode.unidecode(entity)]
+    if unidecode.unidecode(entity) in wikipedia_embeddings:
+        return wikipedia_embeddings[unidecode.unidecode(entity)]
+    return []
 
 def load_question(name,question_num):
     question_data = db.get_question(int(question_num))

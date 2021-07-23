@@ -85,6 +85,13 @@ export default class User extends React.Component<Props, State> {
     }
   }
   
+  random_topic = () => {
+    setCookie("topic",this.state.random_topic);
+    setCookie("difficulty_option","Any");
+    setCookie("category_option","Any");
+    this.setState({redirect_location: "/entitysearch"});
+  }
+  
   render() {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
@@ -104,7 +111,7 @@ export default class User extends React.Component<Props, State> {
       </span> <span style={{float: 'right',marginTop: 20, marginRight: 50, fontSize: 24}}> <a href="/info"> Personal Stats </a> </span> </header>
       
       <div style={{marginBottom: "2%"}}> Allowing Quizbowl players to explore 
-        <span style={{color: 'blue', fontSize: 40}}> {this.state.random_topic} </span> 
+        <span style={{color: 'blue', fontSize: 40}} onClick={this.random_topic}> {this.state.random_topic} </span> 
       </div> 
       
       <div> What would you like to explore? </div>
