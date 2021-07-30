@@ -9,6 +9,7 @@ import Grid from "@material-ui/core/Grid";
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 
+let address = "/quel";
 
 interface Props {
   entity_number: number;
@@ -35,6 +36,7 @@ interface State {
   entity_search: string;
   merge_value: number;
   entity_number: number;
+  entity_id: number;
 }
 
 const boxTarget = {
@@ -63,6 +65,15 @@ class Dragbox extends React.Component<Props, State> {
     entity_name: "No Entity",
     entity_search: "No Entity",
     merge_value: this.props.entity_number,
+    entity_id: 0,
+  }
+  
+  componentDidMount = () => {
+    if(this.props.entity_name!=""){
+      fetch(address+"/get_id/"+this.props.entity_name.replaceAll(" ","_")).then((res) => res.json())
+        .then((res) => {
+        this.setState({entity_id: res})});
+    }        
   }
     
   update_tags = (tags) => {
@@ -145,7 +156,7 @@ class Dragbox extends React.Component<Props, State> {
       
 
       
-      return (<a target="_blank" style={{color: 'black'}} href={"https://wikipedia.org/wiki/"+this.props.entity_name.replaceAll(" ", "_")}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", opacity: alpha,textAlign: "center", fontSize: "3vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
+      return (<a target="_blank" style={{color: 'black'}} href={"https://wikipedia.org/wiki?curid="+this.state.entity_id}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", opacity: alpha,textAlign: "center", fontSize: "2vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
           </span>  </a>);
     }
     return (<span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number > 0?"3vh":"2.5vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):(<span> 2. Move unassigned spans on right to entity </span> )}
@@ -196,17 +207,17 @@ class Dragbox extends React.Component<Props, State> {
     return this.props.dropTarget(
       <div>  
         <br /> 
-        <Grid container spacing={this.props.entity_number>0?3:6}>
+        <Grid container spacing={this.props.entity_number>0?4:6}>
 
-                    <Grid item xs={this.props.entity_number>0?3:6} > 
+                    <Grid item xs={this.props.entity_number>0?4:6} > 
                       {this.render_entity()}
          {this.props.entity_number>0?<br />:<div />}
-        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "50%"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > {this.props.entity_name ==""? 'Select Entity':'Change Entity'}
+        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "50%"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > {this.props.entity_name ==""? 'Select':'Change'}
         </button> :''} {this.props.entity_number>0?<span />:<div />}
         {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "45%", textAlign: "center"}} onClick={this.delete_entity} > Delete
         </button>:''} <br />
         </Grid> 
-        <Grid item xs={this.props.entity_number>0?9:6}>
+        <Grid item xs={this.props.entity_number>0?8:6}>
         <Modal size="lg" show={this.state.show_search} onHide={this.close_search} animation={false}>
           <Modal.Header closeButton>
             <Modal.Title>Search</Modal.Title>

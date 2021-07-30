@@ -118,7 +118,7 @@ blink_file = []
 coref_file = []
 
 print("Loading questions")
-question_list = json.load(open("qanta.train.2018.04.18.json"))['questions']+json.load(open("qanta.dev.2018.04.18.json"))['questions']+json.load(open("qanta.test.2018.04.18.json"))['questions']
+question_list = json.load(open("mostly_right.json"))['questions']
 
 w = open("baseline_entities.json","w")
 

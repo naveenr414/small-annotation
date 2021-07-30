@@ -28,6 +28,11 @@ Base = declarative_base()
 
 gender_dict = pickle.load(open("gender_dict.p","rb"))
 
+class Redirect(Base):
+    __tablename__ = "redirect"
+    name = Column(Text(),index=True, primary_key=True)
+    page = Column(Text())
+
 class Mention(Base):
     __tablename__ = "mention"
     id = Column(Integer, primary_key=True)
@@ -128,6 +133,84 @@ class Database:
 
     def populate(self):
         with self._session_scope as session:
+            start = time.time()
+
+            all_qanta = json.load(open("mostly_right.json"))['questions']
+            all_qanta = [i for i in all_qanta if i['page']!=None]
+            all_answers = set([unidecode.unidecode(i['page']).lower() for i in all_qanta])
+
+            pages = Counter([i['page'] for i in all_qanta])
+            pages = list(dict(pages).items())
+            pages = sorted(pages,key=lambda k: k[1])[::-1]
+
+            redirected_pages = set()
+            redirects = []
+
+            for i in range(len(pages)):
+                words = pages[i][0].split("_")
+                if len(words)>1 and unidecode.unidecode(words[-1]).lower()not in redirected_pages:
+                    redirected_pages.add(unidecode.unidecode(words[-1]).lower())
+                    redirects.append({'name':unidecode.unidecode(words[-1]).lower(),'page':"_".join(words)})
+                    
+            total_writes = 0
+            with open('all_wiki_redirects.csv',encoding='utf-8') as csvfile:
+                line = csvfile.readline()
+
+                while line != '':
+                    split = line.split('","')
+                    option_one = split[0][1:]
+                    option_two = split[1].strip()[:-1]
+                    option_one = option_one.replace('\\"','"').replace("_"," ")
+                    option_two = option_two.replace('\\"','"').replace("_"," ")
+
+                    if unidecode.unidecode(option_two).lower().replace("_"," ") in all_answers and unidecode.unidecode(option_one.lower()) not in redirected_pages:
+                        if option_one != '':
+                            redirects.append({'name': unidecode.unidecode(option_one.lower()), 'page': option_two})
+                            redirected_pages.add(unidecode.unidecode(option_one.lower()))
+                            total_writes+=1
+
+                    if len(redirects)%10000 == 0 and len(redirects)>0:
+                        print("Total writes {}".format(total_writes))
+                        session.bulk_insert_mappings(Redirect,redirects)
+                        print(redirects[-10:])
+                        redirects = []
+                    
+                    line = csvfile.readline()
+            session.bulk_insert_mappings(Redirect,redirects)
+            print("Redirect time {}".format(time.time()-start))
+            start = time.time()
+
+            objects = []
+
+            difficulty_map = {'regular_high_school': 'High School', 'middle_school': 'Middle School', 'college': 'College',
+                              'hs': 'High School', 'easy_high_school': 'High School', 'national_high_school': 'High School',
+                              'hard_high_school': 'High School', 'easy_college': 'College', 'open': 'Open', 'hard_college': 'College',
+                              'ms': 'Middle School', 'regular_college': 'College'}
+            
+            for i in range(len(all_qanta)):
+                objects.append({'id':all_qanta[i]['qanta_id'], 'question': all_qanta[i]['text'], 'category': all_qanta[i]['category'],'wiki_answer':all_qanta[i]['page'].replace("_", " "),
+                                'sub_category': all_qanta[i]['subcategory'],'difficulty': difficulty_map[all_qanta[i]['difficulty'].lower()],'tournament': all_qanta[i]['tournament'],
+                                'year': all_qanta[i]['year'],'answer':all_qanta[i]['answer'].replace("&lt;","<").replace("&gt;",">"),
+                                'wiki_answer_lower':all_qanta[i]['page'].replace("_", " ").lower()})
+                if i%100000 == 0:
+                    print(i,time.time()-start)   
+                if i%100000 == 0:
+                    session.bulk_insert_mappings(Question,objects)
+                    objects = []
+            session.bulk_insert_mappings(Question,objects)
+            objects = []
+            dev = []
+            test = []
+            train = []
+
+            question = json.load(open("sample_question.json"))
+            mention = json.load(open("sample_mention.json"))
+
+            session.bulk_insert_mappings(Question,question)
+            session.bulk_insert_mappings(Mention,mention)
+
+            print("Qanta time {}".format(time.time()-start))
+
             # Wiki
             print("Populating Wikipedia")
             start = time.time()
@@ -184,6 +267,7 @@ class Database:
                 for mention in wiki_obj['clusters']:
                     confidence = sigmoid(mention['score'])
                     for span in mention['clusters']:
+                        if mention['name'] != None:
                             objects.append({'user_id':'system','question_id':wiki_obj['qanta_id'],'start':span[0],
                                             'end':span[1],'wiki_page':unidecode.unidecode(mention['name'].lower()),'number':j,'content':span[2],'confidence':confidence})
                     j+=1
@@ -197,46 +281,6 @@ class Database:
             print("Mentions time {}".format(time.time()-start))
 
             # Load in qanta questions
-            start = time.time()
-            dev = json.load(open("qanta.dev.2018.04.18.json"))['questions']
-            test = json.load(open("qanta.test.2018.04.18.json"))['questions']
-            train = json.load(open("qanta.train.2018.04.18.json"))['questions']
-
-            all_qanta = train+dev+test
-
-            objects = []
-
-            difficulty_map = {'regular_high_school': 'High School', 'middle_school': 'Middle School', 'college': 'College',
-                              'hs': 'High School', 'easy_high_school': 'High School', 'national_high_school': 'High School',
-                              'hard_high_school': 'High School', 'easy_college': 'College', 'open': 'Open', 'hard_college': 'College',
-                              'ms': 'Middle School', 'regular_college': 'College'}
-            
-            for i in range(len(all_qanta)):
-                objects.append({'id':all_qanta[i]['qanta_id'], 'question': all_qanta[i]['text'], 'category': all_qanta[i]['category'],'wiki_answer':all_qanta[i]['page'].replace("_", " "),
-                                'sub_category': all_qanta[i]['subcategory'],'difficulty': difficulty_map[all_qanta[i]['difficulty'].lower()],'tournament': all_qanta[i]['tournament'],
-                                'year': all_qanta[i]['year'],'answer':all_qanta[i]['answer'].replace("&lt;","<").replace("&gt;",">"),
-                                'wiki_answer_lower':all_qanta[i]['page'].replace("_", " ").lower()})
-                if i%100000 == 0:
-                    print(i,time.time()-start)   
-                if i%100000 == 0:
-                    session.bulk_insert_mappings(Question,objects)
-                    objects = []
-            session.bulk_insert_mappings(Question,objects)
-            objects = []
-            dev = []
-            test = []
-            train = []
-
-            question = json.load(open("sample_question.json"))
-            mention = json.load(open("sample_mention.json"))
-
-            session.bulk_insert_mappings(Question,question)
-            session.bulk_insert_mappings(Mention,mention)
-
-            print("Qanta time {}".format(time.time()-start))
-            
-
-
             session.commit()
             print("Commit time {}".format(time.time()-start))
 
@@ -329,6 +373,18 @@ class Database:
                 else:
                     results = session.query(WikiSummary).filter(and_(WikiSummary.title>=word,WikiSummary.title<=upper_bound)).order_by(desc(WikiSummary.popularity)).limit(5)
 
+            print("word {}".format(unidecode.unidecode(word.lower())))
+            exact_match = session.query(Redirect).filter(Redirect.name == unidecode.unidecode(word.lower())).limit(1)
+            exact_match = [i.page.replace(" ","_") for i in exact_match]
+
+            if len(exact_match)>0:
+                summary = session.query(WikiSummary).filter(WikiSummary.title == exact_match[0].lower())
+                ids = [i.id for i in summary] + [0]
+                summary = [i.text for i in summary]+['']
+                summary = summary[0]
+                exact_match = [(exact_match[0].lower(),summary,ids[0])]
+            print("Exact match {}".format(exact_match))
+
         names = [i.title for i in exact]+[i.title for i in results]
         summaries = [i.text for i in exact]+[i.text for i in results]
         ids = [i.id for i in exact]+[i.id for i in results]
@@ -338,7 +394,7 @@ class Database:
         ids = ids[:5]
 
         print("Took {} time with {} count {}".format(time.time()-start,count,word))
-        return [(names[i].replace("&amp;","&"),summaries[i],ids[i]) for i in range(len(names))]
+        return exact_match+[(names[i].replace("&amp;","&"),summaries[i],ids[i]) for i in range(len(names))]
 
     def get_definition(self,word):
         with self._session_scope as session:

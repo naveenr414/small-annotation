@@ -39,7 +39,7 @@ function App() {
         <Route path="/last">
           <Main suggested={false} last={true} selected={false}  />
         </Route>
-        <Route path="/selected">
+        <Route path="/selected*">
           <Main suggested={false} last={false} selected={true} /> 
         </Route>
         <Route path="/sample"> 

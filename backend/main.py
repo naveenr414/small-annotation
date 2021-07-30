@@ -56,6 +56,7 @@ class Preference(BaseModel):
 
 nlp = spacy.load("en_core_web_sm")
 tokenizer = Tokenizer(nlp.vocab)
+all_questions_year = pickle.load(open("year_freq.p","rb"))
 
 user_category = {}
 user_difficulty = {}
@@ -220,6 +221,10 @@ def get_annotations(username,question_num,question_data):
     
     return {'names':json.dumps(real_names),
             'spans':json.dumps(real_spans)}
+
+@app.get("/quel/get_id/{entity}")
+def get_id(entity):
+    return (db.get_id(entity)+[0])[0]
 
 @app.get("/quel/question_num/{question_num}")
 def get_question_num(question_num):
@@ -387,6 +392,8 @@ def get_questions_entity(entity_name):
     for year in range(2005,2018):
         if year not in year_freq:
             year_freq[year] = 0
+        else:
+            year_freq[year]/=all_questions_year[year]
 
     years = [year_freq[i] for i in range(2005,2018)]
 

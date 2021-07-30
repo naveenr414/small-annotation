@@ -14,3 +14,5 @@ backend/all_wiki.json
 backend/wikipedia-index
 qanta*.json
 *.sqlite3
+backend/*.csv
+backend/*pagecounts*

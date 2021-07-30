@@ -127,7 +127,11 @@ export default class Main extends React.Component<Props, State> {
         intro: 'If none of the entities match, you can create a new entity for this span'
       },
       {
-        intro: 'Click "change/select entity" to change the name of the entity box',
+        intro: 'Click "change/select" to change the name of the entity box, or delete to remove entity',
+        element: document.querySelector(".entity_title"),
+      },
+      {
+        intro: 'You can click on the delete button on the top right corner of spans to delete them',
         element: document.querySelector(".entity_title"),
       },{
         intro: 'If you want to merge entities and their spans together, click on the merge button',
@@ -149,9 +153,24 @@ export default class Main extends React.Component<Props, State> {
   /* Loading in questions */ 
   componentDidMount = () => {
     let name = getCookie("token");
- 
+    
+    let location = window.location.href;
+    let nums = location.split("selected_");
+    if(nums.length == 2) {
+      let question_num = parseInt(nums[1]);
+      let questions = [question_num];
+      let current_questions = getCookie("questions");
+      if(current_questions!=="") {
+        current_questions = JSON.parse(current_questions);
+        if(current_questions.indexOf(question_num)>=0) {
+          questions = arrayRotate(current_questions,current_questions.indexOf(question_num));
+        }
+      }
+      setCookie("questions",JSON.stringify(questions));
+      this.setState({name},()=>{this.get_question_num();});
 
-  
+    }
+    
     if(this.props.selected) {
       if(getCookie("questions")!=="") {
          this.setState({name},()=>{this.get_question_num();});
@@ -229,6 +248,9 @@ export default class Main extends React.Component<Props, State> {
     if(numbers!="" && JSON.parse(numbers).length>0) {
       numbers = JSON.parse(numbers);
       this.setState({next_numbers: numbers});
+      var state = {}, newUrl = "selected_"+numbers[0];
+      window.history.pushState(state, "Page Title", newUrl);
+
       this.get_question(address+"/noun_phrases_selected/"+numbers[0]+"_"+this.state.name,numbers[0]);
     }
     else {
@@ -946,7 +968,7 @@ export default class Main extends React.Component<Props, State> {
         { <div> 
                   <Grid container style={{marginTop: 50}} spacing={3}>
 
-                    <Grid item xs={6} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}} onClick={()=>{this.setState({popoverOpen: false})}}> 
+                    <Grid item xs={8} style={{width: "50%", position: "fixed", top:"0", marginLeft: 50}} onClick={()=>{this.setState({popoverOpen: false})}}> 
                       
                       {this.render_menu()}
                       {this.state.done && this.render_done()}  
@@ -956,13 +978,13 @@ export default class Main extends React.Component<Props, State> {
                         Select spans referring to proper nouns, linking them with their  Wikipedia entry <br />
                         <b> Category</b>:  {" "} {this.state.metadata.category}, from {this.state.metadata.tournament} {this.state.metadata.year} 
                        
-                        <div id="main_text" style={{popoverOpen: false}}> {this.get_styles()} </div>
+                        <div id="main_text" style={{popoverOpen: false, fontSize: 14}}> {this.get_styles()} </div>
                         <div> <b> Answer: </b> {this.state.answer.substring(0,250)} </div>
                       </div>
                       <button class="create" style={{fontSize: "2.5vh"}}  onClick={()=>{this.create_tag(0)}} > 
                       Create Span </button> <br />
                       <span style={{fontSize: "2.5vh"}}> Info Box </span> 
-                      <div style={{minHeight: 40, width: "100%", padding: 5, borderRadius: 4,border:"1px solid #444444"}}> 
+                      <div style={{minHeight: 40, width: "100%", padding: 5, borderRadius: 4,border:"1px solid #444444", fontSize: 14}}> 
                         {this.state.current_summary!="" && <b> {this.state.current_title.replaceAll("_"," ")} </b>}
                           {this.state.current_summary!="" && <span> - {this.state.current_summary} </span>
 
@@ -974,7 +996,7 @@ export default class Main extends React.Component<Props, State> {
                     </Grid>
                     
                     <Divider orientation="vertical" flexItem />
-                    <Grid item xs={6} style={{marginLeft: "55%", paddingLeft: 25, paddingRight: 25, borderLeft:'1px solid black',height: "100%", width: "40%"}}>
+                    <Grid item xs={5} style={{marginLeft: "55%", paddingLeft: 25, paddingRight: 10, borderLeft:'1px solid black',height: "100%", width: "40%"}}>
                       <h3 class="entity_title"> Entities </h3>
                       <button class="merge" onClick={this.show_merge}> Merge Entities </button> <br />
                       3. Drag spans to appropriate entity. <br /> Some spans are pre-generated by a model and assigned to an entity; entities which the model is less certain of contain a lighter background and are at the top. <br />

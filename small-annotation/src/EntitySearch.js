@@ -61,7 +61,7 @@ export default class EntitySearch extends React.Component<Props, State> {
         years.push(i.toString());
       }
   
-      return <div> <div style={{textAlign: 'center', marginTop: 20, marginBottom: 20, fontSize: 24}}> Questions about {this.state.search} by Year </div> <LineGraph labels={years} data={this.state.year_freq} label={"Number of Questions"} /> </div>
+      return <div> <div style={{textAlign: 'center', marginTop: 20, marginBottom: 20, fontSize: 24}}> Fraction of questions about {this.state.search} by Year </div> <LineGraph labels={years} data={this.state.year_freq} label={"Number of Questions"} /> </div>
     }
   }
   
@@ -227,9 +227,9 @@ export default class EntitySearch extends React.Component<Props, State> {
         <br /> 
         {this.render_entity_info()}
         {this.render_entities()}
+        {this.render_results()}
         {this.render_bar_graph()}
         {this.render_year_freq()}
-        {this.render_results()}
 
     </div>
     

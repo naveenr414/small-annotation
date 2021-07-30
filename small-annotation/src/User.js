@@ -110,8 +110,8 @@ export default class User extends React.Component<Props, State> {
         <a href="/"  style={{fontSize: 60, color: "black", textDecoration: 'none'}}> QUEL </a> </span> <span style={{fontSize: 16}}> Entity and topic exploration made easy 
       </span> <span style={{float: 'right',marginTop: 20, marginRight: 50, fontSize: 24}}> <a href="/info"> Personal Stats </a> </span> </header>
       
-      <div style={{marginBottom: "2%"}}> Allowing Quizbowl players to explore 
-        <span style={{color: 'blue', fontSize: 40}} onClick={this.random_topic}> {this.state.random_topic} </span> 
+      <div style={{marginBottom: "2%"}}> Allowing Quizbowl players to explore &nbsp;
+        <span style={{color: 'blue', fontSize: 40, cursor: 'pointer', textDecoration: 'underline'}} onClick={this.random_topic}>{this.state.random_topic} </span> 
       </div> 
       
       <div> What would you like to explore? </div>
