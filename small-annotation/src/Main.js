@@ -168,10 +168,8 @@ export default class Main extends React.Component<Props, State> {
       }
       setCookie("questions",JSON.stringify(questions));
       this.setState({name},()=>{this.get_question_num();});
-
     }
-    
-    if(this.props.selected) {
+    else if(this.props.selected) {
       if(getCookie("questions")!=="") {
          this.setState({name},()=>{this.get_question_num();});
       }

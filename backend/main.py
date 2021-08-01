@@ -362,6 +362,8 @@ def get_questions_entity(entity_name):
     start = time.time()
     locations = questions['locations']
     questions = questions['questions']
+    print(locations)
+    print(questions)
     common_entities = db.get_entities(questions,category,difficulty)
     temp = []
     for i in common_entities:
@@ -380,14 +382,17 @@ def get_questions_entity(entity_name):
     common_entity_definitions = common_entity_definitions['definitions']
     print("Getting info on these entities took {} time".format(time.time()-start))
     start = time.time()
+    num_low_confidence,user_annotations = db.get_low_confidence_entities(questions)
+    print("Time to get low confidence was {}".format(time.time()-start))
+
+    start = time.time()
     
     results = db.get_question_answers(questions,category,difficulty)
 
     category_freq = dict(Counter([i['category'] for i in results]))
-
-    start = time.time()
     
     print("Getting question answers took {} time".format(time.time()-start))
+    start = time.time()
     year_freq = Counter([i['year'] for i in results])
     for year in range(2005,2018):
         if year not in year_freq:
@@ -397,27 +402,29 @@ def get_questions_entity(entity_name):
 
     years = [year_freq[i] for i in range(2005,2018)]
 
-    print("Chunking took {} time".format(time.time()-start))
+    print("Getting year_freq took {} time".format(time.time()-start))
     start = time.time()
 
+    chunked = {}
+    for i in range(len(results)):
+        chunked[results[i]['id']] = chunk_words(results[i]['question'])[1]
 
-##    chunked = {}
-##    for i in range(len(results)):
-##        chunked[results[i]['id']] = chunk_words(results[i]['question'])[1]
-##
-##    for i in locations:
-##        if locations[i][0]!=-1:
-##            if i in chunked:
-##                start = chunked[i][locations[i][0]]
-##                if locations[i][1]+1 != len(chunked[i]):
-##                    end = chunked[i][locations[i][1]+1]
-##                else:
-##                    end = chunked[i][locations[i][1]]
-##                locations[i] = (start,end)
+    for i in locations:
+        if locations[i][0]!=-1:
+            if i in chunked:
+                real_start = chunked[i][locations[i][0]]
+                if locations[i][1]+1 != len(chunked[i]):
+                    end = chunked[i][locations[i][1]+1]
+                else:
+                    end = chunked[i][locations[i][1]]
+                locations[i] = (real_start,end)
     print("Post processing took {} time".format(time.time()-start))
+
+    entity_id = (db.get_id(entity_name.replace(" ","_").lower())+[0])[0]
+    
     return {'results':results,'entities':common_entities,'year_freq': years,'definition':db.get_definition(entity_name),
-            'common_definitions':common_entity_definitions,'categories':category_freq,
-            'common_ids':ids}
+            'common_definitions':common_entity_definitions,'categories':category_freq, 'entity_id': entity_id,
+            'common_ids':ids, 'locations': locations, 'low_confidence': num_low_confidence, 'user_annotations': user_annotations}
 
 @app.get("/quel/random_question/{question}")
 def get_random_question(question):

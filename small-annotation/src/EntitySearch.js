@@ -1,12 +1,11 @@
 import * as React from "react";
-import {getCookie,setCookie,arrayRotate} from "./Util";
+import {getCookie,setCookie,arrayRotate, toNormalString,toNiceString, categories,difficulties,emptyOrValue} from "./Util";
 import {Redirect} from 'react-router-dom';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import {toNormalString,toNiceString, categories,difficulties,emptyOrValue} from "./Util";
 import LineGraph from "./LineGraph";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import Card from '@material-ui/core/Card';
@@ -37,7 +36,9 @@ export default class EntitySearch extends React.Component<Props, State> {
     value: "",
     autocorrect: [],
     entities: [],
+    locations: {},
     year_freq: [],
+    low_confidence: [],
     all_entities: false,
     current_question: 0,
     initial_search: "",
@@ -48,6 +49,8 @@ export default class EntitySearch extends React.Component<Props, State> {
     categories: {},
     default_category: "Any",
     default_difficulty: "Any",
+    user_annotations: [],
+    entity_id: 0,
   }
   
   update_current_question = (current_question) => {
@@ -98,7 +101,7 @@ export default class EntitySearch extends React.Component<Props, State> {
       address+"/entity/"+this.state.value.replaceAll(" ","_")+"_"+this.state.category_option+"_"+this.state.difficulty_option
       ).then(res=>res.json())
       .then(res => {
-        this.setState({results: res['results'], search: this.state.value.replaceAll("_"," "),entities: res['entities'],year_freq: res['year_freq'],loading: false, current_question: 0, definition: res['definition'], common_definitions: res['common_definitions'],categories: res['categories'], common_ids: res['common_ids']});
+        this.setState({entity_id: res['entity_id'], results: res['results'], locations: res['locations'],search: this.state.value.replaceAll("_"," "),entities: res['entities'],year_freq: res['year_freq'],loading: false, current_question: 0, definition: res['definition'], common_definitions: res['common_definitions'],categories: res['categories'], common_ids: res['common_ids'], low_confidence: res['low_confidence'], user_annotations: res['user_annotations']});
         setCookie("entity","");
       })
   }
@@ -110,12 +113,38 @@ export default class EntitySearch extends React.Component<Props, State> {
       ids.push(this.state.results[i].id);
     }
 
-    for(var i = 0;i<this.state.results.length;i++) {
+    for(let i = 0;i<this.state.results.length;i++) {
       let annotateButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("questions",JSON.stringify(arrayRotate(ids,i))); setCookie("packet",""); setCookie("entity",this.state.value.replaceAll("_"," ")+"_"+this.state.category_option+"_"+this.state.difficulty_option); }} variant="contained"><a href="/selected"> Annotate Question</a></Button>);
       let answer = this.state.results[i]['answer'];
       let question_id = this.state.results[i]['id'];
-      let question_text = this.state.results[i]['question'].substring(0,200)+"...";
-             
+      let num_low_confidence = this.state.low_confidence[i];
+      let num_user_annotations = this.state.user_annotations[i];
+      let question_text = this.state.results[i]['question'];
+      let boundaries = this.state.locations[question_id]; 
+      let location = JSON.parse(JSON.stringify(this.state.locations[question_id]));
+      if (location[0] == -1) {
+        answer = <span style={{backgroundColor: 'yellow'}}> {answer} </span>;
+      }
+      
+      if(boundaries[0] == -1) {
+        boundaries = [0,200];
+      } else {
+        boundaries[0]-=100;
+        boundaries[1]+=100;
+        
+        while(boundaries[0]>0 && question_text.charAt(boundaries[0]-1) !== " ") {
+          boundaries[0]-=1
+        }
+        while(boundaries[1]<question_text.length-1 && question_text.charAt(boundaries[1]+1) !== " ") {
+          boundaries[1]-=1
+        }
+      }
+      if (location[0] == -1) {
+         question_text = question_text.substring(boundaries[0],boundaries[1]);
+      }
+      else {
+        question_text = <span> <span> {question_text.substring(boundaries[0],location[0])} </span> <span style={{backgroundColor: 'yellow'}}> {question_text.substring(location[0],location[1])} </span> <span> {question_text.substring(location[1],boundaries[1])} </span> ... </span>;   
+      }
       let question = 
               (<div style={{marginBottom: 20, width: "100%"}}> <Card>
       <CardContent>
@@ -130,6 +159,12 @@ export default class EntitySearch extends React.Component<Props, State> {
         </Typography>
         <Typography variant="body2" component="p">
         <b> Answer: </b> {answer}
+        </Typography>
+        <Typography variant="body2" component="p"> 
+        <b> Low confidence entities: </b> {num_low_confidence}
+        </Typography>
+        <Typography variant="body2" component="p"> 
+        <b> User annotations: </b> {num_user_annotations}
         </Typography>
       </CardContent>
       <CardActions>
@@ -180,7 +215,7 @@ export default class EntitySearch extends React.Component<Props, State> {
   
   render_entity_info = () => {
     if(!this.state.loading && this.state.definition!=="") {
-      return (<div> <b> Wikipedia summary for {this.state.search} </b> - {this.state.definition}.. </div>)
+      return (<div> <b> Wikipedia summary for {this.state.search} </b> - {this.state.definition}... <a href={"https://wikipedia.org/wiki?curid="+this.state.entity_id} target="_blank"> More Info </a> </div>)
     }
   }
   

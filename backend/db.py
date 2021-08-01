@@ -468,6 +468,33 @@ class Database:
             other_entities = [i for i in other_entities if "file transfer protocol" not in i and "ftps" not in i]
             return other_entities
 
+    def get_low_confidence_entities(self,question_ids):
+        with self._session_scope as session:
+            num_low_confidence = []
+            user_annotations = []
+            for id in question_ids:
+                low_confidence = session.query(Mention).filter(and_(Mention.question_id==id,
+                                                                         Mention.user_id == "system"))
+
+                confidence_by_entity = {}
+
+                for i in low_confidence:
+                    wiki_page = i.wiki_page
+                    confidence = i.confidence
+
+                    if wiki_page not in confidence_by_entity:
+                        confidence_by_entity[wiki_page] = confidence
+                    else:
+                        confidence_by_entity[wiki_page] = max(confidence_by_entity[wiki_page],confidence)
+
+
+                num_low = len([i for i in confidence_by_entity if confidence_by_entity[i]<0.5])
+                print("{} {} {}".format(num_low,id,confidence_by_entity))                
+                num_low_confidence.append(num_low)
+                user_annotations.append(session.query(Mention).filter(and_(Mention.question_id == id,
+                                                                           Mention.user_id!="system")).count())
+        
+            return num_low_confidence, user_annotations
 
     def get_questions_by_entity(self,entity):
         with self._session_scope as session:
