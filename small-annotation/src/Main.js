@@ -26,6 +26,7 @@ import Carousel from './Carousel';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
+import wikipediaIcon from './images/wikipedia_icon.png';
 
 let address = "/quel";
 

@@ -16,6 +16,7 @@ import Carousel from './Carousel';
 import AutoComplete from './Autocomplete';
 import Dropdown from './Dropdown';
 import BarGraph from './BarGraph';
+import wikipediaIcon from './images/wikipedia_icon.png';
 
 
 interface State {
@@ -60,7 +61,7 @@ export default class EntitySearch extends React.Component<Props, State> {
   render_year_freq = () => {
     if(this.state.year_freq.length>0 && !this.state.loading) {
       let years = [];
-      for(var i = 2005;i<=2017;i++) {
+      for(var i = 2005;i<=2020;i++) {
         years.push(i.toString());
       }
   
@@ -72,20 +73,19 @@ export default class EntitySearch extends React.Component<Props, State> {
     let entities = [];
     for(var i = 0;i<this.state.entities.length;i++) {
       let entity = this.state.entities[i];
-      let searchButton = (<Button style={{marginRight: 30}} onClick={()=>{this.setState({value: entity, initial_search: entity, difficulty_option: 'Any', category_option: 'Any', current_question: 0},()=>{this.get_results()})}} variant="contained"> Search </Button>);
       let definition = this.state.common_definitions[this.state.entities[i]].substring(0,200);
       let card = (<div style={{marginBottom: 20, width: "100%"}}> <Card>
       <CardContent>
         <Typography variant="h5" component="h2">
-        <a href={"https://wikipedia.org/wiki?curid="+this.state.common_ids[entity]} target="_blank"> {entity} </a> 
+        <span style={{cursor: 'pointer', color: 'blue', textDecoration: 'underline'}} onClick={()=>{this.setState({value: entity, initial_search: entity, difficulty_option: 'Any', category_option: 'Any', current_question: 0},()=>{this.get_results()})}}> {entity}</span>  
+        
+        
+        <a style={{textDecoration: 'none'}} href={"https://wikipedia.org/wiki?curid="+this.state.common_ids[entity]} target="_blank">         <img src={wikipediaIcon} style={{width: 32, height: 32}} /> </a> 
         </Typography>
         <Typography variant="body2" component="p">
         {definition}
         </Typography>
       </CardContent>
-      <CardActions>
-      {searchButton}
-      </CardActions>
     </Card> </div>);
       entities.push(card);
     }
@@ -120,8 +120,10 @@ export default class EntitySearch extends React.Component<Props, State> {
       let num_low_confidence = this.state.low_confidence[i];
       let num_user_annotations = this.state.user_annotations[i];
       let question_text = this.state.results[i]['question'];
-      let boundaries = this.state.locations[question_id]; 
+      let boundaries = JSON.parse(JSON.stringify(this.state.locations[question_id])); 
       let location = JSON.parse(JSON.stringify(this.state.locations[question_id]));
+
+      
       if (location[0] == -1) {
         answer = <span style={{backgroundColor: 'yellow'}}> {answer} </span>;
       }
@@ -215,7 +217,7 @@ export default class EntitySearch extends React.Component<Props, State> {
   
   render_entity_info = () => {
     if(!this.state.loading && this.state.definition!=="") {
-      return (<div> <b> Wikipedia summary for {this.state.search} </b> - {this.state.definition}... <a href={"https://wikipedia.org/wiki?curid="+this.state.entity_id} target="_blank"> More Info </a> </div>)
+      return (<div> <b> Wikipedia summary for {this.state.search} </b> - {this.state.definition}... <a href={"https://wikipedia.org/wiki?curid="+this.state.entity_id} target="_blank" style={{textDecoration: 'none'}} > <img src={wikipediaIcon} style={{width: 32, height: 32}} /> </a> </div>)
     }
   }
   
@@ -265,6 +267,7 @@ export default class EntitySearch extends React.Component<Props, State> {
         {this.render_results()}
         {this.render_bar_graph()}
         {this.render_year_freq()}
+
 
     </div>
     

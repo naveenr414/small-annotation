@@ -8,6 +8,7 @@ import Button from 'react-bootstrap/Button';
 import Grid from "@material-ui/core/Grid";
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import wikipediaIcon from './images/wikipedia_icon.png';
 
 let address = "/quel";
 
@@ -156,8 +157,8 @@ class Dragbox extends React.Component<Props, State> {
       
 
       
-      return (<a target="_blank" style={{color: 'black'}} href={"https://wikipedia.org/wiki?curid="+this.state.entity_id}> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", opacity: alpha,textAlign: "center", fontSize: "2vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
-          </span>  </a>);
+      return (<div> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", opacity: alpha,textAlign: "center", fontSize: "2vh"}}>  {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
+          </span>  <a style={{textDecoration: 'none'}} target="_blank" style={{color: 'black'}} href={"https://wikipedia.org/wiki?curid="+this.state.entity_id}> <img src={wikipediaIcon} style={{width: 16, height: 16}} />   </a> </div> );
     }
     return (<span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number > 0?"3vh":"2.5vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):(<span> 2. Move unassigned spans on right to entity </span> )}
           </span> );

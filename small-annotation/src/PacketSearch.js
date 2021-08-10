@@ -16,6 +16,7 @@ import Carousel from './Carousel';
 import BarGraph from './BarGraph';
 import AutoComplete from './Autocomplete';
 import Dropdown from './Dropdown';
+import wikipediaIcon from './images/wikipedia_icon.png';
 
 interface State {
 
@@ -151,20 +152,16 @@ export default class PacketSearch extends React.Component<Props, State> {
     let entities = [];
     for(var i = 0;i<this.state.common_entities.length;i++) {
       let entity = this.state.common_entities[i];
-      let searchButton = (<Button style={{marginRight: 30}} onClick={()=>{this.setState({initial_search: entity.replaceAll("_"," "),search_entity: entity.replaceAll("_"," ")},()=>{this.get_results()})}} variant="contained"> Search </Button>);
       let definition = this.state.common_entity_definitions[entity].substring(0,200)+"...";
       let card = (<div style={{marginBottom: 20, width: "100%"}}> <Card>
       <CardContent>
-        <Typography variant="h5" component="h2">
-        <a href={"https://wikipedia.org/wiki?curid="+this.state.common_entity_ids[entity]} target="_blank"> {entity.replaceAll("_"," ")} </a> 
+        <Typography variant="h5" component="h2"> <span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={()=>{this.setState({initial_search: entity.replaceAll("_"," "),search_entity: entity.replaceAll("_"," ")},()=>{this.get_results()})}}> {entity.replaceAll("_"," ")}</span> 
+        <a style={{textDecoration: 'none'}} href={"https://wikipedia.org/wiki?curid="+this.state.common_entity_ids[entity]} target="_blank"> <img src={wikipediaIcon} style={{width: 32, height: 32}} />  </a> 
         </Typography>
         <Typography variant="body2" component="p">
         {definition}
         </Typography>
       </CardContent>
-      <CardActions>
-      {searchButton}
-      </CardActions>
     </Card> </div>);
       entities.push(card);
     }

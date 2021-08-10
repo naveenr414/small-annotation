@@ -12,6 +12,35 @@ def chunk_words(question):
     return indexes
 
 def process(question,answer,f,g):
+    if len(g) == 0:
+        tokenized_question = chunk_words(question)
+        
+        all_entities = list(set([i['entity'] for i in f['mentions']]))
+        indices = {}
+        for i in range(len(all_entities)):
+            indices[all_entities[i]] = i
+        clusters = [{'score': -10, 'clusters': [], 'name': all_entities[i]} for i in range(len(all_entities))]
+
+        for i in f['mentions']:
+            entity = i['entity']
+            loc = indices[entity]
+            score = i['score']
+            current_cluster = i['span']
+
+            start = 0
+            end = 0
+            j = 0
+            while j<len(tokenized_question) and tokenized_question[j]<current_cluster[0]:
+                j+=1
+            start = j
+            while j<len(tokenized_question) and tokenized_question[j]-1<current_cluster[1]-1:
+                j+=1
+            end = j-1
+            clusters[loc]['clusters'].append([start,end,question[current_cluster[0]:current_cluster[1]]])
+            clusters[loc]['score'] = max(score,clusters[loc]['score'])
+        return clusters
+
+        
     g['doc_key'] = int(g['doc_key'])
 
     chunks = chunk_words(question)
@@ -98,7 +127,7 @@ def process(question,answer,f,g):
     return clusters
 
 print("Loading blink")
-blink_file = open("all_blink.jsonl").read().strip().split("\n")
+blink_file = open("all_blink_new.jsonl").read().strip().split("\n")
 
 print("Loading coref")
 coref_file = open("coref_preds.json").read().strip().split("\n")
@@ -132,8 +161,10 @@ for i in range(len(question_list)):
     else:
         f = {'mentions':[]}
 
-    if question_num in coref_data:
+    if question_num in coref_data and False:
         g = coref_data[question_num]
+    else:
+        g = {}
     
     question = question_list[i]['text'].replace("\'","'").replace("\xa0"," ")
     answer = question_list[i]['page']

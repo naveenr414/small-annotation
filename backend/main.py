@@ -394,13 +394,13 @@ def get_questions_entity(entity_name):
     print("Getting question answers took {} time".format(time.time()-start))
     start = time.time()
     year_freq = Counter([i['year'] for i in results])
-    for year in range(2005,2018):
+    for year in range(2005,2021):
         if year not in year_freq:
             year_freq[year] = 0
         else:
             year_freq[year]/=all_questions_year[year]
 
-    years = [year_freq[i] for i in range(2005,2018)]
+    years = [year_freq[i] for i in range(2005,2021)]
 
     print("Getting year_freq took {} time".format(time.time()-start))
     start = time.time()
@@ -466,10 +466,8 @@ def get_similar_questions(question_id):
     question_id = int(question_id.split("_")[-2])
     mentions = db.get_mentions_by_user(username,str(question_id))
     wiki_pages = [db.get_answer(str(question_id)).replace(" ","_")]
-    print(Counter([i['wiki_page'] for i in mentions]))
     wiki_pages+=[i[0] for i in sorted(Counter([i['wiki_page'] for i in mentions]).items(),key=lambda k: k[1],reverse=True)[:2]]
     wiki_pages = list(set(wiki_pages))
-    print("Wiki pages {}".format(wiki_pages))
 
     similar_questions = db.get_similar_questions(wiki_pages,difficulty)
     

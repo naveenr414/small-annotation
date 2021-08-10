@@ -3,6 +3,14 @@ import csv
 import unidecode
 import nltk
 from collections import Counter
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
+
+def tokenize(d):
+    doc = nlp(d)
+    tokenizations = [[s.start_char, s.end_char] for s in doc.sents]
+    return tokenizations
 
 unmatched = json.load(open("qanta.unmapped.2021.07.25.json"))['questions']
 print("Loaded unmatched")
@@ -84,7 +92,6 @@ for question in unmatched:
     longest = 0
     autocorrect = ""
     
-
     # prefixes
     for i in range(1,len(words)):
         if works(" ".join(words[:i])):
@@ -114,8 +121,12 @@ for i in unmatched:
                 i['page'] = raw_pages[wiki_name].replace(" ","_")
                 num_works+=1
 
-questions = json.load(open("qanta.train.2021.07.25.json"))['questions']+json.load(open("qanta.test.2021.07.25.json"))['questions']+json.load(open("qanta.dev.2021.07.25.json"))['questions']
-all_questions = [i for i in unmatched if i['page']!=''] 
-json.dump({'questions': all_questions},open("mostly_right.json","w"))
+all_questions = [i for i in unmatched if i['page']!='']
 
-years = Counter([i['year'] for i in all_questions])
+print("Tokenizing")
+for i in all_questions:
+    i['tokenizations'] = tokenize(i['text'])
+
+print("Done tokenizing")
+
+json.dump({'questions': all_questions},open("mostly_right.json","w"))
