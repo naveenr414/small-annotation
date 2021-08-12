@@ -161,7 +161,7 @@ for i in range(len(question_list)):
     else:
         f = {'mentions':[]}
 
-    if question_num in coref_data and False:
+    if question_num in coref_data:
         g = coref_data[question_num]
     else:
         g = {}

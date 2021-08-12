@@ -36,6 +36,7 @@ export default class EntitySearch extends React.Component<Props, State> {
     loading: false,
     value: "",
     autocorrect: [],
+    previous_searches: [], 
     entities: [],
     locations: {},
     year_freq: [],
@@ -56,6 +57,26 @@ export default class EntitySearch extends React.Component<Props, State> {
   
   update_current_question = (current_question) => {
     this.setState({current_question});
+  }
+  
+  get_pdf = () => {
+    let ids = [];
+    for(let i = 0;i<this.state.results.length;i++) {
+      ids.push(this.state.results[i].id.toString());
+    }
+    let s = ids.join('_');
+    fetch(
+      address+"/pdf_question_nums/"+s
+      ).then(res => {
+        return res.blob();
+      })
+      .then((blob)=>{
+        const href = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = href;
+        a.download = 'questions.pdf';
+        a.click();
+      });
   }
   
   render_year_freq = () => {
@@ -96,12 +117,14 @@ export default class EntitySearch extends React.Component<Props, State> {
   }
   
   get_results = () => {
+    let previous_searches = this.state.previous_searches;
+    previous_searches.push(this.state.value);
     this.setState({loading: true, start: 0,all_entities: false});
         fetch(
       address+"/entity/"+this.state.value.replaceAll(" ","_")+"_"+this.state.category_option+"_"+this.state.difficulty_option
       ).then(res=>res.json())
       .then(res => {
-        this.setState({entity_id: res['entity_id'], results: res['results'], locations: res['locations'],search: this.state.value.replaceAll("_"," "),entities: res['entities'],year_freq: res['year_freq'],loading: false, current_question: 0, definition: res['definition'], common_definitions: res['common_definitions'],categories: res['categories'], common_ids: res['common_ids'], low_confidence: res['low_confidence'], user_annotations: res['user_annotations']});
+        this.setState({initial_search: this.state.value, entity_id: res['entity_id'], results: res['results'], locations: res['locations'],search: this.state.value.replaceAll("_"," "),entities: res['entities'],year_freq: res['year_freq'],loading: false, current_question: 0, definition: res['definition'], common_definitions: res['common_definitions'],categories: res['categories'], common_ids: res['common_ids'], low_confidence: res['low_confidence'], user_annotations: res['user_annotations']});
         setCookie("entity","");
       })
   }
@@ -228,6 +251,20 @@ export default class EntitySearch extends React.Component<Props, State> {
     }
   }
   
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.state.value !== nextState.value) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  previous_search = () => {
+    this.state.previous_searches.pop();
+    let current_search = this.state.previous_searches.pop();
+    this.setState({value: current_search, initial_search: current_search},()=>{this.get_results()});
+  }
+  
   render() {
     if(getCookie("token") == "") {
       return <Redirect to="/login" />;
@@ -240,7 +277,7 @@ export default class EntitySearch extends React.Component<Props, State> {
     
     return <div style={{marginLeft: 30, marginBottom: 30}}> 
     <h1> {search_text}  </h1>
-          <div style={{marginBottom: 20}}> <Button variant="contained" ><a href="/user"> Main Menu </a> </Button>
+          <div style={{marginBottom: 20}}> <Button variant="contained" style={{marginRight: 20}} ><a href="/user"> Main Menu </a> </Button> {this.state.previous_searches.length>1 && <Button variant="contained" style={{marginRight: 20}} onClick={this.previous_search}> Previous Search </Button>} {this.state.results.length>0 && <Button variant="contained" onClick={this.get_pdf}> Download Questions </Button>}
           </div>
           
         <div style={{fontSize: 20, display: 'inline-block', marginRight: 20}}> 

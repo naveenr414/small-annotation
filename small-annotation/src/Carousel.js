@@ -11,7 +11,9 @@ export default class LineGraph extends React.Component<Props, State> {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.cards.length !== this.props.cards.length) {
+    console.log(nextProps);
+    console.log(this.props.cards);
+    if (nextProps !== this.props.cards) {
       this.setState({ current_question: 0 });
     }
   }

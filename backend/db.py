@@ -148,7 +148,7 @@ class Database:
 
             for i in range(len(pages)):
                 words = pages[i][0].split("_")
-                if len(words)>1 and unidecode.unidecode(words[-1]).lower()not in redirected_pages:
+                if len(words)>1 and unidecode.unidecode(words[-1]).lower() not in redirected_pages:
                     redirected_pages.add(unidecode.unidecode(words[-1]).lower())
                     redirects.append({'name':unidecode.unidecode(words[-1]).lower(),'page':"_".join(words)})
                     
@@ -238,7 +238,7 @@ class Database:
                     gender = gender_list[wiki_obj['name'].replace("_"," ")]
 
                 if wiki_obj['name'] not in wiki_pages or wiki_pages[wiki_obj['name']]<wiki_obj['popularity']:
-                    objects.append({'id':int(wiki_obj['id']),'title':wiki_obj['name'],'text':wiki_obj['summary'],'popularity':wiki_obj['popularity'],'gender':gender})
+                    objects.append({'id':int(wiki_obj['id']),'title_lower':wiki_obj['name'],'title':wiki_obj['clean_name'],'text':wiki_obj['summary'],'popularity':wiki_obj['popularity'],'gender':gender})
                     wiki_pages[wiki_obj['name']] = wiki_obj['popularity']
                 i+=1
 
@@ -364,26 +364,28 @@ class Database:
                 end_count = 0
                 count_time = 0
                 count = 5
-                results = session.query(WikiSummary).filter(and_(WikiSummary.title>=word,WikiSummary.title<=upper_bound)).limit(5)
+                results = session.query(WikiSummary).filter(and_(WikiSummary.title_lower>=word,WikiSummary.title_lower<=upper_bound)).limit(5)
             else:
-                count = session.query(WikiSummary).filter(and_(WikiSummary.title>=word,WikiSummary.title<=upper_bound)).count()
-                exact = session.query(WikiSummary).filter(WikiSummary.title==word).limit(1)
+                count = session.query(WikiSummary).filter(and_(WikiSummary.title_lower>=word,WikiSummary.title_lower<=upper_bound)).count()
+                exact = session.query(WikiSummary).filter(WikiSummary.title_lower==word).limit(1)
                 if count>1000:
-                    results = session.query(WikiSummary).filter(and_(WikiSummary.title>=word,WikiSummary.title<=upper_bound)).limit(5)
+                    results = session.query(WikiSummary).filter(and_(WikiSummary.title_lower>=word,WikiSummary.title_lower<=upper_bound)).limit(5)
                 else:
-                    results = session.query(WikiSummary).filter(and_(WikiSummary.title>=word,WikiSummary.title<=upper_bound)).order_by(desc(WikiSummary.popularity)).limit(5)
+                    results = session.query(WikiSummary).filter(and_(WikiSummary.title_lower>=word,WikiSummary.title_lower<=upper_bound)).order_by(desc(WikiSummary.popularity)).limit(5)
 
             print("word {}".format(unidecode.unidecode(word.lower())))
             exact_match = session.query(Redirect).filter(Redirect.name == unidecode.unidecode(word.lower())).limit(1)
             exact_match = [i.page.replace(" ","_") for i in exact_match]
 
             if len(exact_match)>0:
-                summary = session.query(WikiSummary).filter(WikiSummary.title == exact_match[0].lower())
+                summary = session.query(WikiSummary).filter(WikiSummary.title_lower == exact_match[0].lower())
                 ids = [i.id for i in summary] + [0]
                 summary = [i.text for i in summary]+['']
                 summary = summary[0]
-                exact_match = [(exact_match[0].lower(),summary,ids[0])]
+                exact_match = [(exact_match[0],summary,ids[0])]
             print("Exact match {}".format(exact_match))
+
+        print("Query took {} time".format(time.time()-start))
 
         names = [i.title for i in exact]+[i.title for i in results]
         summaries = [i.text for i in exact]+[i.text for i in results]
@@ -400,9 +402,10 @@ class Database:
         with self._session_scope as session:
             word = word.strip().replace(" ", "_").lower().strip("_")
             print("Getting definition for word {}".format(word))
-            results = session.query(WikiSummary).filter(WikiSummary.title == word)
+            results = session.query(WikiSummary).filter(WikiSummary.title_lower == word)
             results = [(i.text,i.popularity) for i in results]
             results = sorted(results,key=lambda k: k[1])
+            print("Returnign definition {}".format(results))
             if len(results)>0:
                 return [results[-1][0]]
             return ['']
@@ -411,11 +414,15 @@ class Database:
         with self._session_scope as session:
             d = {}
             e = {}
+            f = []
+            definitions = {}
             for i in word_list:
-                d[i] = session.query(WikiSummary).filter(WikiSummary.title == i.replace(" ", "_").lower().strip()).limit(1)
-                e[i] = ([k.id for k in d[i]]+[0])[0]
-                d[i] = ([k.text for k in d[i]]+[''])[0]
-            return {'definitions':d,'ids':e}
+                d[i] = session.query(WikiSummary).filter(WikiSummary.title_lower == i.replace(" ", "_").lower().strip()).limit(1)
+                f.append(([k.title for k in d[i]]+[''])[0])
+                e[f[-1]] = ([k.id for k in d[i]]+[0])[0]
+                definitions[f[-1]] = ([k.text for k in d[i]]+[''])[0]
+            print("Returning {}".format(f))
+            return {'definitions':definitions,'ids':e, 'names': f}
     
     def get_all_mentions(self):
         with self._session_scope as session:
@@ -489,7 +496,6 @@ class Database:
 
 
                 num_low = len([i for i in confidence_by_entity if confidence_by_entity[i]<0.5])
-                print("{} {} {}".format(num_low,id,confidence_by_entity))                
                 num_low_confidence.append(num_low)
                 user_annotations.append(session.query(Mention).filter(and_(Mention.question_id == id,
                                                                            Mention.user_id!="system")).count())
@@ -655,7 +661,7 @@ class Database:
     def get_id(self,word):
         start = time.time()
         with self._session_scope as session:
-            results = session.query(WikiSummary).filter(WikiSummary.title==word).limit(1)
+            results = session.query(WikiSummary).filter(WikiSummary.title_lower==word).limit(1)
 
         return [i.id for i in results]
 

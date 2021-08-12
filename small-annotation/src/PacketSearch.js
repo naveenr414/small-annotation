@@ -130,6 +130,27 @@ export default class PacketSearch extends React.Component<Props, State> {
     }
   }
   
+  get_pdf = () => {
+    let ids = [];
+    for(var i = 0;i<this.state.search_results.length;i++) {
+      ids.push(this.state.search_results[i]['question_id'].toString());
+    }
+    let s = ids.join('_');
+    fetch(
+      address+"/pdf_question_nums/"+s
+      ).then(res => {
+        return res.blob();
+      })
+      .then((blob)=>{
+        const href = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = href;
+        a.download = 'questions.pdf';
+        a.click();
+      });
+
+  }
+  
   render_search = () => {
  
     if(this.state.common_entities.length>0) {
@@ -200,6 +221,7 @@ export default class PacketSearch extends React.Component<Props, State> {
     {this.state.year_option>0 && <div style={{textAlign: 'center', fontSize: 48, fontWeight: 'bold'}}> {this.state.tournament_option} {this.state.year_option} </div>} <br />
           {this.render_search()}
         {this.render_search_results()}
+        {this.state.search_results.length>0 && <Button variant="contained" style={{marginLeft: 20}} onClick={this.get_pdf}> Download Questions </Button>}
 
         <br />
         <div> {this.render_top_entities()}<br />   
