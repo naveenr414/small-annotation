@@ -335,7 +335,7 @@ export default class Main extends React.Component<Props, State> {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", address+"/submit");
     xhr.send(JSON.stringify({str_entity_names,str_entity_spans,username,question_id,time: end_time-this.state.start}));
-    this.setState({saved: true,underline_span: []});
+    this.setState({saved: true});
   } 
 
   /* Download questions */ 
@@ -427,7 +427,7 @@ export default class Main extends React.Component<Props, State> {
     entity_list[click_data.entity_number][click_data.number] = d;
     click_data.start = d.start;
     click_data.end = d.end
-    this.setState({entity_list,clicked:JSON.stringify(click_data)},()=>{this.submit()});
+    this.setState({entity_list,clicked:JSON.stringify(click_data), underline_span: [character_indicies[0],character_indicies[1]]},()=>{this.submit()});
   }
   
   /* Dealing with clicking on spans */ 
@@ -436,6 +436,7 @@ export default class Main extends React.Component<Props, State> {
     if(json_string!=="" && this.state.clicked!==json_string) {
       let click_data = JSON.parse(json_string);
       this.setState({clicked: json_string,underline_span: this.word_to_character([click_data.start,click_data.end])});
+      this.update_popover(click_data.entity_number)
     } else {
       this.setState({clicked: ""});
     }
@@ -629,8 +630,11 @@ export default class Main extends React.Component<Props, State> {
       else if (key == '.') {
         direction = [1,0];
       }
+      
+      
       if(direction != [0,0] && this.state.clicked!=="") {
         let click_data = JSON.parse(this.state.clicked);
+        
         this.adjust_span(direction,click_data);
       }
     }
@@ -660,7 +664,7 @@ export default class Main extends React.Component<Props, State> {
         } 
         let start_character = this.state.indices[current_tag.start];
         let end_character = this.state.indices[Math.min(current_tag.end,this.state.words.length-1)]+this.state.words[Math.min(current_tag.end,this.state.words.length-1)].length;
-        spans.push([start_character,end_character,current_color,i]);
+        spans.push([start_character,end_character,current_color,i,j]);
       }
     }
     
@@ -703,7 +707,7 @@ export default class Main extends React.Component<Props, State> {
         }
         
         let next_i = Math.min(stack[smallest][1],spans.length>0?spans[0][0]:stack[smallest][1]);
-        new_spans.push([i,next_i,stack[smallest][2],stack[smallest][3]]);
+        new_spans.push([i,next_i,stack[smallest][2],stack[smallest][3],stack[smallest][4]]);
         i = next_i;
         let new_stack = [];
         for(var j = 0;j<stack.length;j++) {
@@ -743,41 +747,47 @@ export default class Main extends React.Component<Props, State> {
     var highlights = [];
     for(var i = 0;i<parts.length; i++) {
       let fields = parts[i];
+      let json = "";
+      if(fields.length == 5) {  
+        json = JSON.stringify({start: this.state.entity_list[fields[3]][fields[4]].start, end: this.state.entity_list[fields[3]][fields[4]].end, number: fields[4], entity_number: fields[3]})
+      }
+      let on_click = ()=>{if (fields[3]!=undefined){if(json == this.state.clicked) {this.setState({underline_span: []})} this.update_clicked(json)}};
+
       if(this.state.underline_span.length>0) {
         if(this.state.underline_span[0]>fields[0] && this.state.underline_span[0]<fields[1]) {
             if(this.state.underline_span[1]<fields[1]) {
               // Then it goes [Text][Bolded][Text]
-                highlights.push(<span key={fields[0]+"textboldedtext"} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
-                highlights.push(<span key={this.state.underline_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:'yellow', textDecoration: 'underline'}}>{text.substring(this.state.underline_span[0], this.state.underline_span[1])}</span>);
-                highlights.push(<span key={this.state.underline_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.underline_span[1], fields[1])}</span>);
+                highlights.push(<span key={fields[0]+"textboldedtext"} onClick={on_click} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
+                highlights.push(<span onClick={on_click} onClick={()=>{if (fields[3]!=undefined){this.update_clicked(json)}}} key={this.state.underline_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:'yellow', textDecoration: 'underline'}}>{text.substring(this.state.underline_span[0], this.state.underline_span[1])}</span>);
+                highlights.push(<span onClick={on_click} key={this.state.underline_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.underline_span[1], fields[1])}</span>);
             }
             else {
               // Then it goes [Text][Bolded]
-              highlights.push(<span key={fields[0]+"textbolded"} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
-              highlights.push(<span key={this.state.underline_span[0]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:'yellow', textDecoration: 'underline'}}>{text.substring(this.state.underline_span[0], fields[1])}</span>);
+              highlights.push(<span onClick={on_click} key={fields[0]+"textbolded"} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(fields[0], this.state.underline_span[0])}</span>);
+              highlights.push(<span key={this.state.underline_span[0]} onClick={on_click} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:'yellow', textDecoration: 'underline'}}>{text.substring(this.state.underline_span[0], fields[1])}</span>);
             }
 
         }
         else if(this.state.underline_span[0]<=fields[0] && this.state.underline_span[1]>=fields[0]) {
           if(this.state.underline_span[1]>=fields[1]) {
             // Then it goes [Bolded]
-            highlights.push(<span key={fields[0]+"bolded"} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:'yellow', textDecoration: 'underline'}}>{text.substring(fields[0], fields[1])}</span>);
+            highlights.push(<span onClick={on_click}key={fields[0]+"bolded"} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:'yellow', textDecoration: 'underline'}}>{text.substring(fields[0], fields[1])}</span>);
           }
           else {
             // Then it goes [Bolded][Text]
-            highlights.push(<span key={fields[0]+"boldedtext"} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:'yellow', textDecoration: 'underline'}}>{text.substring(fields[0], this.state.underline_span[1])}</span>);
-            highlights.push(<span key={this.state.underline_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.underline_span[1], fields[1])}</span>);
+            highlights.push(<span onClick={on_click} key={fields[0]+"boldedtext"} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:'yellow', textDecoration: 'underline'}}>{text.substring(fields[0], this.state.underline_span[1])}</span>);
+            highlights.push(<span onClick={on_click} key={this.state.underline_span[1]} style={{border: fields[2]=='white'?'':'1px solid #000000',backgroundColor:fields[2]}}>{text.substring(this.state.underline_span[1], fields[1])}</span>);
           }
         }
         else {
           // Then it goes [Text]
-          highlights.push(<span key={fields[0]+"else"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>)
+          highlights.push(<span onClick={on_click} key={fields[0]+"else"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>)
         }
       }
       else {
           // Then it goes [Text]
           highlights.push();
-          highlights.push(<span id={fields[0]} onMouseEnter={()=>{if(fields[3]!=undefined) {this.update_popover(fields[3])} }} onMouseLeave={()=>{if(fields[3] == undefined) {this.setState({popoverOpen: false});} if(fields[3]!=undefined) {if(this.state.current_title == this.state.entity_names[fields[3]].replaceAll("_"," ")){this.setState({popoverOpen: false,current_title: "", current_summary: ""})}} }} key={fields[0]+"else2"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>);
+          highlights.push(<span id={fields[0]} onClick={on_click} onMouseEnter={()=>{if(fields[3]!=undefined) {this.update_popover(fields[3])} }} onMouseLeave={()=>{if(fields[3] == undefined) {this.setState({popoverOpen: false});} if(fields[3]!=undefined) {if(this.state.current_title == this.state.entity_names[fields[3]].replaceAll("_"," ")){this.setState({popoverOpen: false,current_title: "", current_summary: ""})}} }} key={fields[0]+"else2"} style={{backgroundColor:fields[2],border: fields[2]=='white'?'':'1px solid #000000'}}>{text.substring(fields[0], fields[1])}</span>);
         }
     }
     
@@ -999,7 +1009,7 @@ export default class Main extends React.Component<Props, State> {
                       <h3 class="entity_title"> Entities </h3>
                       <button class="merge" onClick={this.show_merge}> Merge Entities </button> <br />
                       3. Drag spans to appropriate entity. <br /> Some spans are pre-generated by a model and assigned to an entity; entities which the model is less certain of contain a lighter background and are at the top. <br />
-                      To modify span boundaries, click on a span, then use the &#60; &#62; keys for the left end, and the ← → keys for the right end. <br />
+                      <span style={{fontWeight: this.state.clicked!==""?'bold':'normal'}}> To modify span boundaries, click on a span, then use the &#60; &#62; keys for the left endpoint, and the ← → arrow keys for the right endpoint. </span> <br />
                       <b> Note that your changes are autosaved </b> 
                       <div style={{height: "100%"}}>
                               
