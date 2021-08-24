@@ -497,8 +497,7 @@ def get_tournament(tournament):
 
         entity_popularity[i['page']].add(i['question'])
 
-
-    data = [(i,len(entity_popularity[i])) for i in entity_popularity]
+    data = [(i,len(entity_popularity[i])) for i in entity_popularity if i.lower() not in ['ftps','file_transfer_protocol']]
     data = sorted(data,key=lambda k: k[1],reverse=True)[:20]
 
     print("Got popular entities in {} time".format(time.time()-start))

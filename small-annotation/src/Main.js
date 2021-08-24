@@ -810,9 +810,11 @@ export default class Main extends React.Component<Props, State> {
   render_navigation_buttons = () => {
     if(this.state.next_numbers.length>0) {
       return   <div style={{display:'inline-block', paddingTop: 10}}> 
-          <button style={{fontSize: "2.5vh"}} onClick={()=>{this.final_submit(); this.previous();}}> Previous Question </button>
-          <button style={{marginLeft: 50, fontSize: "2.5vh"}} onClick={()=>{this.final_submit();this.next()}}> Next Question </button> 
-            {!this.state.done && <button style={{marginLeft: 50, fontSize: "2.5vh"}} onClick={()=>{this.final_submit();this.done()}}> Finish+See Summary </button>}
+        {this.state.next_numbers.length>1 && 
+        
+        <button style={{fontSize: "2.5vh"}} onClick={()=>{this.final_submit(); this.previous();}}> Previous Question </button> }
+          {this.state.next_numbers.length>1 && <button style={{marginLeft: 50, fontSize: "2.5vh"}} onClick={()=>{this.final_submit();this.next()}}> Next Question </button> }
+            {!this.state.done && <button style={{marginLeft: this.state.next_numbers.length>1? 50 : 0, fontSize: "2.5vh"}} onClick={()=>{this.final_submit();this.done()}}> Finish+See Summary </button>}
 
     </div>
     }
