@@ -157,10 +157,10 @@ class Dragbox extends React.Component<Props, State> {
       
 
       
-      return (<div> <span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", opacity: alpha,textAlign: "center", fontSize: "2vh"}}>  {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
+      return (<div> <span className={this.props.entity_number == 1? "entity_opacity": ""} style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", opacity: alpha,textAlign: "center", fontSize: "2vh"}}>  {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):"Unassigned tags (2. Drag to entity cluster on right)"}
           </span>  {this.state.entity_id!=0 && <a style={{textDecoration: 'none'}} target="_blank" style={{color: 'black'}} href={"https://wikipedia.org/wiki?curid="+this.state.entity_id}> <img src={wikipediaIcon} style={{width: 16, height: 16}} />   </a>} </div> );
     }
-    return (<span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number > 0?"3vh":"2.5vh"}}> {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):(<span> 2. Move unassigned spans on right to entity </span> )}
+    return (<span style={{backgroundColor: this.props.entity_number>0?this.props.color:"white", textAlign: "center", fontSize: this.props.entity_number > 0?"3vh":"2.5vh"}} > {this.props.entity_number > 0?this.entity_number_to_string()+": "+this.props.entity_name.replaceAll("_", " "):(<span> 2. Move unassigned spans on right to entity </span> )}
           </span> );
   }
   
@@ -206,16 +206,16 @@ class Dragbox extends React.Component<Props, State> {
     }
     
     return this.props.dropTarget(
-      <div>  
+      <div className={this.props.entity_number == 1? "entity_box": ""}>  
         <br /> 
         <Grid container spacing={this.props.entity_number>0?4:6}>
 
                     <Grid item xs={this.props.entity_number>0?4:6} > 
                       {this.render_entity()}
          {this.props.entity_number>0?<br />:<div />}
-        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "50%"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > {this.props.entity_name ==""? 'Select':'Change'}
+        {this.props.entity_number>0?<button className={this.props.entity_number == 1? "change": ""} style={{marginTop: 10, fontSize: "2vh", width: "50%"}} onClick={(e)=>{e.currentTarget.blur(); this.setState({show_search: true})}} > {this.props.entity_name ==""? 'Select':'Change'}
         </button> :''} {this.props.entity_number>0?<span />:<div />}
-        {this.props.entity_number>0?<button style={{marginTop: 10, fontSize: "2vh", width: "45%", textAlign: "center"}} onClick={this.delete_entity} > Delete
+        {this.props.entity_number>0?<button className={this.props.entity_number == 1? "delete": ""} style={{marginTop: 10, fontSize: "2vh", width: "45%", textAlign: "center"}} onClick={this.delete_entity} > Delete
         </button>:''} <br />
         </Grid> 
         <Grid item xs={this.props.entity_number>0?8:6}>

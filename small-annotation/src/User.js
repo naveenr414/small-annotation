@@ -126,7 +126,7 @@ export default class User extends React.Component<Props, State> {
         Try a random 
         <Dropdown update_value={(category_option)=>{this.setState({category_option})}} default_value={"Literature"} options={categories} />        
         question at 
-        <Dropdown update_value={(random_difficulty_option)=>{this.setState({random_difficulty_option})}} default_value={"High School"} options={difficulties} /> 
+        <Dropdown update_value={(random_difficulty_option)=>{this.setState({random_difficulty_option})}} default_value={"High School"} options={difficulties.concat(['Any'])} /> 
         difficulty 
         <Button style={{marginLeft: 20}} onClick={this.explore_random_category} variant="contained" color="primary"> Go! </Button> <br /> 
         Explore 
@@ -146,7 +146,7 @@ export default class User extends React.Component<Props, State> {
         <div>
           Topic: <AutoComplete on_enter={this.advanced_search} update_value={(advanced_value)=>{this.setState({advanced_value})}} />    
           <br />
-          Difficulty: <Dropdown update_value={(advanced_difficulty)=>{this.setState({advanced_difficulty})}} default_value={"High School"} options={difficulties} />  <br />
+          Difficulty: <Dropdown update_value={(advanced_difficulty)=>{this.setState({advanced_difficulty})}} default_value={"High School"} options={difficulties.concat(["Any"])} />  <br />
           Category: <Dropdown update_value={(advanced_category)=>{this.setState({advanced_category})}} default_value={"Literature"} options={categories} /> 
                          
           <Button style={{marginLeft: 20}} onClick={this.advanced_search} variant="contained" color="primary"> Go! </Button>
