@@ -348,6 +348,7 @@ def get_category(username):
 
 @app.get("/quel/entity/{entity_name}")
 def get_questions_entity(entity_name):
+    entity_name = unidecode.unidecode(entity_name)
     print("Getting entity name! {}".format(entity_name))
     start = time.time()
     entity_name = entity_name.strip("_").strip()
@@ -517,11 +518,24 @@ def get_tournament(tournament):
     start = time.time()
     data = [i[0] for i in data]
     common_entity_definitions = db.multiple_definitions(data)
-    ids = common_entity_definitions['ids']
-    data = common_entity_definitions['names']
-    common_entity_definitions = common_entity_definitions['definitions']
-    print("Final part took {} time".format(time.time()-start))
+
+    ids = {}
+    data = []
+    c = {}
+
+    print(common_entity_definitions)
+
+    j = 0
+    for i in common_entity_definitions['ids']:
+        if common_entity_definitions['ids'][i] != 0 and i!='':
+            ids[i] = common_entity_definitions['ids'][i]
+            data.append(i)
+            c[i] = common_entity_definitions['definitions'][i]
+        j+=1
     
+    common_entity_definitions = c
+
+    print("Final part took {} time".format(time.time()-start))
 
     print("Data {}".format(data))
     return {'data':data,'genders':counter,'definitions': common_entity_definitions,
@@ -678,6 +692,19 @@ def get_topic_distro(username):
     common_entity_definitions = db.multiple_definitions(common_entities)
     ids = common_entity_definitions['ids']
     common_entity_definitions = common_entity_definitions['definitions']
+
+    c = {}
+    id_new = {}
+
+    for i in common_entity_definitions:
+        c[i.lower()] = common_entity_definitions[i]
+        id_new[i.lower()] = ids[i]
+
+    ids = id_new
+    common_entity_definitions = c
+
+    common_entities = [i for i in common_entity_definitions]
+    
     return {'topics':Counter(topics),'common_entities':common_entities,
             'common_entity_definitions': common_entity_definitions,
             'common_ids':ids}
@@ -784,7 +811,12 @@ def write_factbook(username):
     common_entities = db.get_entities(questions,category,'Any')
     common_entity_definitions = db.multiple_definitions(common_entities)
     common_ids = common_entity_definitions['ids']
+
+    
     common_entity_definitions = common_entity_definitions['definitions']
+
+    common_entities = list(common_entity_definitions.keys())
+
     pdf = FPDF()
     pdf.add_page()
 

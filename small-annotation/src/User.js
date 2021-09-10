@@ -14,6 +14,7 @@ interface State {
 }
 
 let address = "/quel";
+let prizes = false;
 
 export default class User extends React.Component<Props, State> {
   state: State = {
@@ -152,9 +153,9 @@ export default class User extends React.Component<Props, State> {
           <Button style={{marginLeft: 20}} onClick={this.advanced_search} variant="contained" color="primary"> Go! </Button>
         </div>
       }
-      <div style={{textAlign: 'center', fontSize: 48}}> 
+      {prizes && <div style={{textAlign: 'center', fontSize: 48}}> 
         Explore questions and <a target="_blank" href="https://docs.google.com/document/d/1ndk13ZvBAezTlb_z1QofvJg8qmlOCRvgm3fY9ExcBaA/edit?usp=sharing"> Win Prizes! </a> 
-      </div>
+      </div>}
       </div> 
     
     </div>);

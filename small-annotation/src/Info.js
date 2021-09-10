@@ -131,6 +131,7 @@ export default class Info extends React.Component<Props, State> {
   
   render_entities = () => {
     let entities = [];
+    console.log(this.state.common_entity_definitions);
     for(var i = 0;i<this.state.common_entities.length;i++) {
       let entity = this.state.common_entities[i];
       let searchButton = (<Button style={{marginRight: 30}} onClick={()=>{setCookie("topic",entity); setCookie("difficulty_option", "Any"); setCookie("category_option","Any"); this.setState({should_redirect: true});}} variant="contained"> Search </Button>);
@@ -148,7 +149,9 @@ export default class Info extends React.Component<Props, State> {
       {searchButton}
       </CardActions>
     </Card> </div>);
-      entities.push(card);
+     if (this.state.common_entity_definitions[entity].length >0) {
+        entities.push(card);
+     }
     }
     
     return <Carousel cards={entities} /> 
@@ -240,7 +243,7 @@ export default class Info extends React.Component<Props, State> {
           </Tabs>
         </AppBar>
         {this.state.value === 'one' && <div>  {main_menu} {this.get_info()} </div>}
-        {this.state.value  === 'two' && <Typography>{main_menu} {this.render_stats()} </Typography>}
+        {this.state.value  === 'two' && <Typography>{main_menu} <br />{this.render_stats()} </Typography>}
    </div>
     
   }
