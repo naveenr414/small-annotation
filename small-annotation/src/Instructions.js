@@ -30,7 +30,7 @@ class Span extends React.Component<Props, State> {
       </ol>
       
       Annotate everything that refers to a proper noun, selecting the longest applicable span of text when multiple are possible, and annotating possesives. 
-      More detailed guidelines are available <a target="_blank" href="https://docs.google.com/document/d/1r9iDFMYvu9qn-Du3ytmfE65kGItk9dfiz-RcUKZH0mE/edit?usp=sharing"> here </a>, and a video example is available <a target="_blank" href="https://drive.google.com/file/d/1AhVsmYt83y038Bf_63TyhEA2-l3Iw5o_/view?usp=sharing">here </a>
+      More detailed guidelines are available <a target="_blank" href="https://docs.google.com/document/d/1r9iDFMYvu9qn-Du3ytmfE65kGItk9dfiz-RcUKZH0mE/edit?usp=sharing"> here </a>, and a video example is available <a target="_blank" href="https://drive.google.com/file/d/1-AC5NeDfkL8GCLydvzD2bQF8VP0SU6HI/view?usp=sharing">here </a>
       To go to another question, press the random button to get a random question, and the suggested question to have our algorithms suggest a question for you to annotate. 
       
 
