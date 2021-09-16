@@ -312,6 +312,15 @@ class Database:
 
             return True
 
+    def get_num_responses(self):
+        with self._session_scope as session:
+            all_edits = session.query(UserEdits).filter(UserEdits.user_id != "system")
+            tod = datetime.datetime.now()
+            d = datetime.timedelta(days = 7)
+            a = tod - d
+            return {'1 week': len([i for i in all_edits if i.start_time>=a]), 'total': len([i for i in all_edits])}
+
+
     def update_user_topic(self,user_id,question_id,topic,subtopic,num_mentions,edit_time):
         with self._session_scope as session:
             current_values = session.query(UserTopic).filter(and_(UserTopic.user_id==user_id,UserTopic.question_id==question_id))

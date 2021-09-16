@@ -312,6 +312,15 @@ def get_selected_question(question_num):
     real_name = security.decode_token(username)
     return load_question(real_name,question_num)
 
+@app.get("/quel/website_works")
+def website_works():
+    answer = db.get_answer(0)
+    return answer == "queequeg"
+
+@app.get("/quel/responses")
+def responses():
+    return db.get_num_responses()
+
 @app.get("/quel/get_sample_question")
 def get_sample_question():    
     return load_question("nav.j.raman@gmail.com",-1)
