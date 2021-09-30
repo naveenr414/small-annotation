@@ -16,3 +16,4 @@ qanta*.json
 *.sqlite3
 backend/*.csv
 backend/*pagecounts*
+backend/security_config.py

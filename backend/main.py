@@ -3,6 +3,7 @@ import spacy
 from spacy.tokenizer import Tokenizer
 from spacy.lang.en import English
 from starlette.middleware.cors import CORSMiddleware
+from security_config import hash_password
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
 import json
 import time
@@ -20,6 +21,7 @@ from sqlalchemy import func
 from collections import Counter
 import unidecode
 from scipy.spatial.distance import cosine
+import hashlib
 
 app = FastAPI()
 origins = [
@@ -221,6 +223,25 @@ def get_annotations(username,question_num,question_data):
     
     return {'names':json.dumps(real_names),
             'spans':json.dumps(real_spans)}
+
+@app.get("/quel/dump_data/{password}")
+def dump_data(password):
+    print("Password {}".format(password))
+    if hashlib.md5(password.encode()).hexdigest() == hash_password:
+        all_mentions = db.get_all_mentions()
+        for i in all_mentions:
+            del i['user']
+            del i['confidence']
+
+        all_mentions = [i for i in all_mentions if i['question']!=-1]
+
+        w = open("dumped_data.jsonl","w")
+        for i in all_mentions:
+            w.write("{}\n".format(json.dumps(i)))
+        w.close()
+        return FileResponse(path="dumped_data.jsonl", filename="dumped_data.jsonl", media_type='text')
+
+    
 
 @app.get("/quel/get_id/{entity}")
 def get_id(entity):
