@@ -179,7 +179,7 @@ export default class Info extends React.Component<Props, State> {
           {this.state.leaderboard.map((row) => (
             <TableRow key={row[0]}>
               <TableCell component="th" scope="row">
-                {row[0]}
+                {row[0].substring(0,7)+"..."}
               </TableCell>
               <TableCell align="right">{row[1]}</TableCell>
               <TableCell align="right">{row[2]}</TableCell>
